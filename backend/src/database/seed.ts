@@ -1,13 +1,13 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { AppDataSource } from './data-source';
+import { dataSource } from './data-source';
 import { ClassificationRule } from '../taxonomy/entities/rule.entity';
 
 async function seed() {
-  const dataSource: DataSource = await AppDataSource.initialize();
+  const ds: DataSource = await dataSource.initialize();
 
   try {
-    const ruleRepo = dataSource.getRepository(ClassificationRule);
+    const ruleRepo = ds.getRepository(ClassificationRule);
 
     const existing = await ruleRepo.findOne({
       where: { code: 'fall_protection_missing' },
@@ -32,7 +32,7 @@ async function seed() {
     console.error('Seed failed:', error);
     process.exitCode = 1;
   } finally {
-    await dataSource.destroy();
+    await ds.destroy();
   }
 }
 
