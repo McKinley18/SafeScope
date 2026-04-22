@@ -56,6 +56,9 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
           AuditEntryFinding,
         ],
         synchronize: false,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       }),
     }),
     HealthModule,
