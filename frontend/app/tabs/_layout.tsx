@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppTheme } from '../../src/theme/ThemeContext';
+import { ThemeProvider, useAppTheme } from '../../src/theme/ThemeContext';
 
-export default function TabsLayout() {
+function TabsNavigator() {
   const { colors, dark } = useAppTheme();
 
   return (
@@ -91,5 +91,13 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+  );
+}
+
+export default function TabsLayout() {
+  return (
+    <ThemeProvider>
+      <TabsNavigator />
+    </ThemeProvider>
   );
 }
