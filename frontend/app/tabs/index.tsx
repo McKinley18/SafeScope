@@ -230,12 +230,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
   },
   logoWrap: {
-    marginBottom: -28,
-    marginTop: -8,
+    marginBottom: -30,
+    marginTop: -10,
   },
   logo: {
-    width: 320,
-    height: 145,
+    width: 390,
+    height: 175,
   },
   brandTitle: {
     fontSize: 30,
