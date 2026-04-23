@@ -47,7 +47,7 @@ export const Dashboard = () => {
         <div className="grid grid-cols-3 gap-4">
             <div>Avg Review Time: {data.analytics.avgReviewTime.toFixed(1)} hrs</div>
             <div>Avg Action Close Time: {data.analytics.avgCloseTime.toFixed(1)} days</div>
-            <button onClick={() => window.open('http://localhost:3000/reports/export?format=csv', '_blank')} className="px-3 py-1 bg-blue-500 text-white rounded">Download CSV Report</button>
+            <button onClick={() => window.open('https://safescope-backend.onrender.com/reports/export?format=csv', '_blank')} className="px-3 py-1 bg-blue-500 text-white rounded">Download CSV Report</button>
         </div>
       </section>
     </div>

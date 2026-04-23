@@ -1,8 +1,8 @@
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'https://safescope-backend.onrender.com';
 
 export const apiClient = {
   getDashboard: async () => {
-    const BASE_URL = 'http://localhost:3000';
+    const BASE_URL = 'https://safescope-backend.onrender.com';
 
     const getHeaders = () => {
       const token = localStorage.getItem('token');

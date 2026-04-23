@@ -21,7 +21,7 @@ type DashboardResponse = {
   timestamp?: string;
 };
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
 
 export default function AnalyticsScreen() {
   const scheme = useColorScheme();
