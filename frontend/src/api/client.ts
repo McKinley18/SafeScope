@@ -3,7 +3,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.o
 const getHeaders = () => {
   let token: string | null = null;
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     token = localStorage.getItem('token');
   }
 
@@ -33,9 +33,16 @@ export const apiClient = {
     return res.json();
   },
 
-  getReports: async (params?: { page?: number; limit?: number; status?: string; eventTypeCode?: string }) => {
-    const query = new URLSearchParams(params as any).toString();
-    const res = await fetch(`${BASE_URL}/reports?${query}`, { headers: getHeaders() });
+  getReports: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    eventTypeCode?: string;
+  }) => {
+    const query = new URLSearchParams(params as Record<string, string>).toString();
+    const res = await fetch(`${BASE_URL}/reports${query ? `?${query}` : ''}`, {
+      headers: getHeaders(),
+    });
     return res.json();
   },
 
@@ -57,7 +64,7 @@ export const apiClient = {
     return res.json();
   },
 
-  addReportEvidence: async (reportId: string, attachments: Array<{ uri: string; fileName?: string; mimeType?: string }>) => {
+  addReportEvidence: async (reportId: string, attachments: Array<{ uri: string; mimeType?: string; fileName?: string }>) => {
     const res = await fetch(`${BASE_URL}/reports/${reportId}/evidence`, {
       method: 'POST',
       headers: getHeaders(),
@@ -80,53 +87,8 @@ export const apiClient = {
   },
 
   getReportClassifications: async (reportId: string) => {
-    const res = await fetch(`${BASE_URL}/reports/${reportId}/classifications`, { headers: getHeaders() });
-    return res.json();
-  },
-
-  getReportAudit: async (reportId: string) => {
-    const res = await fetch(`${BASE_URL}/reports/${reportId}/audit`, { headers: getHeaders() });
-    return res.json();
-  },
-
-  exportReport: async (reportId: string) => {
-    const res = await fetch(`${BASE_URL}/reports/${reportId}/export`, { headers: getHeaders() });
-    return res.json();
-  },
-
-  getReviewQueue: async () => {
-    const res = await fetch(`${BASE_URL}/review-queue`, { headers: getHeaders() });
-    return res.json();
-  },
-
-  reviewClassification: async (classificationId: string, action: string, notes: string) => {
-    const res = await fetch(`${BASE_URL}/classifications/${classificationId}/review`, {
-      method: 'POST',
+    const res = await fetch(`${BASE_URL}/reports/${reportId}/classifications`, {
       headers: getHeaders(),
-      body: JSON.stringify({ action, notes }),
-    });
-    return res.json();
-  },
-
-  getActions: async () => {
-    const res = await fetch(`${BASE_URL}/actions`, { headers: getHeaders() });
-    return res.json();
-  },
-
-  createAction: async (data: any) => {
-    const res = await fetch(`${BASE_URL}/actions`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-
-  closeAction: async (actionId: string, closureNotes: string) => {
-    const res = await fetch(`${BASE_URL}/actions/${actionId}/close`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ closureNotes }),
     });
     return res.json();
   },
