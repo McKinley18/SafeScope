@@ -1,65 +1,47 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  Switch,
-  TouchableOpacity,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Switch } from 'react-native';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme, ThemeMode } from '../../src/theme/ThemeContext';
+import { tokens } from '../../src/theme/tokens';
+import AppCard from '../../src/components/ui/AppCard';
+import PageHeader from '../../src/components/ui/PageHeader';
 
-const standardsModes = ['MSHA First', 'OSHA First', 'Hybrid', 'Custom Company Rules'];
-const inspectionTypes = [
-  'Full Site Inspection',
-  'Area Walkthrough',
-  'Equipment Inspection',
-  'Incident Follow-up',
-  'Shift Start Check',
-];
-const captureModes = ['Photo + Notes', 'Voice Notes', 'Notes Only', 'Fast Tap Checklist'];
-const riskScoringModes = ['Severity × Likelihood', 'Low / Medium / High', '1–5 Score'];
-const reportStyles = ['Professional', 'Executive Summary', 'Compliance Only', 'Corrective Action Focused'];
+const standardsModes = ['MSHA First', 'OSHA First', 'Hybrid', 'Company Rules'];
+const inspectionTypes = ['Full Site', 'Area Walkthrough', 'Equipment', 'Incident Follow-up'];
+const reportStyles = ['Professional', 'Executive', 'Compliance', 'Corrective Action'];
 
-function SegmentedSelect({
+function ChipGroup({
   label,
-  value,
   options,
+  value,
   onChange,
-  colors,
 }: {
   label: string;
-  value: string;
   options: string[];
+  value: string;
   onChange: (value: string) => void;
-  colors: {
-    text: string;
-    sub: string;
-    border: string;
-    cardAlt: string;
-    accent: string;
-  };
 }) {
+  const { colors } = useAppTheme();
+
   return (
     <View style={styles.fieldGroup}>
-      <Text style={[styles.label, { color: colors.sub }]}>{label}</Text>
-      <View style={styles.optionWrap}>
+      <Text style={[styles.fieldLabel, { color: colors.sub }]}>{label}</Text>
+      <View style={styles.chipRow}>
         {options.map((option) => {
           const active = value === option;
           return (
             <TouchableOpacity
               key={option}
+              onPress={() => onChange(option)}
               style={[
-                styles.optionChip,
+                styles.chip,
                 {
                   backgroundColor: active ? colors.accent : colors.cardAlt,
                   borderColor: active ? colors.accent : colors.border,
                 },
               ]}
-              onPress={() => onChange(option)}
             >
-              <Text style={[styles.optionChipText, { color: active ? '#fff' : colors.text }]}>
+              <Text style={[styles.chipText, { color: active ? '#FFFFFF' : colors.text }]}>
                 {option}
               </Text>
             </TouchableOpacity>
@@ -71,389 +53,320 @@ function SegmentedSelect({
 }
 
 export default function SettingsScreen() {
-  const { themeMode, setThemeMode, dark, colors } = useAppTheme();
+  const { colors, themeMode, setThemeMode } = useAppTheme();
 
   const [name, setName] = useState('Christopher McKinley');
   const [title, setTitle] = useState('Safety Manager');
   const [company, setCompany] = useState('Monolith Studios');
   const [site, setSite] = useState('North Ridge Plant');
-  const [department, setDepartment] = useState('Operations Safety');
-
-  const [highVisibilityTheme, setHighVisibilityTheme] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const [standardsMode, setStandardsMode] = useState('MSHA First');
-  const [inspectionType, setInspectionType] = useState('Full Site Inspection');
-  const [captureMode, setCaptureMode] = useState('Photo + Notes');
-  const [riskScoring, setRiskScoring] = useState('Severity × Likelihood');
+  const [inspectionType, setInspectionType] = useState('Full Site');
   const [reportStyle, setReportStyle] = useState('Professional');
-  const [autoGenerateActions, setAutoGenerateActions] = useState(true);
-  const [autoTagSevereHazards, setAutoTagSevereHazards] = useState(true);
-  const [autoSaveDrafts, setAutoSaveDrafts] = useState(true);
 
-  const ui = {
-    bg: colors.bg,
-    card: colors.card,
-    cardAlt: colors.cardAlt,
-    border: colors.border,
-    text: colors.text,
-    subtext: colors.sub,
-    inputBg: dark ? '#111827' : '#ffffff',
-    inputBorder: dark ? '#374151' : '#d1d5db',
-    accent: colors.accent,
-    footer: dark ? '#6b7280' : '#94a3b8',
-  };
+  const [aiSuggestions, setAiSuggestions] = useState(true);
+  const [autoDrafts, setAutoDrafts] = useState(true);
+  const [notifications, setNotifications] = useState(true);
+  const [highVisibility, setHighVisibility] = useState(false);
 
   return (
-    <ScrollView contentContainerStyle={[styles.scrollContent, { backgroundColor: ui.bg }]}>
-      <View style={[styles.container, { backgroundColor: ui.bg }]}>
-        <Text style={[styles.screenTitle, { color: ui.text }]}>Settings</Text>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
+      <PageHeader
+        eyebrow="Control"
+        title="Control Center"
+        subtitle="Configure SafeScope profile, intelligence behavior, reporting defaults, and field preferences."
+      />
 
-        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
-          <Text style={[styles.sectionTitle, { color: ui.text }]}>Profile</Text>
-          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
-            Personal and organizational details used throughout audits and reports.
-          </Text>
-
-          <View style={styles.twoColRow}>
-            <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: ui.subtext }]}>Name</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
-                value={name}
-                onChangeText={setName}
-                placeholder="Enter your name"
-                placeholderTextColor={ui.subtext}
-              />
-            </View>
-
-            <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: ui.subtext }]}>Title</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Enter your title"
-                placeholderTextColor={ui.subtext}
-              />
-            </View>
+      <AppCard style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Operator Profile</Text>
+            <Text style={[styles.sectionSub, { color: colors.sub }]}>
+              Used across reports, reviews, and audit exports.
+            </Text>
           </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: ui.subtext }]}>Company</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
-              value={company}
-              onChangeText={setCompany}
-              placeholder="Enter company"
-              placeholderTextColor={ui.subtext}
-            />
-          </View>
-
-          <View style={styles.twoColRow}>
-            <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: ui.subtext }]}>Site</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
-                value={site}
-                onChangeText={setSite}
-                placeholder="Enter site"
-                placeholderTextColor={ui.subtext}
-              />
-            </View>
-
-            <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: ui.subtext }]}>Department</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
-                value={department}
-                onChangeText={setDepartment}
-                placeholder="Enter department"
-                placeholderTextColor={ui.subtext}
-              />
-            </View>
-          </View>
+          <Ionicons name="person-circle-outline" size={26} color={colors.accent} />
         </View>
 
-        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
-          <Text style={[styles.sectionTitle, { color: ui.text }]}>Appearance</Text>
-          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
-            Control how SafeScope looks in the field and in the office.
-          </Text>
+        <Text style={[styles.fieldLabel, { color: colors.sub }]}>Name</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.cardAlt, borderColor: colors.border, color: colors.text }]}
+          value={name}
+          onChangeText={setName}
+          placeholder="Your name"
+          placeholderTextColor={colors.muted}
+        />
 
-          <Text style={[styles.label, { color: ui.subtext, marginBottom: 10 }]}>Theme Mode</Text>
-          <View style={styles.segmentRow}>
-            {(['light', 'dark'] as ThemeMode[]).map((mode) => {
-              const active = themeMode === mode;
-              return (
-                <TouchableOpacity
-                  key={mode}
-                  style={[
-                    styles.segmentButton,
-                    {
-                      backgroundColor: active ? ui.accent : ui.cardAlt,
-                      borderColor: active ? ui.accent : ui.border,
-                    },
-                  ]}
-                  onPress={() => setThemeMode(mode)}
-                >
-                  <Text style={[styles.segmentText, { color: active ? '#fff' : ui.text }]}>
-                    {mode === 'dark' ? 'Dark' : 'Light'}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+        <Text style={[styles.fieldLabel, { color: colors.sub }]}>Title</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.cardAlt, borderColor: colors.border, color: colors.text }]}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Safety Manager"
+          placeholderTextColor={colors.muted}
+        />
 
-          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
-            <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: ui.text }]}>High Visibility Theme</Text>
-              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
-                Increase contrast for fast scanning in field conditions.
-              </Text>
-            </View>
-            <Switch
-              value={highVisibilityTheme}
-              onValueChange={setHighVisibilityTheme}
-              trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={highVisibilityTheme ? ui.accent : '#9ca3af'}
-            />
+        <Text style={[styles.fieldLabel, { color: colors.sub }]}>Company</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.cardAlt, borderColor: colors.border, color: colors.text }]}
+          value={company}
+          onChangeText={setCompany}
+          placeholder="Company"
+          placeholderTextColor={colors.muted}
+        />
+
+        <Text style={[styles.fieldLabel, { color: colors.sub }]}>Primary Site</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.cardAlt, borderColor: colors.border, color: colors.text }]}
+          value={site}
+          onChangeText={setSite}
+          placeholder="Site"
+          placeholderTextColor={colors.muted}
+        />
+      </AppCard>
+
+      <AppCard style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Appearance</Text>
+            <Text style={[styles.sectionSub, { color: colors.sub }]}>
+              Optimize SafeScope for field or office conditions.
+            </Text>
           </View>
+          <Ionicons name="contrast-outline" size={24} color={colors.accent} />
         </View>
 
-        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
-          <Text style={[styles.sectionTitle, { color: ui.text }]}>Notifications</Text>
-          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
-            Manage reminders and activity updates.
-          </Text>
-
-          <View style={styles.preferenceRowNoBorder}>
-            <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Enable Notifications</Text>
-              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
-                Alerts for actions, reviews, and audit activity.
-              </Text>
-            </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={notificationsEnabled ? ui.accent : '#9ca3af'}
-            />
-          </View>
+        <Text style={[styles.fieldLabel, { color: colors.sub }]}>Theme Mode</Text>
+        <View style={styles.themeRow}>
+          {(['light', 'dark'] as ThemeMode[]).map((mode) => {
+            const active = themeMode === mode;
+            return (
+              <TouchableOpacity
+                key={mode}
+                style={[
+                  styles.themeButton,
+                  {
+                    backgroundColor: active ? colors.accent : colors.cardAlt,
+                    borderColor: active ? colors.accent : colors.border,
+                  },
+                ]}
+                onPress={() => setThemeMode(mode)}
+              >
+                <Text style={[styles.themeButtonText, { color: active ? '#FFFFFF' : colors.text }]}>
+                  {mode === 'dark' ? 'Dark' : 'Light'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
-          <Text style={[styles.sectionTitle, { color: ui.text }]}>Audit Defaults</Text>
-          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
-            These settings shape how every new audit session begins.
-          </Text>
-
-          <SegmentedSelect
-            label="Standards Mode"
-            value={standardsMode}
-            options={standardsModes}
-            onChange={setStandardsMode}
-            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
-          />
-
-          <SegmentedSelect
-            label="Inspection Type"
-            value={inspectionType}
-            options={inspectionTypes}
-            onChange={setInspectionType}
-            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
-          />
-
-          <SegmentedSelect
-            label="Capture Mode"
-            value={captureMode}
-            options={captureModes}
-            onChange={setCaptureMode}
-            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
-          />
-
-          <SegmentedSelect
-            label="Risk Scoring"
-            value={riskScoring}
-            options={riskScoringModes}
-            onChange={setRiskScoring}
-            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
-          />
-
-          <SegmentedSelect
-            label="Report Style"
-            value={reportStyle}
-            options={reportStyles}
-            onChange={setReportStyle}
-            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
-          />
-
-          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
-            <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Auto Generate Actions</Text>
-              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
-                Draft corrective actions automatically from findings.
-              </Text>
-            </View>
-            <Switch
-              value={autoGenerateActions}
-              onValueChange={setAutoGenerateActions}
-              trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={autoGenerateActions ? ui.accent : '#9ca3af'}
-            />
+        <View style={[styles.preferenceRow, { borderTopColor: colors.border }]}>
+          <View style={styles.preferenceText}>
+            <Text style={[styles.preferenceTitle, { color: colors.text }]}>High Visibility Mode</Text>
+            <Text style={[styles.preferenceSub, { color: colors.sub }]}>Extra contrast for field conditions.</Text>
           </View>
+          <Switch
+            value={highVisibility}
+            onValueChange={setHighVisibility}
+            thumbColor={highVisibility ? colors.accent : '#94A3B8'}
+          />
+        </View>
+      </AppCard>
 
-          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
-            <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Auto Tag Severe Hazards</Text>
-              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
-                Escalate likely critical findings for review.
-              </Text>
-            </View>
-            <Switch
-              value={autoTagSevereHazards}
-              onValueChange={setAutoTagSevereHazards}
-              trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={autoTagSevereHazards ? ui.accent : '#9ca3af'}
-            />
+      <AppCard style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Audit Defaults</Text>
+            <Text style={[styles.sectionSub, { color: colors.sub }]}>
+              Set how new inspections and reports begin.
+            </Text>
           </View>
-
-          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
-            <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Auto Save Drafts</Text>
-              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
-                Preserve in-progress work automatically.
-              </Text>
-            </View>
-            <Switch
-              value={autoSaveDrafts}
-              onValueChange={setAutoSaveDrafts}
-              trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={autoSaveDrafts ? ui.accent : '#9ca3af'}
-            />
-          </View>
+          <Ionicons name="options-outline" size={24} color={colors.accent} />
         </View>
 
-        <Text style={[styles.footerText, { color: ui.footer }]}>
-          SafeScope settings are stored locally for this pilot build.
+        <ChipGroup label="Standards Priority" options={standardsModes} value={standardsMode} onChange={setStandardsMode} />
+        <ChipGroup label="Default Inspection Type" options={inspectionTypes} value={inspectionType} onChange={setInspectionType} />
+        <ChipGroup label="Report Style" options={reportStyles} value={reportStyle} onChange={setReportStyle} />
+      </AppCard>
+
+      <AppCard style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Intelligence Behavior</Text>
+            <Text style={[styles.sectionSub, { color: colors.sub }]}>
+              Control how SafeScope assists with analysis and workflow automation.
+            </Text>
+          </View>
+          <Ionicons name="sparkles-outline" size={24} color={colors.accent} />
+        </View>
+
+        <PreferenceSwitch
+          title="AI Hazard Suggestions"
+          subtitle="Generate draft hazard descriptions from evidence."
+          value={aiSuggestions}
+          onChange={setAiSuggestions}
+        />
+
+        <PreferenceSwitch
+          title="Auto-save Drafts"
+          subtitle="Preserve incomplete inspections locally."
+          value={autoDrafts}
+          onChange={setAutoDrafts}
+        />
+
+        <PreferenceSwitch
+          title="Notifications"
+          subtitle="Alerts for reviews, actions, and overdue items."
+          value={notifications}
+          onChange={setNotifications}
+        />
+      </AppCard>
+
+      <AppCard style={styles.footerCard}>
+        <Text style={[styles.footerTitle, { color: colors.text }]}>SafeScope Platform</Text>
+        <Text style={[styles.footerText, { color: colors.sub }]}>
+          Premium Safety Intelligence Build • Sprint UI Overhaul
         </Text>
-      </View>
+      </AppCard>
     </ScrollView>
   );
 }
 
+function PreferenceSwitch({
+  title,
+  subtitle,
+  value,
+  onChange,
+}: {
+  title: string;
+  subtitle: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  const { colors } = useAppTheme();
+
+  return (
+    <View style={[styles.preferenceRow, { borderTopColor: colors.border }]}>
+      <View style={styles.preferenceText}>
+        <Text style={[styles.preferenceTitle, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.preferenceSub, { color: colors.sub }]}>{subtitle}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        thumbColor={value ? colors.accent : '#94A3B8'}
+      />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  scrollContent: {
+  container: {
+    padding: tokens.spacing.md,
+    paddingBottom: tokens.spacing.xxl,
     flexGrow: 1,
   },
-  container: {
-    padding: 18,
-    paddingBottom: 30,
-  },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    marginBottom: 16,
-  },
   sectionCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
+    marginBottom: tokens.spacing.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: tokens.spacing.md,
+    marginBottom: tokens.spacing.md,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: tokens.type.h2,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  sectionSub: {
+    fontSize: tokens.type.small,
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  fieldGroup: {
+    marginTop: tokens.spacing.sm,
+  },
+  fieldLabel: {
+    fontSize: tokens.type.small,
+    fontWeight: '800',
+    marginBottom: 6,
+    marginTop: tokens.spacing.sm,
+  },
+  input: {
+    minHeight: 52,
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.md,
+    fontSize: tokens.type.body,
+    fontWeight: '600',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: tokens.spacing.sm,
+  },
+  chip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  chipText: {
+    fontSize: tokens.type.small,
+    fontWeight: '800',
+  },
+  themeRow: {
+    flexDirection: 'row',
+    gap: tokens.spacing.sm,
+    marginBottom: tokens.spacing.sm,
+  },
+  themeButton: {
+    flex: 1,
+    minHeight: 48,
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeButtonText: {
+    fontSize: tokens.type.body,
+    fontWeight: '800',
+  },
+  preferenceRow: {
+    borderTopWidth: 1,
+    paddingTop: tokens.spacing.md,
+    marginTop: tokens.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: tokens.spacing.md,
+  },
+  preferenceText: {
+    flex: 1,
+  },
+  preferenceTitle: {
+    fontSize: tokens.type.body,
     fontWeight: '800',
     marginBottom: 4,
   },
-  sectionSubtitle: {
-    fontSize: 13,
+  preferenceSub: {
+    fontSize: tokens.type.small,
     lineHeight: 18,
-    marginBottom: 14,
-  },
-  twoColRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  halfWidth: {
-    flex: 1,
-  },
-  fieldGroup: {
-    marginBottom: 14,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 14,
-  },
-  segmentRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
-  segmentButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  segmentText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  optionWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  optionChip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-  },
-  optionChipText: {
-    fontSize: 13,
     fontWeight: '600',
   },
-  preferenceRow: {
-    marginTop: 6,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
+  footerCard: {
+    alignItems: 'center',
   },
-  preferenceRowNoBorder: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  preferenceTextWrap: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  preferenceTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 3,
-  },
-  preferenceSubtitle: {
-    fontSize: 13,
-    lineHeight: 18,
+  footerTitle: {
+    fontSize: tokens.type.body,
+    fontWeight: '900',
+    marginBottom: 4,
   },
   footerText: {
+    fontSize: tokens.type.small,
+    fontWeight: '600',
     textAlign: 'center',
-    fontSize: 12,
-    marginTop: 4,
   },
 });
