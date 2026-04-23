@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme, ActivityIndicator } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type DashboardResponse = {
   totalReports?: number;
@@ -22,6 +31,8 @@ type DashboardResponse = {
 };
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
+const ANALYTICS_CACHE_KEY = 'safescope_dashboard_cache';
+const ANALYTICS_CACHE_TIME_KEY = 'safescope_dashboard_cache_time';
 
 export default function AnalyticsScreen() {
   const scheme = useColorScheme();
@@ -29,7 +40,9 @@ export default function AnalyticsScreen() {
 
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [cacheTime, setCacheTime] = useState<string>('');
 
   const bg = dark ? '#050505' : '#f8fafc';
   const card = dark ? '#111111' : '#ffffff';
@@ -42,8 +55,17 @@ export default function AnalyticsScreen() {
   useEffect(() => {
     const load = async () => {
       try {
-        setLoading(true);
-        setError('');
+        const cached = await AsyncStorage.getItem(ANALYTICS_CACHE_KEY);
+        const cachedTime = await AsyncStorage.getItem(ANALYTICS_CACHE_TIME_KEY);
+
+        if (cached) {
+          setData(JSON.parse(cached));
+          if (cachedTime) setCacheTime(cachedTime);
+          setLoading(false);
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
 
         const res = await fetch(`${API_URL}/dashboard/overview`);
         if (!res.ok) {
@@ -52,10 +74,20 @@ export default function AnalyticsScreen() {
 
         const json = await res.json();
         setData(json);
+        const now = new Date().toISOString();
+        setCacheTime(now);
+
+        await AsyncStorage.setItem(ANALYTICS_CACHE_KEY, JSON.stringify(json));
+        await AsyncStorage.setItem(ANALYTICS_CACHE_TIME_KEY, now);
+
+        setError('');
       } catch (err: any) {
-        setError(err?.message || 'Failed to load analytics');
+        if (!data) {
+          setError(err?.message || 'Failed to load analytics');
+        }
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     };
 
@@ -115,10 +147,14 @@ export default function AnalyticsScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: bg }]}>
       <View style={styles.headerRow}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: text }]}>Executive Analytics</Text>
           <Text style={[styles.subtitle, { color: sub }]}>
             Live operational intelligence from SafeScope reports and reviews.
+          </Text>
+          <Text style={[styles.cacheMeta, { color: muted }]}>
+            {refreshing ? 'Refreshing in background…' : 'Loaded'}
+            {cacheTime ? ` • Last updated ${new Date(cacheTime).toLocaleTimeString()}` : ''}
           </Text>
         </View>
         <TouchableOpacity style={[styles.filterButton, { backgroundColor: cardAlt, borderColor: border }]}>
@@ -260,123 +296,95 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stateTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
-    marginBottom: 6,
+    marginTop: 10,
   },
   stateSub: {
     fontSize: 14,
+    marginTop: 8,
     textAlign: 'center',
-    lineHeight: 20,
-    marginTop: 4,
   },
   headerRow: {
+    marginBottom: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 18,
     gap: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '800',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
     lineHeight: 20,
-    maxWidth: 280,
+  },
+  cacheMeta: {
+    fontSize: 12,
+    marginTop: 6,
   },
   filterButton: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 6,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   filterText: {
     fontSize: 13,
     fontWeight: '700',
   },
   kpiGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 18,
+    gap: 12,
+    marginBottom: 20,
   },
   kpiCard: {
-    width: '48%',
     borderRadius: 18,
-    padding: 14,
     borderWidth: 1,
-    marginBottom: 12,
+    padding: 14,
   },
   kpiTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: 10,
   },
   iconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: 'rgba(255,106,0,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   kpiValue: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '800',
-    marginTop: 12,
     marginBottom: 4,
   },
   kpiLabel: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  sectionHeader: {
-    marginBottom: 12,
-    marginTop: 4,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 19,
-    fontWeight: '800',
-  },
-  panel: {
-    borderRadius: 18,
-    borderWidth: 1,
-    overflow: 'hidden',
-    marginBottom: 18,
-  },
-  row: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rowTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
-  score: {
-    color: '#ff6a00',
-    fontSize: 22,
+  sectionHeader: {
+    marginTop: 6,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: '800',
   },
   trendGrid: {
+    gap: 12,
     marginBottom: 18,
   },
   trendCard: {
     borderRadius: 18,
     borderWidth: 1,
     padding: 16,
-    marginBottom: 10,
   },
   trendTitle: {
     fontSize: 15,
@@ -387,32 +395,57 @@ const styles = StyleSheet.create({
     color: '#ff6a00',
     fontSize: 24,
     fontWeight: '800',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   trendSub: {
     fontSize: 13,
     lineHeight: 18,
   },
+  panel: {
+    borderRadius: 18,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 18,
+  },
+  row: {
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  rowTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+    paddingRight: 10,
+  },
   badge: {
-    backgroundColor: 'rgba(255,106,0,0.12)',
+    minWidth: 36,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 999,
+    backgroundColor: 'rgba(255,106,0,0.12)',
+    alignItems: 'center',
   },
   badgeText: {
     color: '#ff6a00',
+    fontWeight: '700',
     fontSize: 12,
+  },
+  score: {
+    color: '#ff6a00',
+    fontSize: 15,
     fontWeight: '800',
   },
   emptyWrap: {
     padding: 16,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
   },
   footerMeta: {
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 6,
   },
 });
