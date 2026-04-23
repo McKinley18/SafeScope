@@ -211,14 +211,15 @@ const styles = StyleSheet.create({
   heroCard: {
     marginBottom: tokens.spacing.xl,
     alignItems: 'center',
-    paddingVertical: tokens.spacing.xl,
+    paddingVertical: tokens.spacing.lg,
+    paddingHorizontal: tokens.spacing.md,
   },
   logoWrap: {
     marginBottom: tokens.spacing.md,
   },
   logo: {
-    width: 250,
-    height: 115,
+    width: 320,
+    height: 145,
   },
   brandTitle: {
     fontSize: 30,
@@ -227,10 +228,11 @@ const styles = StyleSheet.create({
     marginTop: tokens.spacing.sm,
   },
   brandSubtitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 6,
+    fontSize: 22,
+    fontWeight: '900',
+    marginTop: 2,
     textAlign: 'center',
+    letterSpacing: -0.3,
   },
   sectionHeader: {
     marginBottom: tokens.spacing.sm,
