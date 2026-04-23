@@ -74,7 +74,9 @@ export default function Home() {
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
         <LegalDisclaimer onAccept={() => {}} />
 
-        <AppCard style={styles.heroCard}>
+        <View style={[styles.heroShell, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.accentGlow} />
+
           <View style={styles.logoWrap}>
             <Image
               source={require('../../assets/images/logo.png')}
@@ -83,10 +85,10 @@ export default function Home() {
             />
           </View>
 
-          <Text style={[styles.brandSubtitle, { color: colors.sub }]}>
+          <Text style={[styles.brandSubtitle, { color: colors.text }]}>
             Operational Safety Intelligence
           </Text>
-        </AppCard>
+        </View>
 
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Operational Snapshot</Text>
@@ -208,11 +210,24 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.spacing.xl,
     flexGrow: 1,
   },
-  heroCard: {
+  heroShell: {
     marginBottom: tokens.spacing.xl,
     alignItems: 'center',
-    paddingVertical: tokens.spacing.lg,
+    borderWidth: 1,
+    borderRadius: tokens.radius.xl,
+    paddingTop: 8,
+    paddingBottom: 14,
     paddingHorizontal: tokens.spacing.md,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  accentGlow: {
+    position: 'absolute',
+    top: -36,
+    width: 220,
+    height: 70,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,106,0,0.18)',
   },
   logoWrap: {
     marginBottom: tokens.spacing.md,
