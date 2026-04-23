@@ -219,7 +219,17 @@ export default function CameraScreen() {
     }
   };
 
-  const useSuggestion = async () => {
+  
+  const removeImage = async (index: number) => {
+    const next = draft.images.filter((_, i) => i !== index);
+    await persistDraft({ ...draft, images: next });
+  };
+
+  const clearImages = async () => {
+    await persistDraft({ ...draft, images: [] });
+  };
+
+const useSuggestion = async () => {
     if (!suggestion?.suggestedHazardDescription) return;
     await updateField('hazardDescription', suggestion.suggestedHazardDescription);
     Alert.alert('Suggestion applied', 'Review and edit the hazard description as needed.');
@@ -276,7 +286,15 @@ export default function CameraScreen() {
             </View>
           ) : (
             draft.images.map((img, i) => (
-              <Image key={i} source={{ uri: img.uri }} style={styles.image} />
+              <View key={i} style={styles.thumbWrap}>
+                <Image source={{ uri: img.uri }} style={styles.image} />
+                <TouchableOpacity
+                  style={styles.deleteBadge}
+                  onPress={() => removeImage(i)}
+                >
+                  <Text style={styles.deleteBadgeText}>×</Text>
+                </TouchableOpacity>
+              </View>
             ))
           )}
         </ScrollView>
@@ -474,7 +492,31 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.small,
     fontWeight: '600',
   },
-  image: {
+  
+thumbWrap: {
+  position: 'relative',
+},
+
+deleteBadge: {
+  position: 'absolute',
+  top: 4,
+  right: 4,
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  backgroundColor: '#ef4444',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+deleteBadgeText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '800',
+  lineHeight: 18,
+},
+
+image: {
     width: 110,
     height: 110,
     borderRadius: tokens.radius.md,
