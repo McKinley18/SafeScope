@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   brandSubtitle: {
     fontSize: 26,
     fontWeight: '900',
-    marginTop: -26,
+    marginTop: -16,
     textAlign: 'center',
     letterSpacing: -0.6,
   },
