@@ -75,8 +75,6 @@ export default function Home() {
         <LegalDisclaimer onAccept={() => {}} />
 
         <View style={[styles.heroShell, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.accentGlow} />
-
           <View style={styles.logoWrap}>
             <Image
               source={require('../../assets/images/logo.png')}
@@ -211,26 +209,18 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   heroShell: {
-    marginBottom: tokens.spacing.xl,
+    marginBottom: tokens.spacing.lg,
     alignItems: 'center',
     borderWidth: 1,
+    borderTopWidth: 4,
+    borderTopColor: '#FF6A00',
     borderRadius: tokens.radius.xl,
-    paddingTop: 8,
-    paddingBottom: 14,
-    paddingHorizontal: tokens.spacing.md,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  accentGlow: {
-    position: 'absolute',
-    top: -36,
-    width: 220,
-    height: 70,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,106,0,0.18)',
+    paddingTop: 2,
+    paddingBottom: 10,
+    paddingHorizontal: tokens.spacing.sm,
   },
   logoWrap: {
-    marginBottom: tokens.spacing.md,
+    marginBottom: 0,
   },
   logo: {
     width: 320,
@@ -245,7 +235,7 @@ const styles = StyleSheet.create({
   brandSubtitle: {
     fontSize: 22,
     fontWeight: '900',
-    marginTop: 2,
+    marginTop: -8,
     textAlign: 'center',
     letterSpacing: -0.3,
   },
