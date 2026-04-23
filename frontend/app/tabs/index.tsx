@@ -7,7 +7,6 @@ import LegalDisclaimer from '../../components/LegalDisclaimer';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
-import AppButton from '../../src/components/ui/AppButton';
 import PageHeader from '../../src/components/ui/PageHeader';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
@@ -83,25 +82,11 @@ export default function Home() {
               resizeMode="contain"
             />
           </View>
-      <PageHeader
-            eyebrow="SafeScope"
-            title="Operational Safety Intelligence"
-            subtitle="See risk clearly across your operation."
-          />
 
-          <View style={styles.heroButtons}>
-            <AppButton
-              label="Start Inspection"
-              onPress={() => router.push('/tabs/camera')}
-              style={styles.heroButton}
-            />
-            <AppButton
-              label="View Reports"
-              variant="secondary"
-              onPress={() => router.push('/tabs/history' as any)}
-              style={styles.heroButton}
-            />
-          </View>
+          <Text style={[styles.brandTitle, { color: colors.text }]}>SafeScope</Text>
+          <Text style={[styles.brandSubtitle, { color: colors.sub }]}>
+            Operational Safety Intelligence
+          </Text>
         </AppCard>
 
         <View style={styles.sectionHeader}>
@@ -227,21 +212,26 @@ const styles = StyleSheet.create({
   heroCard: {
     marginBottom: tokens.spacing.xl,
     alignItems: 'center',
+    paddingVertical: tokens.spacing.xl,
   },
   logoWrap: {
     marginBottom: tokens.spacing.md,
   },
   logo: {
-    width: 230,
-    height: 105,
+    width: 250,
+    height: 115,
   },
-  heroButtons: {
-    width: '100%',
-    gap: tokens.spacing.sm,
+  brandTitle: {
+    fontSize: 30,
+    fontWeight: '900',
+    letterSpacing: -0.6,
     marginTop: tokens.spacing.sm,
   },
-  heroButton: {
-    width: '100%',
+  brandSubtitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 6,
+    textAlign: 'center',
   },
   sectionHeader: {
     marginBottom: tokens.spacing.sm,
