@@ -6,11 +6,9 @@ import {
   TextInput,
   Switch,
   TouchableOpacity,
-  useColorScheme,
 } from 'react-native';
-import { useMemo, useState } from 'react';
-
-type ThemeMode = 'auto' | 'dark' | 'light';
+import { useState } from 'react';
+import { useAppTheme, ThemeMode } from '../../src/theme/ThemeContext';
 
 const standardsModes = ['MSHA First', 'OSHA First', 'Hybrid', 'Custom Company Rules'];
 const inspectionTypes = [
@@ -37,7 +35,7 @@ function SegmentedSelect({
   onChange: (value: string) => void;
   colors: {
     text: string;
-    subtext: string;
+    sub: string;
     border: string;
     cardAlt: string;
     accent: string;
@@ -45,7 +43,7 @@ function SegmentedSelect({
 }) {
   return (
     <View style={styles.fieldGroup}>
-      <Text style={[styles.label, { color: colors.subtext }]}>{label}</Text>
+      <Text style={[styles.label, { color: colors.sub }]}>{label}</Text>
       <View style={styles.optionWrap}>
         {options.map((option) => {
           const active = value === option;
@@ -73,7 +71,7 @@ function SegmentedSelect({
 }
 
 export default function SettingsScreen() {
-  const systemScheme = useColorScheme();
+  const { themeMode, setThemeMode, dark, colors } = useAppTheme();
 
   const [name, setName] = useState('Christopher McKinley');
   const [title, setTitle] = useState('Safety Manager');
@@ -81,7 +79,6 @@ export default function SettingsScreen() {
   const [site, setSite] = useState('North Ridge Plant');
   const [department, setDepartment] = useState('Operations Safety');
 
-  const [themeMode, setThemeMode] = useState<ThemeMode>('auto');
   const [highVisibilityTheme, setHighVisibilityTheme] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -94,105 +91,99 @@ export default function SettingsScreen() {
   const [autoTagSevereHazards, setAutoTagSevereHazards] = useState(true);
   const [autoSaveDrafts, setAutoSaveDrafts] = useState(true);
 
-  const dark = useMemo(() => {
-    if (themeMode === 'dark') return true;
-    if (themeMode === 'light') return false;
-    return systemScheme === 'dark';
-  }, [themeMode, systemScheme]);
-
-  const colors = {
-    bg: dark ? '#000000' : '#f8fafc',
-    card: dark ? '#111111' : '#ffffff',
-    cardAlt: dark ? '#171717' : '#f8fafc',
-    border: dark ? '#222222' : '#e2e8f0',
-    text: dark ? '#f8fafc' : '#111827',
-    subtext: dark ? '#9ca3af' : '#64748b',
+  const ui = {
+    bg: colors.bg,
+    card: colors.card,
+    cardAlt: colors.cardAlt,
+    border: colors.border,
+    text: colors.text,
+    subtext: colors.sub,
     inputBg: dark ? '#111827' : '#ffffff',
     inputBorder: dark ? '#374151' : '#d1d5db',
-    accent: '#ff6a00',
+    accent: colors.accent,
     footer: dark ? '#6b7280' : '#94a3b8',
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.scrollContent, { backgroundColor: colors.bg }]}>
-      <View style={[styles.container, { backgroundColor: colors.bg }]}>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>Settings</Text>
+    <ScrollView contentContainerStyle={[styles.scrollContent, { backgroundColor: ui.bg }]}>
+      <View style={[styles.container, { backgroundColor: ui.bg }]}>
+        <Text style={[styles.screenTitle, { color: ui.text }]}>Settings</Text>
 
-        <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Profile</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.subtext }]}>
+        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
+          <Text style={[styles.sectionTitle, { color: ui.text }]}>Profile</Text>
+          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
             Personal and organizational details used throughout audits and reports.
           </Text>
 
           <View style={styles.twoColRow}>
             <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: colors.subtext }]}>Name</Text>
+              <Text style={[styles.label, { color: ui.subtext }]}>Name</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
+                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
                 value={name}
                 onChangeText={setName}
                 placeholder="Enter your name"
-                placeholderTextColor={colors.subtext}
+                placeholderTextColor={ui.subtext}
               />
             </View>
 
             <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: colors.subtext }]}>Title</Text>
+              <Text style={[styles.label, { color: ui.subtext }]}>Title</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
+                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
                 value={title}
                 onChangeText={setTitle}
                 placeholder="Enter your title"
-                placeholderTextColor={colors.subtext}
+                placeholderTextColor={ui.subtext}
               />
             </View>
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.subtext }]}>Company</Text>
+            <Text style={[styles.label, { color: ui.subtext }]}>Company</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
+              style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
               value={company}
               onChangeText={setCompany}
               placeholder="Enter company"
-              placeholderTextColor={colors.subtext}
+              placeholderTextColor={ui.subtext}
             />
           </View>
 
           <View style={styles.twoColRow}>
             <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: colors.subtext }]}>Site</Text>
+              <Text style={[styles.label, { color: ui.subtext }]}>Site</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
+                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
                 value={site}
                 onChangeText={setSite}
                 placeholder="Enter site"
-                placeholderTextColor={colors.subtext}
+                placeholderTextColor={ui.subtext}
               />
             </View>
 
             <View style={[styles.fieldGroup, styles.halfWidth]}>
-              <Text style={[styles.label, { color: colors.subtext }]}>Department</Text>
+              <Text style={[styles.label, { color: ui.subtext }]}>Department</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
+                style={[styles.input, { backgroundColor: ui.inputBg, borderColor: ui.inputBorder, color: ui.text }]}
                 value={department}
                 onChangeText={setDepartment}
                 placeholder="Enter department"
-                placeholderTextColor={colors.subtext}
+                placeholderTextColor={ui.subtext}
               />
             </View>
           </View>
         </View>
 
-        <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Appearance</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.subtext }]}>
+        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
+          <Text style={[styles.sectionTitle, { color: ui.text }]}>Appearance</Text>
+          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
             Control how SafeScope looks in the field and in the office.
           </Text>
 
-          <Text style={[styles.label, { color: colors.subtext, marginBottom: 10 }]}>Theme Mode</Text>
+          <Text style={[styles.label, { color: ui.subtext, marginBottom: 10 }]}>Theme Mode</Text>
           <View style={styles.segmentRow}>
-            {(['auto', 'dark', 'light'] as ThemeMode[]).map((mode) => {
+            {(['light', 'dark'] as ThemeMode[]).map((mode) => {
               const active = themeMode === mode;
               return (
                 <TouchableOpacity
@@ -200,24 +191,24 @@ export default function SettingsScreen() {
                   style={[
                     styles.segmentButton,
                     {
-                      backgroundColor: active ? colors.accent : colors.cardAlt,
-                      borderColor: active ? colors.accent : colors.border,
+                      backgroundColor: active ? ui.accent : ui.cardAlt,
+                      borderColor: active ? ui.accent : ui.border,
                     },
                   ]}
                   onPress={() => setThemeMode(mode)}
                 >
-                  <Text style={[styles.segmentText, { color: active ? '#fff' : colors.text }]}>
-                    {mode === 'auto' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'}
+                  <Text style={[styles.segmentText, { color: active ? '#fff' : ui.text }]}>
+                    {mode === 'dark' ? 'Dark' : 'Light'}
                   </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
-          <View style={[styles.preferenceRow, { borderTopColor: colors.border }]}>
+          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
             <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: colors.text }]}>High Visibility Theme</Text>
-              <Text style={[styles.preferenceSubtitle, { color: colors.subtext }]}>
+              <Text style={[styles.preferenceTitle, { color: ui.text }]}>High Visibility Theme</Text>
+              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
                 Increase contrast for fast scanning in field conditions.
               </Text>
             </View>
@@ -225,21 +216,21 @@ export default function SettingsScreen() {
               value={highVisibilityTheme}
               onValueChange={setHighVisibilityTheme}
               trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={highVisibilityTheme ? colors.accent : '#9ca3af'}
+              thumbColor={highVisibilityTheme ? ui.accent : '#9ca3af'}
             />
           </View>
         </View>
 
-        <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Notifications</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.subtext }]}>
+        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
+          <Text style={[styles.sectionTitle, { color: ui.text }]}>Notifications</Text>
+          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
             Manage reminders and activity updates.
           </Text>
 
           <View style={styles.preferenceRowNoBorder}>
             <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: colors.text }]}>Enable Notifications</Text>
-              <Text style={[styles.preferenceSubtitle, { color: colors.subtext }]}>
+              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Enable Notifications</Text>
+              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
                 Alerts for actions, reviews, and audit activity.
               </Text>
             </View>
@@ -247,14 +238,14 @@ export default function SettingsScreen() {
               value={notificationsEnabled}
               onValueChange={setNotificationsEnabled}
               trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={notificationsEnabled ? colors.accent : '#9ca3af'}
+              thumbColor={notificationsEnabled ? ui.accent : '#9ca3af'}
             />
           </View>
         </View>
 
-        <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Audit Defaults</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.subtext }]}>
+        <View style={[styles.sectionCard, { backgroundColor: ui.card, borderColor: ui.border }]}>
+          <Text style={[styles.sectionTitle, { color: ui.text }]}>Audit Defaults</Text>
+          <Text style={[styles.sectionSubtitle, { color: ui.subtext }]}>
             These settings shape how every new audit session begins.
           </Text>
 
@@ -263,7 +254,7 @@ export default function SettingsScreen() {
             value={standardsMode}
             options={standardsModes}
             onChange={setStandardsMode}
-            colors={colors}
+            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
           />
 
           <SegmentedSelect
@@ -271,7 +262,7 @@ export default function SettingsScreen() {
             value={inspectionType}
             options={inspectionTypes}
             onChange={setInspectionType}
-            colors={colors}
+            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
           />
 
           <SegmentedSelect
@@ -279,7 +270,7 @@ export default function SettingsScreen() {
             value={captureMode}
             options={captureModes}
             onChange={setCaptureMode}
-            colors={colors}
+            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
           />
 
           <SegmentedSelect
@@ -287,7 +278,7 @@ export default function SettingsScreen() {
             value={riskScoring}
             options={riskScoringModes}
             onChange={setRiskScoring}
-            colors={colors}
+            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
           />
 
           <SegmentedSelect
@@ -295,60 +286,58 @@ export default function SettingsScreen() {
             value={reportStyle}
             options={reportStyles}
             onChange={setReportStyle}
-            colors={colors}
+            colors={{ text: ui.text, sub: ui.subtext, border: ui.border, cardAlt: ui.cardAlt, accent: ui.accent }}
           />
 
-          <View style={[styles.preferenceRow, { borderTopColor: colors.border }]}>
+          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
             <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: colors.text }]}>Auto-generate corrective actions</Text>
-              <Text style={[styles.preferenceSubtitle, { color: colors.subtext }]}>
-                Create suggested action items from verified findings.
+              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Auto Generate Actions</Text>
+              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
+                Draft corrective actions automatically from findings.
               </Text>
             </View>
             <Switch
               value={autoGenerateActions}
               onValueChange={setAutoGenerateActions}
               trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={autoGenerateActions ? colors.accent : '#9ca3af'}
+              thumbColor={autoGenerateActions ? ui.accent : '#9ca3af'}
             />
           </View>
 
-          <View style={[styles.preferenceRow, { borderTopColor: colors.border }]}>
+          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
             <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: colors.text }]}>Auto-tag severe hazards</Text>
-              <Text style={[styles.preferenceSubtitle, { color: colors.subtext }]}>
-                Highlight severe findings for manager review.
+              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Auto Tag Severe Hazards</Text>
+              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
+                Escalate likely critical findings for review.
               </Text>
             </View>
             <Switch
               value={autoTagSevereHazards}
               onValueChange={setAutoTagSevereHazards}
               trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={autoTagSevereHazards ? colors.accent : '#9ca3af'}
+              thumbColor={autoTagSevereHazards ? ui.accent : '#9ca3af'}
             />
           </View>
 
-          <View style={[styles.preferenceRow, { borderTopColor: colors.border }]}>
+          <View style={[styles.preferenceRow, { borderTopColor: ui.border }]}>
             <View style={styles.preferenceTextWrap}>
-              <Text style={[styles.preferenceTitle, { color: colors.text }]}>Auto-save drafts</Text>
-              <Text style={[styles.preferenceSubtitle, { color: colors.subtext }]}>
-                Save progress during walkthroughs automatically.
+              <Text style={[styles.preferenceTitle, { color: ui.text }]}>Auto Save Drafts</Text>
+              <Text style={[styles.preferenceSubtitle, { color: ui.subtext }]}>
+                Preserve in-progress work automatically.
               </Text>
             </View>
             <Switch
               value={autoSaveDrafts}
               onValueChange={setAutoSaveDrafts}
               trackColor={{ false: '#374151', true: '#fb923c' }}
-              thumbColor={autoSaveDrafts ? colors.accent : '#9ca3af'}
+              thumbColor={autoSaveDrafts ? ui.accent : '#9ca3af'}
             />
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.footer }]}>SafeScope v1.0.0</Text>
-          <Text style={[styles.footerText, { color: colors.footer }]}>A Monolith Studios product</Text>
-          <Text style={[styles.footerText, { color: colors.footer }]}>Created by Christopher McKinley</Text>
-        </View>
+        <Text style={[styles.footerText, { color: ui.footer }]}>
+          SafeScope settings are stored locally for this pilot build.
+        </Text>
       </View>
     </ScrollView>
   );
@@ -359,29 +348,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   container: {
-    padding: 20,
-    paddingTop: 28,
+    padding: 18,
+    paddingBottom: 30,
   },
   screenTitle: {
     fontSize: 28,
     fontWeight: '800',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   sectionCard: {
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 18,
+    borderRadius: 20,
     borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 6,
+    fontWeight: '800',
+    marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 13,
     lineHeight: 18,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   twoColRow: {
     flexDirection: 'row',
@@ -394,27 +383,27 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: 14,
   },
   segmentRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   segmentButton: {
     flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
     borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   segmentText: {
@@ -424,53 +413,47 @@ const styles = StyleSheet.create({
   optionWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
   optionChip: {
     borderWidth: 1,
     borderRadius: 999,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
   },
   optionChipText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   preferenceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 6,
     paddingTop: 14,
-    gap: 12,
     borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   preferenceRowNoBorder: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
   },
   preferenceTextWrap: {
     flex: 1,
+    paddingRight: 8,
   },
   preferenceTitle: {
     fontSize: 15,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   preferenceSubtitle: {
     fontSize: 13,
     lineHeight: 18,
   },
-  footer: {
-    marginTop: 10,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
   footerText: {
-    fontSize: 12,
-    marginBottom: 4,
     textAlign: 'center',
+    fontSize: 12,
+    marginTop: 4,
   },
 });
