@@ -70,7 +70,6 @@ export default function HistoryScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
-        eyebrow="Reports"
         title="Operational Record"
         subtitle="Track completed audits, active reviews, and historical reporting performance."
       />

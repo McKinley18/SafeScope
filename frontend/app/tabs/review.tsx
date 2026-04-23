@@ -108,8 +108,7 @@ export default function ReviewScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
-        eyebrow="Review Center"
-        title="AI Decision Queue"
+                title="AI Decision Queue"
         subtitle="Validate findings, approve classifications, and accelerate closeout."
       />
 

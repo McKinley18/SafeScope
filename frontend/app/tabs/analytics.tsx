@@ -145,7 +145,6 @@ export default function AnalyticsScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
-        eyebrow="Intelligence"
         title="Executive Analytics"
         subtitle="Live operational intelligence from reports, reviews, and action performance."
       />

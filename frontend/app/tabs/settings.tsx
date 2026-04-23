@@ -72,7 +72,6 @@ export default function SettingsScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
-        eyebrow="Control"
         title="Control Center"
         subtitle="Configure SafeScope profile, intelligence behavior, reporting defaults, and field preferences."
       />
