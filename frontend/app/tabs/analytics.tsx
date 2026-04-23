@@ -5,11 +5,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  useColorScheme,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppTheme } from '../../src/theme/ThemeContext';
 
 type DashboardResponse = {
   totalReports?: number;
@@ -35,8 +35,7 @@ const ANALYTICS_CACHE_KEY = 'safescope_dashboard_cache';
 const ANALYTICS_CACHE_TIME_KEY = 'safescope_dashboard_cache_time';
 
 export default function AnalyticsScreen() {
-  const scheme = useColorScheme();
-  const dark = scheme === 'dark';
+  const { colors } = useAppTheme();
 
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,13 +43,13 @@ export default function AnalyticsScreen() {
   const [error, setError] = useState('');
   const [cacheTime, setCacheTime] = useState<string>('');
 
-  const bg = dark ? '#050505' : '#f8fafc';
-  const card = dark ? '#111111' : '#ffffff';
-  const cardAlt = dark ? '#171717' : '#f1f5f9';
-  const border = dark ? '#232323' : '#e5e7eb';
-  const text = dark ? '#ffffff' : '#111827';
-  const sub = dark ? '#cbd5e1' : '#475569';
-  const muted = dark ? '#9ca3af' : '#64748b';
+  const bg = colors.bg;
+  const card = colors.card;
+  const cardAlt = colors.cardAlt;
+  const border = colors.border;
+  const text = colors.text;
+  const sub = colors.sub;
+  const muted = colors.muted;
 
   useEffect(() => {
     const load = async () => {

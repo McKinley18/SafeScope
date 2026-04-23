@@ -1,15 +1,15 @@
-import { View, Text, StyleSheet, ScrollView, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useAppTheme } from '../../src/theme/ThemeContext';
 
 export default function HistoryScreen() {
-  const scheme = useColorScheme();
-  const dark = scheme === 'dark';
+  const { colors } = useAppTheme();
 
-  const bg = dark ? '#050505' : '#f8fafc';
-  const card = dark ? '#111111' : '#ffffff';
-  const border = dark ? '#232323' : '#e5e7eb';
-  const text = dark ? '#ffffff' : '#111827';
-  const sub = dark ? '#cbd5e1' : '#475569';
-  const muted = dark ? '#9ca3af' : '#64748b';
+  const bg = colors.bg;
+  const card = colors.card;
+  const border = colors.border;
+  const text = colors.text;
+  const sub = colors.sub;
+  const muted = colors.muted;
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: bg }]}>

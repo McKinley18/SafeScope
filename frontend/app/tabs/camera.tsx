@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../../src/api/client';
+import { useAppTheme } from '../../src/theme/ThemeContext';
 
 const DRAFT_KEY = 'safescope_hazard_draft_v1';
 
@@ -54,6 +55,7 @@ const emptyDraft: HazardDraft = {
 };
 
 export default function CameraScreen() {
+  const { colors } = useAppTheme();
   const [draft, setDraft] = useState<HazardDraft>(emptyDraft);
   const [detecting, setDetecting] = useState(false);
   const [suggestion, setSuggestion] = useState<HazardSuggestion | null>(null);
@@ -217,12 +219,20 @@ export default function CameraScreen() {
     Alert.alert('Suggestion applied', 'Review and edit the hazard description as needed.');
   };
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>New Hazard</Text>
+  const bg = colors.bg;
+  const card = colors.card;
+  const border = colors.border;
+  const text = colors.text;
+  const muted = colors.muted;
+  const cardAlt = colors.cardAlt;
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Evidence</Text>
+  return (
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: bg }]}>
+      <Text style={[styles.title, { color: text }]}>New Hazard</Text>
+
+      <View style={[styles.section, { backgroundColor: card, borderColor: border }]}>
+
+        <Text style={[styles.sectionTitle, { color: text }]}>Evidence</Text>
 
         <View style={styles.evidenceActions}>
           <TouchableOpacity style={styles.primaryButton} onPress={takePhoto}>
@@ -230,9 +240,9 @@ export default function CameraScreen() {
             <Text style={styles.primaryButtonText}>Take Photo</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.secondaryButton} onPress={chooseFromLibrary}>
+          <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: cardAlt, borderColor: border }]} onPress={chooseFromLibrary}>
             <Ionicons name="images-outline" size={18} color="#111827" />
-            <Text style={styles.secondaryButtonText}>Choose From Library</Text>
+            <Text style={[styles.secondaryButtonText, { color: text }]}>Choose From Library</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -255,14 +265,14 @@ export default function CameraScreen() {
       </View>
 
       {suggestion && (
-        <View style={styles.suggestionCard}>
+        <View style={[styles.suggestionCard, { backgroundColor: card, borderColor: border }]}>
           <Text style={styles.suggestionTitle}>AI Suggestion</Text>
 
           <Text style={styles.suggestionLabel}>Suggested Hazard</Text>
-          <Text style={styles.suggestionValue}>{suggestion.suggestedHazardDescription}</Text>
+          <Text style={[styles.suggestionValue, { color: text }]}>{suggestion.suggestedHazardDescription}</Text>
 
           <Text style={styles.suggestionLabel}>Observation Summary</Text>
-          <Text style={styles.suggestionBody}>{suggestion.observationSummary}</Text>
+          <Text style={[styles.suggestionBody, { color: muted }]}>{suggestion.observationSummary}</Text>
 
           <Text style={styles.suggestionLabel}>Confidence</Text>
           <Text style={styles.suggestionConfidence}>{suggestion.confidence}</Text>
@@ -273,10 +283,11 @@ export default function CameraScreen() {
         </View>
       )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Hazard Description</Text>
+      <View style={[styles.section, { backgroundColor: card, borderColor: border }]}>
+
+        <Text style={[styles.sectionTitle, { color: text }]}>Hazard Description</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: card, borderColor: border, color: text }]}
           multiline
           placeholder="Example: Missing guard on conveyor tail pulley"
           placeholderTextColor="#94a3b8"
@@ -292,27 +303,22 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#f8fafc',
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 20,
-    color: '#111827',
   },
   section: {
     marginBottom: 22,
-    backgroundColor: '#ffffff',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     padding: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 10,
-    color: '#111827',
   },
   evidenceActions: {
     gap: 10,
@@ -341,7 +347,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#111827',
     fontWeight: '700',
   },
   detectButton: {
@@ -374,13 +379,11 @@ const styles = StyleSheet.create({
   suggestionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#9a3412',
     marginBottom: 10,
   },
   suggestionLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#9a3412',
     marginTop: 8,
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -388,17 +391,14 @@ const styles = StyleSheet.create({
   suggestionValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
   },
   suggestionBody: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#374151',
   },
   suggestionConfidence: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#b45309',
   },
   useSuggestionButton: {
     marginTop: 14,
@@ -418,8 +418,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     textAlignVertical: 'top',
-    backgroundColor: '#ffffff',
-    color: '#111827',
   },
 });
 
