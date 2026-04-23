@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { useAppTheme } from '../../src/theme/ThemeContext';
 
 const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || 'MISSING_API_KEY');
 
 export default function ReviewScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams();
   const router = useRouter();
 
@@ -37,22 +39,38 @@ export default function ReviewScreen() {
     finally { setLoading(false); }
   };
 
+  const bg = colors.bg;
+  const card = colors.card;
+  const cardAlt = colors.cardAlt;
+  const border = colors.border;
+  const textColor = colors.text;
+  const sub = colors.sub;
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.label}>Photos ({photos.length})</Text>
+    <ScrollView style={[styles.container, { backgroundColor: bg }]}>
+      <Text style={[styles.label, { color: textColor }]}>Photos ({photos.length})</Text>
       <ScrollView horizontal>
         {photos.map((p, i) => (
           <View key={i} style={styles.thumbContainer}>
             <Image source={{ uri: p.uri }} style={styles.thumb} />
-            <TouchableOpacity onPress={() => removePhoto(i)} style={styles.removeBtn}><Text style={{color:'white'}}>X</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => removePhoto(i)} style={styles.removeBtn}><Text style={{ color: 'white' }}>X</Text></TouchableOpacity>
           </View>
         ))}
-        <TouchableOpacity style={styles.addButton} onPress={() => router.push('/tabs/camera')}><Text>+</Text></TouchableOpacity>
+        <TouchableOpacity style={[styles.addButton, { backgroundColor: cardAlt, borderColor: border }]} onPress={() => router.push('/tabs/camera')}>
+          <Text style={{ color: textColor, fontSize: 28, fontWeight: '700' }}>+</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Inputs remain similar, use state as before */}
-      <Text style={styles.label}>Auditor Notes</Text>
-      <TextInput style={styles.input} multiline value={auditorNotes} onChangeText={setAuditorNotes} />
+      <Text style={[styles.label, { color: textColor }]}>Auditor Notes</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: card, borderColor: border, color: textColor }]}
+        placeholder="Enter notes"
+        placeholderTextColor={sub}
+        multiline
+        value={auditorNotes}
+        onChangeText={setAuditorNotes}
+      />
 
       <TouchableOpacity style={styles.button} onPress={() => Alert.alert('Submitted', 'Report sent to backend.')}>
         <Text style={styles.buttonText}>Submit Report</Text>
@@ -62,13 +80,13 @@ export default function ReviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 15, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 15 },
   thumbContainer: { position: 'relative', marginRight: 10 },
   thumb: { width: 100, height: 100, borderRadius: 8 },
   removeBtn: { position: 'absolute', top: 5, right: 5, backgroundColor: 'red', borderRadius: 10, width: 20, height: 20, alignItems: 'center' },
-  addButton: { width: 100, height: 100, borderRadius: 8, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' },
+  addButton: { width: 100, height: 100, borderRadius: 8, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
   label: { fontSize: 16, fontWeight: '600', marginBottom: 10 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 20 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 20, textAlignVertical: 'top' },
   button: { backgroundColor: '#28a745', padding: 15, borderRadius: 8, alignItems: 'center' },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
 });
