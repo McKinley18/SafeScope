@@ -241,7 +241,7 @@ export default function CameraScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: cardAlt, borderColor: border }]} onPress={chooseFromLibrary}>
-            <Ionicons name="images-outline" size={18} color="#111827" />
+            <Ionicons name="images-outline" size={18} color={text} />
             <Text style={[styles.secondaryButtonText, { color: text }]}>Choose From Library</Text>
           </TouchableOpacity>
 
