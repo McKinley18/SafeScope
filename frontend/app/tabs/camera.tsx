@@ -58,50 +58,40 @@ export default function CameraScreen() {
 
   useEffect(() => {
     const loadDraft = async () => {
-      try {
-        const raw = await AsyncStorage.getItem(DRAFT_KEY);
-        if (raw) {
-          setDraft(JSON.parse(raw));
-        }
-      } catch (error) {
-        console.error('Failed to load draft', error);
-      }
+      const raw = await AsyncStorage.getItem(DRAFT_KEY);
+      if (raw) setDraft(JSON.parse(raw));
     };
-
     loadDraft();
   }, []);
 
   const persistDraft = async (nextDraft: HazardDraft) => {
     setDraft(nextDraft);
-    try {
-      await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(nextDraft));
-    } catch (error) {
-      console.error('Failed to save local draft', error);
-    }
+    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(nextDraft));
   };
 
-  const updateField = async <K extends keyof HazardDraft>(key: K, value: HazardDraft[K]) => {
-    const nextDraft = { ...draft, [key]: value };
-    await persistDraft(nextDraft);
+  const updateField = async <K extends keyof HazardDraft>(
+    key: K,
+    value: HazardDraft[K]
+  ) => {
+    await persistDraft({ ...draft, [key]: value });
   };
 
-  const addImages = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
     if (!permission.granted) {
-      Alert.alert('Permission required', 'Please allow photo library access to attach hazard evidence.');
+      Alert.alert('Permission required', 'Allow camera access.');
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+    const result = await ImagePicker.launchCameraAsync({
       quality: 0.7,
-      allowsMultipleSelection: true,
-      selectionLimit: 5,
+      mediaTypes: ['images'],
     });
 
     if (result.canceled) return;
 
-    const newImages: DraftImage[] = result.assets.map((asset) => ({
+    const newImages = result.assets.map((asset) => ({
       uri: asset.uri,
       fileName: asset.fileName ?? `hazard-${Date.now()}.jpg`,
       mimeType: asset.mimeType ?? 'image/jpeg',
@@ -113,255 +103,84 @@ export default function CameraScreen() {
     });
   };
 
-  const removeImage = async (index: number) => {
-    const nextImages = draft.images.filter((_, i) => i !== index);
+  const chooseFromLibrary = async () => {
+    const permission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert('Permission required', 'Allow photo access.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.7,
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+      mediaTypes: ['images'],
+    });
+
+    if (result.canceled) return;
+
+    const newImages = result.assets.map((asset) => ({
+      uri: asset.uri,
+      fileName: asset.fileName ?? `hazard-${Date.now()}.jpg`,
+      mimeType: asset.mimeType ?? 'image/jpeg',
+    }));
+
     await persistDraft({
       ...draft,
-      images: nextImages,
+      images: [...draft.images, ...newImages],
     });
   };
 
-  const buildPayload = () => ({
-    hazardDescription: draft.hazardDescription || undefined,
-    area: draft.area || undefined,
-    equipment: draft.equipment || undefined,
-    workActivity: draft.workActivity || undefined,
-    severity: draft.severity || undefined,
-    immediateDanger: draft.immediateDanger,
-    notes: draft.notes || undefined,
-    reportStatus: 'draft',
-    title: draft.hazardDescription || 'Hazard Draft',
-    narrative: draft.notes || draft.hazardDescription || '',
-  });
-
-  const saveDraft = async () => {
-    if (!draft.hazardDescription.trim() && draft.images.length === 0) {
-      Alert.alert('Nothing to save', 'Add a hazard description or at least one image first.');
-      return;
-    }
-
-    setSaving(true);
-    try {
-      let reportId = draft.id;
-
-      if (!reportId) {
-        const created = await apiClient.createReport(buildPayload());
-        reportId = created?.id;
-      } else {
-        await apiClient.updateReport(reportId, buildPayload());
-      }
-
-      if (reportId && draft.images.length > 0) {
-        await apiClient.addReportEvidence(reportId, draft.images);
-      }
-
-      const nextDraft = { ...draft, id: reportId };
-      await persistDraft(nextDraft);
-
-      Alert.alert('Draft saved', 'Your hazard draft was saved.');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Save failed', 'We could not save the draft to the backend.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const analyzeHazard = async () => {
-    if (!draft.hazardDescription.trim()) {
-      Alert.alert('Hazard description required', 'Enter a hazard description before continuing.');
-      return;
-    }
-
-    setAnalyzing(true);
-    try {
-      let reportId = draft.id;
-
-      if (!reportId) {
-        const created = await apiClient.createReport(buildPayload());
-        reportId = created?.id;
-      } else {
-        await apiClient.updateReport(reportId, {
-          ...buildPayload(),
-          reportStatus: 'submitted',
-        });
-      }
-
-      if (reportId && draft.images.length > 0) {
-        await apiClient.addReportEvidence(reportId, draft.images);
-      }
-
-      const nextDraft = { ...draft, id: reportId };
-      await persistDraft(nextDraft);
-
-      Alert.alert(
-        'Ready for Sprint 2',
-        `Hazard draft saved${reportId ? ` (ID: ${reportId})` : ''} and prepared for standards retrieval.`
-      );
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Analyze failed', 'We could not prepare the hazard draft for analysis.');
-    } finally {
-      setAnalyzing(false);
-    }
-  };
-
-  const clearDraft = async () => {
-    await AsyncStorage.removeItem(DRAFT_KEY);
-    setDraft(emptyDraft);
-  };
-
-  const severityOptions: Severity[] = ['low', 'medium', 'high', 'critical'];
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>New Hazard</Text>
-        <Text style={styles.subtitle}>
-          Capture evidence, describe the condition, and add enough context for standards lookup.
-        </Text>
-      </View>
+      <Text style={styles.title}>New Hazard</Text>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Evidence</Text>
-        <TouchableOpacity style={styles.primaryButton} onPress={addImages}>
-          <Ionicons name="images-outline" size={18} color="#fff" />
-          <Text style={styles.primaryButtonText}>Add Photos</Text>
-        </TouchableOpacity>
 
-        {draft.images.length === 0 ? (
-          <Text style={styles.helperText}>No photos attached yet.</Text>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageRow}>
-            {draft.images.map((image, index) => (
-              <View key={`${image.uri}-${index}`} style={styles.imageCard}>
-                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-                <TouchableOpacity style={styles.removeImageButton} onPress={() => removeImage(index)}>
-                  <Ionicons name="close-circle" size={22} color="#ff6a00" />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-        )}
+        <View style={styles.evidenceActions}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={takePhoto}
+          >
+            <Ionicons name="camera-outline" size={18} color="#fff" />
+            <Text style={styles.primaryButtonText}>Take Photo</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={chooseFromLibrary}
+          >
+            <Ionicons name="images-outline" size={18} color="#111827" />
+            <Text style={styles.secondaryButtonText}>
+              Choose From Library
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView horizontal>
+          {draft.images.map((img, i) => (
+            <Image
+              key={i}
+              source={{ uri: img.uri }}
+              style={styles.image}
+            />
+          ))}
+        </ScrollView>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Hazard Description</Text>
         <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Example: Missing guard on conveyor tail pulley"
-          placeholderTextColor="#94a3b8"
+          style={styles.input}
           multiline
           value={draft.hazardDescription}
-          onChangeText={(text) => updateField('hazardDescription', text)}
+          onChangeText={(t) =>
+            updateField('hazardDescription', t)
+          }
         />
-        <Text style={styles.helperText}>
-          Describe the known hazard in plain language. This will drive standards retrieval later.
-        </Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Context</Text>
-
-        <Text style={styles.label}>Area</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Prep Plant - Line 2"
-          placeholderTextColor="#94a3b8"
-          value={draft.area}
-          onChangeText={(text) => updateField('area', text)}
-        />
-
-        <Text style={styles.label}>Equipment</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Conveyor CV-201"
-          placeholderTextColor="#94a3b8"
-          value={draft.equipment}
-          onChangeText={(text) => updateField('equipment', text)}
-        />
-
-        <Text style={styles.label}>Work Activity</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Routine operation"
-          placeholderTextColor="#94a3b8"
-          value={draft.workActivity}
-          onChangeText={(text) => updateField('workActivity', text)}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Risk and Notes</Text>
-
-        <Text style={styles.label}>Severity</Text>
-        <View style={styles.chipRow}>
-          {severityOptions.map((option) => {
-            const active = draft.severity === option;
-            return (
-              <TouchableOpacity
-                key={option}
-                style={[styles.chip, active && styles.chipActive]}
-                onPress={() => updateField('severity', option)}
-              >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                  {option.charAt(0).toUpperCase() + option.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        <View style={styles.switchRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Immediate Danger</Text>
-            <Text style={styles.helperText}>
-              Turn on if the condition may require urgent action or immediate escalation.
-            </Text>
-          </View>
-          <Switch
-            value={draft.immediateDanger}
-            onValueChange={(value) => updateField('immediateDanger', value)}
-            trackColor={{ false: '#cbd5e1', true: '#fdba74' }}
-            thumbColor={draft.immediateDanger ? '#ff6a00' : '#64748b'}
-          />
-        </View>
-
-        <Text style={styles.label}>Notes</Text>
-        <TextInput
-          style={[styles.input, styles.notesArea]}
-          placeholder="Optional notes, conditions, work status, or missing context"
-          placeholderTextColor="#94a3b8"
-          multiline
-          value={draft.notes}
-          onChangeText={(text) => updateField('notes', text)}
-        />
-      </View>
-
-      <View style={styles.actionSection}>
-        <TouchableOpacity style={styles.secondaryButton} onPress={clearDraft}>
-          <Text style={styles.secondaryButtonText}>Clear Draft</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.secondaryButton} onPress={saveDraft} disabled={saving}>
-          <Text style={styles.secondaryButtonText}>{saving ? 'Saving…' : 'Save Draft'}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            !draft.hazardDescription.trim() && { opacity: 0.5 },
-          ]}
-          onPress={analyzeHazard}
-          disabled={!draft.hazardDescription.trim() || analyzing}
-        >
-          <Ionicons name="search-outline" size={18} color="#fff" />
-          <Text style={styles.primaryButtonText}>{analyzing ? 'Preparing…' : 'Analyze Hazard'}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.backLink} onPress={() => router.back()}>
-          <Text style={styles.backLinkText}>Cancel</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -369,161 +188,63 @@ export default function CameraScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: '#f8fafc',
-    padding: 18,
-    paddingBottom: 36,
-  },
-  header: {
-    marginBottom: 18,
+    padding: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#111827',
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#475569',
+    marginBottom: 20,
   },
   section: {
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    padding: 16,
-    marginBottom: 14,
+    marginBottom: 22,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  label: {
-    fontSize: 13,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#475569',
-    marginBottom: 8,
-    marginTop: 10,
+    marginBottom: 10,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: '#111827',
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  notesArea: {
-    minHeight: 90,
-    textAlignVertical: 'top',
-  },
-  helperText: {
-    marginTop: 8,
-    fontSize: 12,
-    lineHeight: 18,
-    color: '#64748b',
-  },
-  imageRow: {
-    marginTop: 12,
-  },
-  imageCard: {
-    marginRight: 12,
-    position: 'relative',
-  },
-  imagePreview: {
-    width: 130,
-    height: 130,
-    borderRadius: 16,
-    backgroundColor: '#e5e7eb',
-  },
-  removeImageButton: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  evidenceActions: {
     gap: 10,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: '#f8fafc',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-  },
-  chipActive: {
-    backgroundColor: '#ff6a00',
-    borderColor: '#ff6a00',
-  },
-  chipText: {
-    color: '#111827',
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  chipTextActive: {
-    color: '#fff',
-  },
-  switchRow: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  actionSection: {
-    gap: 10,
-    marginTop: 6,
+    marginBottom: 14,
   },
   primaryButton: {
     backgroundColor: '#ff6a00',
-    borderRadius: 16,
-    paddingVertical: 15,
-    paddingHorizontal: 16,
+    padding: 14,
+    borderRadius: 12,
     flexDirection: 'row',
+    gap: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
   primaryButtonText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
   },
   secondaryButton: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    backgroundColor: '#f3f4f6',
+    padding: 14,
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   secondaryButtonText: {
     color: '#111827',
     fontWeight: '700',
-    fontSize: 15,
   },
-  backLink: {
-    alignItems: 'center',
-    paddingVertical: 8,
+  image: {
+    width: 110,
+    height: 110,
+    borderRadius: 12,
+    marginRight: 10,
   },
-  backLinkText: {
-    color: '#64748b',
-    fontSize: 14,
-    fontWeight: '600',
+  input: {
+    minHeight: 120,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    padding: 12,
+    textAlignVertical: 'top',
   },
 });
