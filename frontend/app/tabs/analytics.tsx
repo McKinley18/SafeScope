@@ -13,6 +13,7 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import PageHeader from '../../src/components/ui/PageHeader';
+import AppBanner from '../../src/components/ui/AppBanner';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
 const ANALYTICS_CACHE_KEY = 'safescope_dashboard_cache';
@@ -144,6 +145,8 @@ export default function AnalyticsScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
+      <AppBanner section="Executive Intelligence" />
+
       <PageHeader
         eyebrow="Intelligence"
         title="Executive Analytics"

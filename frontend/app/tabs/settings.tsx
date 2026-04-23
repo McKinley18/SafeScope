@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { useAppTheme, ThemeMode } from '../../src/theme/ThemeContext';
+import AppBanner from '../../src/components/ui/AppBanner';
 
 const standardsModes = ['MSHA First', 'OSHA First', 'Hybrid', 'Custom Company Rules'];
 const inspectionTypes = [
