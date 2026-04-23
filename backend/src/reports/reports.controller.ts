@@ -55,6 +55,11 @@ export class ReportsController {
     return this.reportsService.addEvidence(reportId, addReportEvidenceDto);
   }
 
+  @Post(':reportId/detect-hazard')
+  detectHazard(@Param('reportId') reportId: string) {
+    return this.reportsService.detectHazard(reportId);
+  }
+
   @Post(':reportId/classify')
   classify(@Param('reportId') reportId: string) {
     return this.classificationsService.classify(reportId);

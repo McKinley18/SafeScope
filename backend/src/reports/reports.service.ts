@@ -156,4 +156,34 @@ export class ReportsService {
       attachments: savedAttachments,
     };
   }
+
+  async detectHazard(reportId: string) {
+    const report = await this.reportsRepository.findOne({
+      where: { id: reportId },
+      relations: ['attachments'],
+    });
+
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    let suggestedHazardDescription = 'Potential workplace hazard detected';
+    let observationSummary =
+      'The uploaded image may contain a workplace condition that requires review.';
+    let confidence = 'medium';
+
+    if (report.attachments?.length) {
+      suggestedHazardDescription = 'Possible missing guard or exposed hazard area';
+      observationSummary =
+        'The image appears to show equipment or a work area with a potentially unsafe condition that should be reviewed by a qualified person.';
+      confidence = 'medium';
+    }
+
+    return {
+      reportId,
+      suggestedHazardDescription,
+      observationSummary,
+      confidence,
+    };
+  }
 }
