@@ -12,22 +12,39 @@ function TabsNavigator() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: dark ? '#9ca3af' : '#6b7280',
         tabBarStyle: {
-          backgroundColor: dark ? '#0f0f0f' : '#ffffff',
-          borderTopColor: dark ? '#222222' : '#e5e7eb',
-          height: 78,
+          position: 'absolute',
+          left: 14,
+          right: 14,
+          bottom: 12,
+          height: 72,
           paddingTop: 8,
-          paddingBottom: 14,
+          paddingBottom: 12,
+          borderTopWidth: 0,
+          borderRadius: 24,
+          backgroundColor: dark ? 'rgba(17,18,20,0.96)' : 'rgba(255,255,255,0.96)',
+          borderWidth: 1,
+          borderColor: colors.border,
+          shadowColor: '#000',
+          shadowOpacity: dark ? 0.35 : 0.12,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 12,
+        },
+        tabBarItemStyle: {
+          borderRadius: 18,
+          marginHorizontal: 2,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
+          fontSize: 10,
+          fontWeight: '800',
+          marginTop: 2,
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Command',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -37,7 +54,7 @@ function TabsNavigator() {
       <Tabs.Screen
         name="camera"
         options={{
-          title: 'Capture',
+          title: 'Inspect',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="camera-outline" size={size} color={color} />
           ),
@@ -47,7 +64,7 @@ function TabsNavigator() {
       <Tabs.Screen
         name="review"
         options={{
-          title: 'Reviews',
+          title: 'Review',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="shield-checkmark-outline" size={size} color={color} />
           ),
@@ -57,7 +74,7 @@ function TabsNavigator() {
       <Tabs.Screen
         name="analytics"
         options={{
-          title: 'Analytics',
+          title: 'Intel',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart-outline" size={size} color={color} />
           ),
@@ -67,7 +84,7 @@ function TabsNavigator() {
       <Tabs.Screen
         name="history"
         options={{
-          title: 'History',
+          title: 'Reports',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="time-outline" size={size} color={color} />
           ),
@@ -77,7 +94,7 @@ function TabsNavigator() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: 'Control',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="options-outline" size={size} color={color} />
           ),
