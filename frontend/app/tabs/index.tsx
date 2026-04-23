@@ -86,6 +86,15 @@ export default function Home() {
           <Text style={[styles.brandSubtitle, { color: colors.text }]}>
             Operational Safety Intelligence
           </Text>
+
+          <View style={[styles.heroDivider, { backgroundColor: colors.border }]} />
+
+          <View style={styles.metaRow}>
+            <View style={styles.liveDot} />
+            <Text style={[styles.metaText, { color: colors.sub }]}>
+              Enterprise Safety Platform
+            </Text>
+          </View>
         </View>
 
         <View style={styles.sectionHeader}>
@@ -209,18 +218,17 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   heroShell: {
-    marginBottom: tokens.spacing.lg,
+    marginBottom: tokens.spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderTopWidth: 4,
-    borderTopColor: '#FF6A00',
-    borderRadius: tokens.radius.xl,
-    paddingTop: 2,
-    paddingBottom: 10,
-    paddingHorizontal: tokens.spacing.sm,
+    borderRadius: 18,
+    paddingTop: 0,
+    paddingBottom: 6,
+    paddingHorizontal: 10,
   },
   logoWrap: {
-    marginBottom: 0,
+    marginBottom: -28,
+    marginTop: -8,
   },
   logo: {
     width: 320,
@@ -233,11 +241,33 @@ const styles = StyleSheet.create({
     marginTop: tokens.spacing.sm,
   },
   brandSubtitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '900',
-    marginTop: -8,
+    marginTop: -26,
     textAlign: 'center',
-    letterSpacing: -0.3,
+    letterSpacing: -0.6,
+  },
+  heroDivider: {
+    height: 1,
+    width: '62%',
+    marginTop: 4,
+    marginBottom: 5,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 99,
+    backgroundColor: '#FF6A00',
+  },
+  metaText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.4,
   },
   sectionHeader: {
     marginBottom: tokens.spacing.sm,
