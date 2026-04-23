@@ -74,7 +74,7 @@ export default function Home() {
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
         <LegalDisclaimer onAccept={() => {}} />
 
-        <View style={[styles.heroShell, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.heroShell, { backgroundColor: colors.cardAlt }]}>
           <View style={styles.logoWrap}>
             <Image
               source={require('../../assets/images/logo.png')}
@@ -87,7 +87,7 @@ export default function Home() {
             Operational Safety Intelligence
           </Text>
 
-          <View style={[styles.heroDivider, { backgroundColor: colors.border }]} />
+          <View style={[styles.heroDivider, { backgroundColor: colors.accent }]} />
 
           <View style={styles.metaRow}>
             <View style={styles.liveDot} />
@@ -220,11 +220,14 @@ const styles = StyleSheet.create({
   heroShell: {
     marginBottom: tokens.spacing.md,
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 24,
     paddingTop: 0,
-    paddingBottom: 6,
+    paddingBottom: 8,
     paddingHorizontal: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
   },
   logoWrap: {
     marginBottom: -28,
@@ -248,10 +251,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.6,
   },
   heroDivider: {
-    height: 1,
-    width: '62%',
-    marginTop: 4,
-    marginBottom: 5,
+    height: 2,
+    width: 88,
+    borderRadius: 999,
+    marginTop: 5,
+    marginBottom: 6,
   },
   metaRow: {
     flexDirection: 'row',
