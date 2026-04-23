@@ -83,7 +83,6 @@ export default function Home() {
             />
           </View>
 
-          <Text style={[styles.brandTitle, { color: colors.text }]}>SafeScope</Text>
           <Text style={[styles.brandSubtitle, { color: colors.sub }]}>
             Operational Safety Intelligence
           </Text>
