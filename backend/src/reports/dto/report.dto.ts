@@ -1,26 +1,93 @@
-import { IsString, IsNotEmpty, IsDateString, IsOptional, IsNumber } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  IsArray,
+} from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { Type } from 'class-transformer';
 
 export class CreateReportDto {
   @IsString()
-  @IsNotEmpty()
-  siteId: string;
+  @IsOptional()
+  siteId?: string;
 
   @IsString()
   @IsOptional()
-  sourceType: string;
+  sourceType?: string;
 
   @IsDateString()
-  eventDatetime: string;
+  @IsOptional()
+  eventDatetime?: string;
 
   @IsString()
-  @IsNotEmpty()
-  eventTypeCode: string;
+  @IsOptional()
+  eventTypeCode?: string;
 
   @IsString()
-  @IsNotEmpty()
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @IsString()
+  @IsOptional()
+  narrative?: string;
+
+  @IsString()
+  @IsOptional()
+  reportStatus?: string;
+
+  @IsString()
+  @IsOptional()
+  hazardDescription?: string;
+
+  @IsString()
+  @IsOptional()
+  area?: string;
+
+  @IsString()
+  @IsOptional()
+  equipment?: string;
+
+  @IsString()
+  @IsOptional()
+  workActivity?: string;
+
+  @IsString()
+  @IsOptional()
+  severity?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  immediateDanger?: boolean;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+}
+
+export class UpdateReportDto extends PartialType(CreateReportDto) {}
+
+export class CreateReportAttachmentDto {
+  @IsString()
   @IsNotEmpty()
-  narrative: string;
+  uri: string;
+
+  @IsString()
+  @IsOptional()
+  mimeType?: string;
+
+  @IsString()
+  @IsOptional()
+  fileName?: string;
+}
+
+export class AddReportEvidenceDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateReportAttachmentDto)
+  attachments: CreateReportAttachmentDto[];
 }

@@ -1,8 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateReportDto } from './dto/report.dto';
+import {
+  AddReportEvidenceDto,
+  CreateReportDto,
+  UpdateReportDto,
+} from './dto/report.dto';
 import { Report } from './entities/report.entity';
+import { ReportAttachment } from './entities/attachment.entity';
 import { AuditService } from '../audit/audit.service';
 import { ClassificationsService } from '../classifications/classifications.service';
 import { Review } from '../reviews/entities/review.entity';
@@ -13,6 +18,8 @@ export class ReportsService {
   constructor(
     @InjectRepository(Report)
     private reportsRepository: Repository<Report>,
+    @InjectRepository(ReportAttachment)
+    private attachmentsRepository: Repository<ReportAttachment>,
     @InjectRepository(Review)
     private reviewRepo: Repository<Review>,
     @InjectRepository(CorrectiveAction)
@@ -28,7 +35,10 @@ export class ReportsService {
   }
 
   async findOne(id: string) {
-    const report = await this.reportsRepository.findOne({ where: { id } });
+    const report = await this.reportsRepository.findOne({
+      where: { id },
+      relations: ['attachments'],
+    });
     if (!report) throw new NotFoundException('Report not found');
 
     const classifications = await this.classificationsService.findByReportId(id);
@@ -50,7 +60,12 @@ export class ReportsService {
     return where;
   }
 
-  async findAll(options: { page: number; limit: number; status?: string; eventTypeCode?: string }): Promise<{ data: Report[], meta: { total: number, page: number, limit: number } }> {
+  async findAll(options: {
+    page: number;
+    limit: number;
+    status?: string;
+    eventTypeCode?: string;
+  }): Promise<{ data: Report[]; meta: { total: number; page: number; limit: number } }> {
     const { page, limit, status, eventTypeCode } = options;
     const where = this.buildFilter(status, eventTypeCode);
 
@@ -63,7 +78,7 @@ export class ReportsService {
 
     return {
       data,
-      meta: { total, page, limit }
+      meta: { total, page, limit },
     };
   }
 
@@ -75,17 +90,70 @@ export class ReportsService {
   async create(dto: CreateReportDto): Promise<Report> {
     const report = this.reportsRepository.create({
       ...dto,
+      eventDatetime: dto.eventDatetime ? new Date(dto.eventDatetime) : undefined,
       reportedDatetime: new Date(),
+      reportStatus: dto.reportStatus ?? 'draft',
+      intakeStatus: 'received',
     });
+
     const saved = await this.reportsRepository.save(report);
-    
+
     await this.auditService.log({
       entityType: 'REPORT',
       entityId: saved.id,
       actionCode: 'REPORT_CREATED',
       afterJson: saved,
     });
-    
+
     return saved;
+  }
+
+  async update(id: string, dto: UpdateReportDto): Promise<Report> {
+    const report = await this.reportsRepository.findOne({ where: { id } });
+    if (!report) throw new NotFoundException('Report not found');
+
+    const next = this.reportsRepository.merge(report, {
+      ...dto,
+      eventDatetime: dto.eventDatetime ? new Date(dto.eventDatetime) : report.eventDatetime,
+    });
+
+    const saved = await this.reportsRepository.save(next);
+
+    await this.auditService.log({
+      entityType: 'REPORT',
+      entityId: saved.id,
+      actionCode: 'REPORT_UPDATED',
+      afterJson: saved,
+    });
+
+    return saved;
+  }
+
+  async addEvidence(reportId: string, dto: AddReportEvidenceDto) {
+    const report = await this.reportsRepository.findOne({ where: { id: reportId } });
+    if (!report) throw new NotFoundException('Report not found');
+
+    const attachments = dto.attachments.map((item) =>
+      this.attachmentsRepository.create({
+        reportId,
+        imageUri: item.uri,
+        mimeType: item.mimeType,
+        fileName: item.fileName,
+      }),
+    );
+
+    const savedAttachments = await this.attachmentsRepository.save(attachments);
+
+    await this.auditService.log({
+      entityType: 'REPORT',
+      entityId: reportId,
+      actionCode: 'REPORT_EVIDENCE_ADDED',
+      afterJson: savedAttachments,
+    });
+
+    return {
+      reportId,
+      attachments: savedAttachments,
+    };
   }
 }

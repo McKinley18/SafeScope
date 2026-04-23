@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Report } from './report.entity';
 
 @Entity('report_attachments')
@@ -20,4 +26,7 @@ export class ReportAttachment {
 
   @Column({ nullable: true })
   fileName: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

@@ -1,6 +1,18 @@
-import { Controller, Get, Post, Body, Param , Query} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ReportsService } from './reports.service';
-import { CreateReportDto } from './dto/report.dto';
+import {
+  AddReportEvidenceDto,
+  CreateReportDto,
+  UpdateReportDto,
+} from './dto/report.dto';
 import { ClassificationsService } from '../classifications/classifications.service';
 
 @Controller('reports')
@@ -9,27 +21,6 @@ export class ReportsController {
     private readonly reportsService: ReportsService,
     private readonly classificationsService: ClassificationsService,
   ) {}
-
-  @Get(':id/audit')
-  async getAudit(@Param('id') id: string) {
-    return this.reportsService.getAudit(id);
-  }
-
-  @Get('export')
-  async export(
-    @Query('status') status?: string,
-    @Query('eventTypeCode') eventTypeCode?: string,
-    @Query('format') format: string = 'json',
-  ) {
-    const data = await this.reportsService.export(status, eventTypeCode);
-    if (format === 'csv') {
-      // Basic CSV conversion
-      const header = Object.keys(data[0] || {}).join(',');
-      const rows = data.map(obj => Object.values(obj).join(',')).join('\n');
-      return header + '\n' + rows;
-    }
-    return data;
-  }
 
   @Get()
   findAll(
@@ -41,9 +32,27 @@ export class ReportsController {
     return this.reportsService.findAll({ page, limit, status, eventTypeCode });
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.reportsService.findOne(id);
+  }
+
   @Post()
   create(@Body() createReportDto: CreateReportDto) {
     return this.reportsService.create(createReportDto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
+    return this.reportsService.update(id, updateReportDto);
+  }
+
+  @Post(':reportId/evidence')
+  addEvidence(
+    @Param('reportId') reportId: string,
+    @Body() addReportEvidenceDto: AddReportEvidenceDto,
+  ) {
+    return this.reportsService.addEvidence(reportId, addReportEvidenceDto);
   }
 
   @Post(':reportId/classify')
