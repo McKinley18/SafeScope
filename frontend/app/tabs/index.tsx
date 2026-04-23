@@ -91,12 +91,12 @@ export default function Home() {
 
           <View style={styles.heroButtons}>
             <AppButton
-              label="Launch Inspection"
+              label="Start Inspection"
               onPress={() => router.push('/tabs/camera')}
               style={styles.heroButton}
             />
             <AppButton
-              label="Open Reports"
+              label="View Reports"
               variant="secondary"
               onPress={() => router.push('/tabs/history' as any)}
               style={styles.heroButton}
@@ -232,12 +232,13 @@ const styles = StyleSheet.create({
     marginBottom: tokens.spacing.md,
   },
   logo: {
-    width: 160,
-    height: 70,
+    width: 230,
+    height: 105,
   },
   heroButtons: {
     width: '100%',
     gap: tokens.spacing.sm,
+    marginTop: tokens.spacing.sm,
   },
   heroButton: {
     width: '100%',
