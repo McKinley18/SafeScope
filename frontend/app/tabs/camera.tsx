@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { apiClient } from '../../src/api/client';
 
 const DRAFT_KEY = 'safescope_hazard_draft_v1';
 
@@ -26,6 +27,7 @@ type DraftImage = {
 };
 
 type HazardDraft = {
+  id?: string;
   hazardDescription: string;
   area: string;
   equipment: string;
@@ -52,6 +54,7 @@ export default function CameraScreen() {
 
   const [draft, setDraft] = useState<HazardDraft>(emptyDraft);
   const [saving, setSaving] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     const loadDraft = async () => {
@@ -118,6 +121,19 @@ export default function CameraScreen() {
     });
   };
 
+  const buildPayload = () => ({
+    hazardDescription: draft.hazardDescription || undefined,
+    area: draft.area || undefined,
+    equipment: draft.equipment || undefined,
+    workActivity: draft.workActivity || undefined,
+    severity: draft.severity || undefined,
+    immediateDanger: draft.immediateDanger,
+    notes: draft.notes || undefined,
+    reportStatus: 'draft',
+    title: draft.hazardDescription || 'Hazard Draft',
+    narrative: draft.notes || draft.hazardDescription || '',
+  });
+
   const saveDraft = async () => {
     if (!draft.hazardDescription.trim() && draft.images.length === 0) {
       Alert.alert('Nothing to save', 'Add a hazard description or at least one image first.');
@@ -126,10 +142,26 @@ export default function CameraScreen() {
 
     setSaving(true);
     try {
-      await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      Alert.alert('Draft saved', 'Your hazard draft was saved on this device.');
+      let reportId = draft.id;
+
+      if (!reportId) {
+        const created = await apiClient.createReport(buildPayload());
+        reportId = created?.id;
+      } else {
+        await apiClient.updateReport(reportId, buildPayload());
+      }
+
+      if (reportId && draft.images.length > 0) {
+        await apiClient.addReportEvidence(reportId, draft.images);
+      }
+
+      const nextDraft = { ...draft, id: reportId };
+      await persistDraft(nextDraft);
+
+      Alert.alert('Draft saved', 'Your hazard draft was saved.');
     } catch (error) {
-      Alert.alert('Save failed', 'We could not save the draft locally.');
+      console.error(error);
+      Alert.alert('Save failed', 'We could not save the draft to the backend.');
     } finally {
       setSaving(false);
     }
@@ -141,10 +173,37 @@ export default function CameraScreen() {
       return;
     }
 
-    Alert.alert(
-      'Analyze Hazard',
-      'Sprint 1 complete: this draft is now structured and ready for backend save and standards retrieval wiring in Sprint 2.'
-    );
+    setAnalyzing(true);
+    try {
+      let reportId = draft.id;
+
+      if (!reportId) {
+        const created = await apiClient.createReport(buildPayload());
+        reportId = created?.id;
+      } else {
+        await apiClient.updateReport(reportId, {
+          ...buildPayload(),
+          reportStatus: 'submitted',
+        });
+      }
+
+      if (reportId && draft.images.length > 0) {
+        await apiClient.addReportEvidence(reportId, draft.images);
+      }
+
+      const nextDraft = { ...draft, id: reportId };
+      await persistDraft(nextDraft);
+
+      Alert.alert(
+        'Ready for Sprint 2',
+        `Hazard draft saved${reportId ? ` (ID: ${reportId})` : ''} and prepared for standards retrieval.`
+      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Analyze failed', 'We could not prepare the hazard draft for analysis.');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const clearDraft = async () => {
@@ -294,10 +353,10 @@ export default function CameraScreen() {
             !draft.hazardDescription.trim() && { opacity: 0.5 },
           ]}
           onPress={analyzeHazard}
-          disabled={!draft.hazardDescription.trim()}
+          disabled={!draft.hazardDescription.trim() || analyzing}
         >
           <Ionicons name="search-outline" size={18} color="#fff" />
-          <Text style={styles.primaryButtonText}>Analyze Hazard</Text>
+          <Text style={styles.primaryButtonText}>{analyzing ? 'Preparing…' : 'Analyze Hazard'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backLink} onPress={() => router.back()}>
