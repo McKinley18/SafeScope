@@ -1,18 +1,14 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  Modal,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAppTheme } from '../../src/theme/ThemeContext';
 import LegalDisclaimer from '../../components/LegalDisclaimer';
+import { useAppTheme } from '../../src/theme/ThemeContext';
+import { tokens } from '../../src/theme/tokens';
+import AppCard from '../../src/components/ui/AppCard';
+import AppButton from '../../src/components/ui/AppButton';
+import PageHeader from '../../src/components/ui/PageHeader';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
 const ANALYTICS_CACHE_KEY = 'safescope_dashboard_cache';
@@ -20,7 +16,7 @@ const ANALYTICS_CACHE_TIME_KEY = 'safescope_dashboard_cache_time';
 
 const kpis = [
   {
-    label: 'Company Risk Score',
+    label: 'Risk Index',
     value: '82',
     trend: '+4%',
     icon: 'shield-checkmark-outline' as const,
@@ -34,14 +30,14 @@ const kpis = [
     help: 'Corrective actions still unresolved or awaiting verification.',
   },
   {
-    label: 'Audits This Month',
+    label: 'Inspections',
     value: '27',
     trend: '+6',
     icon: 'document-text-outline' as const,
     help: 'Audit sessions started during the current month.',
   },
   {
-    label: 'High-Risk Findings',
+    label: 'High-Risk',
     value: '5',
     trend: '-1',
     icon: 'warning-outline' as const,
@@ -60,14 +56,6 @@ export default function Home() {
   const { colors } = useAppTheme();
   const [infoOpen, setInfoOpen] = useState(false);
 
-  const bg = colors.bg;
-  const card = colors.card;
-  const cardAlt = colors.cardAlt;
-  const border = colors.border;
-  const text = colors.text;
-  const sub = colors.sub;
-  const muted = colors.muted;
-
   useEffect(() => {
     const prefetchAnalytics = async () => {
       try {
@@ -84,155 +72,143 @@ export default function Home() {
 
   return (
     <>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: bg }}>
-        <View style={[styles.container, { backgroundColor: bg }]}>
-          <LegalDisclaimer onAccept={() => {}} />
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
+        <LegalDisclaimer onAccept={() => {}} />
 
-          <View style={[styles.heroCard, { backgroundColor: card, borderColor: border }]}>
-            <View style={styles.logoWrap}>
-              <Image
-                source={require('../../assets/images/logo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-
-            <Text style={[styles.heroTitle, { color: text }]}>Safety Intelligence Command</Text>
-            <Text style={[styles.subtitle, { color: sub }]}>
-              Monitor risk, manage actions, and accelerate audits across your operation.
-            </Text>
-
-            <View style={styles.heroButtons}>
-              <TouchableOpacity
-                style={styles.primaryAction}
-                onPress={() => router.push('/tabs/camera')}
-              >
-                <Ionicons name="camera-outline" size={18} color="#fff" />
-                <Text style={styles.primaryText}>Start New Audit</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.secondaryAction, { backgroundColor: cardAlt, borderColor: border }]}
-                onPress={() => router.push('/tabs/history' as any)}
-              >
-                <Ionicons name="time-outline" size={18} color={text} />
-                <Text style={[styles.secondaryText, { color: text }]}>View History</Text>
-              </TouchableOpacity>
-            </View>
+        <AppCard style={styles.heroCard}>
+          <View style={styles.logoWrap}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
 
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: text }]}>Operational Snapshot</Text>
-            <View style={styles.sectionHeaderRight}>
-              <TouchableOpacity onPress={() => setInfoOpen(true)} style={styles.infoButton}>
-                <Ionicons name="information-circle-outline" size={18} color="#ff6a00" />
-                <Text style={styles.sectionLink}>About</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/tabs/analytics' as any)}>
-                <Text style={styles.sectionLink}>Open Analytics</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <PageHeader
+            eyebrow="SafeScope"
+            title="Operational Safety Intelligence"
+            subtitle="See risk clearly across your operation."
+          />
 
-          <View style={styles.kpiGrid}>
-            {kpis.map((item) => (
-              <View
-                key={item.label}
-                style={[styles.kpiCard, { backgroundColor: card, borderColor: border }]}
-              >
-                <View style={styles.kpiTop}>
-                  <View style={styles.kpiIconWrap}>
-                    <Ionicons name={item.icon} size={18} color="#ff6a00" />
-                  </View>
-                  <Text style={styles.kpiTrend}>{item.trend}</Text>
-                </View>
-                <Text style={[styles.kpiValue, { color: text }]}>{item.value}</Text>
-                <Text style={[styles.kpiLabel, { color: muted }]}>{item.label}</Text>
-                <Text style={[styles.kpiHelp, { color: sub }]}>{item.help}</Text>
-              </View>
-            ))}
-          </View>
-
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: text }]}>Quick Actions</Text>
-          </View>
-
-          <View style={styles.quickGrid}>
-            <TouchableOpacity
-              style={[styles.quickCard, { backgroundColor: card, borderColor: border }]}
-              onPress={() => router.push('/tabs/review')}
-            >
-              <Ionicons name="shield-checkmark-outline" size={20} color="#ff6a00" />
-              <Text style={[styles.quickTitle, { color: text }]}>Review Queue</Text>
-              <Text style={[styles.quickSub, { color: muted }]}>Validate AI findings</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.quickCard, { backgroundColor: card, borderColor: border }]}
-              onPress={() => router.push('/tabs/analytics' as any)}
-            >
-              <Ionicons name="bar-chart-outline" size={20} color="#ff6a00" />
-              <Text style={[styles.quickTitle, { color: text }]}>Analytics</Text>
-              <Text style={[styles.quickSub, { color: muted }]}>View trends and KPIs</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.quickCard, { backgroundColor: card, borderColor: border }]}
-              onPress={() => router.push('/tabs/settings')}
-            >
-              <Ionicons name="options-outline" size={20} color="#ff6a00" />
-              <Text style={[styles.quickTitle, { color: text }]}>Settings</Text>
-              <Text style={[styles.quickSub, { color: muted }]}>Profile and defaults</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.quickCard, { backgroundColor: card, borderColor: border }]}
+          <View style={styles.heroButtons}>
+            <AppButton
+              label="Launch Inspection"
+              onPress={() => router.push('/tabs/camera')}
+              style={styles.heroButton}
+            />
+            <AppButton
+              label="Open Reports"
+              variant="secondary"
               onPress={() => router.push('/tabs/history' as any)}
-            >
-              <Ionicons name="documents-outline" size={20} color="#ff6a00" />
-              <Text style={[styles.quickTitle, { color: text }]}>Audit History</Text>
-              <Text style={[styles.quickSub, { color: muted }]}>Past audits and stats</Text>
+              style={styles.heroButton}
+            />
+          </View>
+        </AppCard>
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Operational Snapshot</Text>
+          <View style={styles.sectionHeaderRight}>
+            <TouchableOpacity onPress={() => setInfoOpen(true)} style={styles.infoButton}>
+              <Ionicons name="information-circle-outline" size={18} color={colors.accent} />
+              <Text style={[styles.sectionLink, { color: colors.accent }]}>About</Text>
             </TouchableOpacity>
-          </View>
-
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: text }]}>Recent Activity</Text>
-          </View>
-
-          <View style={[styles.activityCard, { backgroundColor: card, borderColor: border }]}>
-            {activity.map((item, index) => (
-              <View
-                key={item.title}
-                style={[
-                  styles.activityRow,
-                  index < activity.length - 1 && { borderBottomWidth: 1, borderBottomColor: border },
-                ]}
-              >
-                <View style={styles.activityDot} />
-                <View style={styles.activityTextWrap}>
-                  <Text style={[styles.activityTitle, { color: text }]}>{item.title}</Text>
-                  <Text style={[styles.activityMeta, { color: muted }]}>{item.meta}</Text>
-                </View>
-              </View>
-            ))}
+            <TouchableOpacity onPress={() => router.push('/tabs/analytics' as any)}>
+              <Text style={[styles.sectionLink, { color: colors.accent }]}>Open Intelligence</Text>
+            </TouchableOpacity>
           </View>
         </View>
+
+        <View style={styles.kpiGrid}>
+          {kpis.map((item) => (
+            <AppCard key={item.label} style={styles.kpiCard}>
+              <View style={styles.kpiTop}>
+                <View style={[styles.kpiIconWrap, { backgroundColor: colors.cardAlt }]}>
+                  <Ionicons name={item.icon} size={18} color={colors.accent} />
+                </View>
+                <Text style={[styles.kpiTrend, { color: colors.accent }]}>{item.trend}</Text>
+              </View>
+              <Text style={[styles.kpiValue, { color: colors.text }]}>{item.value}</Text>
+              <Text style={[styles.kpiLabel, { color: colors.muted }]}>{item.label}</Text>
+              <Text style={[styles.kpiHelp, { color: colors.sub }]}>{item.help}</Text>
+            </AppCard>
+          ))}
+        </View>
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Actions</Text>
+        </View>
+
+        <View style={styles.quickGrid}>
+          <AppCard style={styles.quickCard}>
+            <TouchableOpacity onPress={() => router.push('/tabs/review')}>
+              <Ionicons name="shield-checkmark-outline" size={20} color={colors.accent} />
+              <Text style={[styles.quickTitle, { color: colors.text }]}>Review Queue</Text>
+              <Text style={[styles.quickSub, { color: colors.muted }]}>Validate AI findings</Text>
+            </TouchableOpacity>
+          </AppCard>
+
+          <AppCard style={styles.quickCard}>
+            <TouchableOpacity onPress={() => router.push('/tabs/analytics' as any)}>
+              <Ionicons name="bar-chart-outline" size={20} color={colors.accent} />
+              <Text style={[styles.quickTitle, { color: colors.text }]}>Executive Intelligence</Text>
+              <Text style={[styles.quickSub, { color: colors.muted }]}>View trends and KPIs</Text>
+            </TouchableOpacity>
+          </AppCard>
+
+          <AppCard style={styles.quickCard}>
+            <TouchableOpacity onPress={() => router.push('/tabs/settings')}>
+              <Ionicons name="options-outline" size={20} color={colors.accent} />
+              <Text style={[styles.quickTitle, { color: colors.text }]}>Control</Text>
+              <Text style={[styles.quickSub, { color: colors.muted }]}>Profile and defaults</Text>
+            </TouchableOpacity>
+          </AppCard>
+
+          <AppCard style={styles.quickCard}>
+            <TouchableOpacity onPress={() => router.push('/tabs/history' as any)}>
+              <Ionicons name="documents-outline" size={20} color={colors.accent} />
+              <Text style={[styles.quickTitle, { color: colors.text }]}>Reports</Text>
+              <Text style={[styles.quickSub, { color: colors.muted }]}>Past audits and stats</Text>
+            </TouchableOpacity>
+          </AppCard>
+        </View>
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</Text>
+        </View>
+
+        <AppCard>
+          {activity.map((item, index) => (
+            <View
+              key={item.title}
+              style={[
+                styles.activityRow,
+                index < activity.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+              ]}
+            >
+              <View style={[styles.activityDot, { backgroundColor: colors.accent }]} />
+              <View style={styles.activityTextWrap}>
+                <Text style={[styles.activityTitle, { color: colors.text }]}>{item.title}</Text>
+                <Text style={[styles.activityMeta, { color: colors.muted }]}>{item.meta}</Text>
+              </View>
+            </View>
+          ))}
+        </AppCard>
       </ScrollView>
 
       <Modal visible={infoOpen} transparent animationType="fade" onRequestClose={() => setInfoOpen(false)}>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: card, borderColor: border }]}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: text }]}>Operational Snapshot</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Operational Snapshot</Text>
               <TouchableOpacity onPress={() => setInfoOpen(false)}>
-                <Ionicons name="close-outline" size={24} color={text} />
+                <Ionicons name="close-outline" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             {kpis.map((item) => (
               <View key={item.label} style={styles.modalItem}>
-                <Text style={[styles.modalItemTitle, { color: text }]}>{item.label}</Text>
-                <Text style={[styles.modalItemText, { color: sub }]}>{item.help}</Text>
+                <Text style={[styles.modalItemTitle, { color: colors.text }]}>{item.label}</Text>
+                <Text style={[styles.modalItemText, { color: colors.sub }]}>{item.help}</Text>
               </View>
             ))}
           </View>
@@ -244,80 +220,31 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingTop: 22,
-    paddingBottom: 28,
-    flex: 1,
+    padding: tokens.spacing.md,
+    paddingTop: tokens.spacing.lg,
+    paddingBottom: tokens.spacing.xl,
+    flexGrow: 1,
   },
   heroCard: {
-    borderRadius: 22,
-    padding: 18,
-    marginBottom: 20,
-    borderWidth: 1,
+    marginBottom: tokens.spacing.xl,
     alignItems: 'center',
   },
   logoWrap: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    marginBottom: 10,
+    marginBottom: tokens.spacing.md,
   },
   logo: {
-    width: 340,
-    height: 136,
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    maxWidth: 320,
-    lineHeight: 20,
-    marginBottom: 16,
+    width: 160,
+    height: 70,
   },
   heroButtons: {
     width: '100%',
-    gap: 10,
+    gap: tokens.spacing.sm,
   },
-  primaryAction: {
-    backgroundColor: '#ff6a00',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  secondaryAction: {
-    borderRadius: 16,
-    paddingVertical: 15,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  primaryText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  secondaryText: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
+  heroButton: {
+    width: '100%',
   },
   sectionHeader: {
-    marginBottom: 12,
-    marginTop: 4,
+    marginBottom: tokens.spacing.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -325,141 +252,131 @@ const styles = StyleSheet.create({
   sectionHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: tokens.spacing.md,
+  },
+  sectionTitle: {
+    fontSize: tokens.type.h2,
+    fontWeight: '800',
+  },
+  sectionLink: {
+    fontSize: tokens.type.small,
+    fontWeight: '700',
   },
   infoButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  sectionTitle: {
-    fontSize: 19,
-    fontWeight: '800',
-  },
-  sectionLink: {
-    color: '#ff6a00',
-    fontSize: 13,
-    fontWeight: '700',
-  },
   kpiGrid: {
-    gap: 12,
-    marginBottom: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: tokens.spacing.sm,
+    marginBottom: tokens.spacing.xl,
   },
   kpiCard: {
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
+    width: '48%',
   },
   kpiTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
   },
   kpiIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(255,106,0,0.12)',
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   kpiTrend: {
-    color: '#ff6a00',
-    fontWeight: '700',
-    fontSize: 13,
+    fontSize: tokens.type.small,
+    fontWeight: '800',
   },
   kpiValue: {
-    fontSize: 28,
+    marginTop: tokens.spacing.sm,
+    fontSize: tokens.type.kpi,
     fontWeight: '800',
-    marginBottom: 4,
   },
   kpiLabel: {
-    fontSize: 14,
+    marginTop: 4,
+    fontSize: tokens.type.body,
     fontWeight: '700',
-    marginBottom: 6,
   },
   kpiHelp: {
-    fontSize: 12,
-    lineHeight: 17,
+    marginTop: 6,
+    fontSize: tokens.type.small,
+    lineHeight: 18,
   },
   quickGrid: {
-    gap: 12,
-    marginBottom: 16,
+    gap: tokens.spacing.sm,
+    marginBottom: tokens.spacing.xl,
   },
   quickCard: {
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
+    paddingVertical: tokens.spacing.lg,
   },
   quickTitle: {
     marginTop: 10,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontSize: tokens.type.body,
+    fontWeight: '800',
   },
   quickSub: {
-    fontSize: 13,
-  },
-  activityCard: {
-    borderRadius: 18,
-    borderWidth: 1,
-    overflow: 'hidden',
+    marginTop: 4,
+    fontSize: tokens.type.small,
   },
   activityRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    padding: 14,
+    paddingVertical: tokens.spacing.md,
   },
   activityDot: {
     width: 10,
     height: 10,
-    borderRadius: 5,
-    backgroundColor: '#ff6a00',
-    marginTop: 5,
+    borderRadius: 999,
+    marginTop: 6,
     marginRight: 12,
   },
   activityTextWrap: {
     flex: 1,
   },
   activityTitle: {
-    fontSize: 15,
+    fontSize: tokens.type.body,
     fontWeight: '700',
-    marginBottom: 3,
   },
   activityMeta: {
-    fontSize: 13,
+    marginTop: 4,
+    fontSize: tokens.type.small,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
-    padding: 20,
+    padding: tokens.spacing.lg,
   },
   modalCard: {
-    borderRadius: 20,
-    padding: 18,
     borderWidth: 1,
+    borderRadius: tokens.radius.xl,
+    padding: tokens.spacing.lg,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: tokens.spacing.sm,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: tokens.type.h1,
     fontWeight: '800',
   },
   modalItem: {
-    marginTop: 10,
+    marginTop: tokens.spacing.sm,
   },
   modalItemTitle: {
-    fontSize: 15,
+    fontSize: tokens.type.body,
     fontWeight: '700',
     marginBottom: 4,
   },
   modalItemText: {
-    fontSize: 13,
+    fontSize: tokens.type.small,
     lineHeight: 18,
   },
 });

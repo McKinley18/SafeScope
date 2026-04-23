@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { tokens } from './tokens';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -7,24 +8,24 @@ const STORAGE_KEY = 'safescope_theme_mode';
 
 const palette = {
   light: {
-    bg: '#f8fafc',
-    card: '#ffffff',
-    cardAlt: '#f1f5f9',
-    border: '#e5e7eb',
-    text: '#111827',
-    sub: '#475569',
-    muted: '#64748b',
-    accent: '#ff6a00',
+    bg: tokens.color.light.bg,
+    card: tokens.color.light.card,
+    cardAlt: tokens.color.light.surface,
+    border: tokens.color.light.border,
+    text: tokens.color.light.text,
+    sub: tokens.color.light.sub,
+    muted: tokens.color.light.muted,
+    accent: tokens.color.light.accent,
   },
   dark: {
-    bg: '#050505',
-    card: '#111111',
-    cardAlt: '#171717',
-    border: '#232323',
-    text: '#ffffff',
-    sub: '#cbd5e1',
-    muted: '#9ca3af',
-    accent: '#ff6a00',
+    bg: tokens.color.dark.bg,
+    card: tokens.color.dark.card,
+    cardAlt: tokens.color.dark.surface,
+    border: tokens.color.dark.border,
+    text: tokens.color.dark.text,
+    sub: tokens.color.dark.sub,
+    muted: tokens.color.dark.muted,
+    accent: tokens.color.dark.accent,
   },
 };
 
