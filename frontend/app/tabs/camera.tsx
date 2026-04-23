@@ -18,7 +18,6 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import PageHeader from '../../src/components/ui/PageHeader';
-import AppBanner from '../../src/components/ui/AppBanner';
 
 const DRAFT_KEY = 'safescope_hazard_draft_v1';
 
@@ -238,8 +237,6 @@ const useSuggestion = async () => {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <AppBanner section="AI Hazard Capture" />
-
       <PageHeader
         eyebrow="Inspect"
         title="AI Hazard Capture"

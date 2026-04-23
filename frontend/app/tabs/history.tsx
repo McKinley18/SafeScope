@@ -4,7 +4,6 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import PageHeader from '../../src/components/ui/PageHeader';
-import AppBanner from '../../src/components/ui/AppBanner';
 
 type ReportItem = {
   id: string;
@@ -70,8 +69,6 @@ export default function HistoryScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <AppBanner section="Operational Record" />
-
       <PageHeader
         eyebrow="Reports"
         title="Operational Record"

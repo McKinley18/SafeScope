@@ -16,7 +16,6 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import PageHeader from '../../src/components/ui/PageHeader';
-import AppBanner from '../../src/components/ui/AppBanner';
 
 type QueueItem = {
   id: string;
@@ -108,8 +107,6 @@ export default function ReviewScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <AppBanner section="AI Decision Queue" />
-
       <PageHeader
         eyebrow="Review Center"
         title="AI Decision Queue"
