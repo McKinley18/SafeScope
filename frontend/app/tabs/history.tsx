@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import {
+  Alert, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -114,6 +115,41 @@ export default function HistoryScreen() {
 
     return { total, approved, submitted, highRisk };
   }, [reports]);
+
+  const archiveReport = async (id: string) => {
+    Alert.alert(
+      'Archive report?',
+      'This removes the report from active lists while preserving the record.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Archive',
+          onPress: async () => {
+            await apiClient.archiveReport(id);
+            await loadReports();
+          },
+        },
+      ]
+    );
+  };
+
+  const deleteReport = async (id: string) => {
+    Alert.alert(
+      'Delete report?',
+      'This hides the report from active records. Only use this if allowed by your record retention policy.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await apiClient.deleteReport(id);
+            await loadReports();
+          },
+        },
+      ]
+    );
+  };
 
   const statusColor = (status?: string) => {
     const value = String(status || '').toLowerCase();
@@ -310,6 +346,28 @@ export default function HistoryScreen() {
                   </View>
                 </View>
 
+                <View style={styles.reportActions}>
+                  <TouchableOpacity
+                    style={[styles.smallAction, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                    onPress={(event) => {
+                      event.stopPropagation();
+                      archiveReport(report.id);
+                    }}
+                  >
+                    <Text style={[styles.smallActionText, { color: colors.text }]}>Archive</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.smallAction, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                    onPress={(event) => {
+                      event.stopPropagation();
+                      deleteReport(report.id);
+                    }}
+                  >
+                    <Text style={[styles.smallActionText, { color: '#ef4444' }]}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+
                 <View style={styles.metricsRow}>
                   <View style={styles.metricBlock}>
                     <Text style={[styles.metricValue, { color: colors.text }]}>
@@ -475,6 +533,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'capitalize',
+  },
+  reportActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: tokens.spacing.md,
+  },
+  smallAction: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  smallActionText: {
+    fontSize: 11,
+    fontWeight: '900',
   },
   metricsRow: {
     flexDirection: 'row',

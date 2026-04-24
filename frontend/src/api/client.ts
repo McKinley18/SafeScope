@@ -108,6 +108,22 @@ export const apiClient = {
     return res.json();
   },
 
+  archiveReport: async (reportId: string) => {
+    const res = await fetch(`${BASE_URL}/reports/${reportId}/archive`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  deleteReport: async (reportId: string) => {
+    const res = await fetch(`${BASE_URL}/reports/${reportId}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
   getReportDetail: async (reportId: string) => {
     const res = await fetch(`${BASE_URL}/reports/${reportId}`, { headers: getHeaders() });
     return res.json();
