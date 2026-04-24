@@ -161,7 +161,7 @@ export default function HistoryScreen() {
           <Ionicons name="document-text-outline" size={24} color={colors.accent} />
           <Text style={[styles.emptyTitle, { color: colors.text }]}>No reports yet</Text>
           <Text style={[styles.emptyText, { color: colors.sub }]}>
-            Captured hazards and submitted inspections will appear here.
+            Your operational record will build automatically as inspections are submitted, reviewed, and closed.
           </Text>
         </AppCard>
       ) : (

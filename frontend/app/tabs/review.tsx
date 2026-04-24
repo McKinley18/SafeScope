@@ -69,7 +69,7 @@ export default function ReviewScreen() {
       ) : queue.length === 0 ? (
         <AppCard>
           <Text style={[styles.empty, { color: colors.text }]}>
-            No submitted reports in queue.
+            No reports are waiting for review. Submit a hazard from Capture and it will appear here automatically.
           </Text>
         </AppCard>
       ) : (

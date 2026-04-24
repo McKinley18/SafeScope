@@ -208,7 +208,7 @@ export default function AnalyticsScreen() {
 
         {topHazards.length === 0 ? (
           <View style={[styles.emptyWrap, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <Text style={[styles.emptyText, { color: colors.muted }]}>No hazard recurrence data yet.</Text>
+            <Text style={[styles.emptyText, { color: colors.muted }]}>Hazard recurrence intelligence will appear after reports are submitted and classified.</Text>
           </View>
         ) : (
           topHazards.map((item, index) => (
@@ -238,7 +238,7 @@ export default function AnalyticsScreen() {
 
         {reviewAging.length === 0 ? (
           <View style={[styles.emptyWrap, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <Text style={[styles.emptyText, { color: colors.muted }]}>No pending review aging data yet.</Text>
+            <Text style={[styles.emptyText, { color: colors.muted }]}>Review aging metrics will appear once submitted reports enter the review workflow.</Text>
           </View>
         ) : (
           reviewAging.map((item, index) => (
@@ -264,7 +264,7 @@ export default function AnalyticsScreen() {
 
         {actionAging.length === 0 ? (
           <View style={[styles.emptyWrap, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <Text style={[styles.emptyText, { color: colors.muted }]}>No corrective action aging data yet.</Text>
+            <Text style={[styles.emptyText, { color: colors.muted }]}>Corrective action aging will appear after actions are assigned.</Text>
           </View>
         ) : (
           actionAging.map((item, index) => (
