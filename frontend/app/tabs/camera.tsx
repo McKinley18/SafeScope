@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../../src/api/client';
+import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
@@ -63,6 +64,7 @@ const severityOptions: HazardDraft['severity'][] = ['low', 'medium', 'high', 'cr
 
 export default function CameraScreen() {
   const { colors } = useAppTheme();
+  const router = useRouter();
   const [draft, setDraft] = useState<HazardDraft>(emptyDraft);
   const [detecting, setDetecting] = useState(false);
   const [suggestion, setSuggestion] = useState<HazardSuggestion | null>(null);
