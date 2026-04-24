@@ -53,8 +53,9 @@ export class ReportsService {
     };
   }
 
-  private buildFilter(status?: string, eventTypeCode?: string) {
+  private buildFilter(status?: string, eventTypeCode?: string, tenantId?: string) {
     const where: any = {};
+    if (tenantId) where.tenantId = tenantId;
     if (status) where.reportStatus = status;
     if (eventTypeCode) where.eventTypeCode = eventTypeCode;
     where.deletedAt = null;
@@ -67,9 +68,10 @@ export class ReportsService {
     limit: number;
     status?: string;
     eventTypeCode?: string;
+    tenantId?: string;
   }): Promise<{ data: Report[]; meta: { total: number; page: number; limit: number } }> {
-    const { page, limit, status, eventTypeCode } = options;
-    const where = this.buildFilter(status, eventTypeCode);
+    const { page, limit, status, eventTypeCode, tenantId } = options;
+    const where = this.buildFilter(status, eventTypeCode, tenantId);
 
     const [data, total] = await this.reportsRepository.findAndCount({
       where,
@@ -84,8 +86,8 @@ export class ReportsService {
     };
   }
 
-  async export(status?: string, eventTypeCode?: string) {
-    const where = this.buildFilter(status, eventTypeCode);
+  async export(status?: string, eventTypeCode?: string, tenantId?: string) {
+    const where = this.buildFilter(status, eventTypeCode, tenantId);
     return this.reportsRepository.find({ where, order: { reportedDatetime: 'DESC' } });
   }
 

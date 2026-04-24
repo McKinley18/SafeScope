@@ -3,12 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { ReportsService } from './reports.service';
+import * as jwt from 'jsonwebtoken';
 import {
   AddReportEvidenceDto,
   CreateReportDto,
@@ -23,18 +25,41 @@ export class ReportsController {
     private readonly classificationsService: ClassificationsService,
   ) {}
 
+  private getAuthContext(authHeader?: string) {
+    try {
+      const token = authHeader?.replace('Bearer ', '');
+      if (!token) return { tenantId: 'default', userId: undefined };
+
+      const decoded: any = jwt.verify(
+        token,
+        process.env.JWT_SECRET || 'safescope_dev_secret_change_me',
+      );
+
+      return {
+        tenantId: decoded.tenantId || 'default',
+        userId: decoded.sub,
+      };
+    } catch {
+      return { tenantId: 'default', userId: undefined };
+    }
+  }
+
   @Get()
   findAll(
+    @Headers('authorization') authorization: string,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
     @Query('status') status?: string,
     @Query('eventTypeCode') eventTypeCode?: string,
   ) {
+    const auth = this.getAuthContext(authorization);
+
     return this.reportsService.findAll({
       page: Number(page) || 1,
       limit: Number(limit) || 20,
       status,
       eventTypeCode,
+      tenantId: auth.tenantId,
     });
   }
 
@@ -44,8 +69,14 @@ export class ReportsController {
   }
 
   @Post()
-  create(@Body() createReportDto: CreateReportDto) {
-    return this.reportsService.create(createReportDto);
+  create(@Headers('authorization') authorization: string, @Body() createReportDto: CreateReportDto) {
+    const auth = this.getAuthContext(authorization);
+
+    return this.reportsService.create({
+      ...createReportDto,
+      tenantId: auth.tenantId,
+      createdByUserId: auth.userId,
+    });
   }
 
   @Patch(':id')
