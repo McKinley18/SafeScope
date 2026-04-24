@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -50,6 +51,16 @@ export class ReportsController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
     return this.reportsService.update(id, updateReportDto);
+  }
+
+  @Patch(':id/archive')
+  archive(@Param('id') id: string) {
+    return this.reportsService.archive(id);
+  }
+
+  @Delete(':id')
+  softDelete(@Param('id') id: string) {
+    return this.reportsService.softDelete(id);
   }
 
   @Post(':id/review-decision')

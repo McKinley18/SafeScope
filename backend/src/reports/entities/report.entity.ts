@@ -82,6 +82,12 @@ export class Report {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  archivedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deletedAt: Date;
+
   @UpdateDateColumn()
   updatedAt: Date;
 }

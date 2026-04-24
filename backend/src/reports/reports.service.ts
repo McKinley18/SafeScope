@@ -57,6 +57,8 @@ export class ReportsService {
     const where: any = {};
     if (status) where.reportStatus = status;
     if (eventTypeCode) where.eventTypeCode = eventTypeCode;
+    where.deletedAt = null;
+    where.archivedAt = null;
     return where;
   }
 
@@ -151,6 +153,46 @@ export class ReportsService {
       entityType: 'REPORT',
       entityId: saved.id,
       actionCode: decision === 'approved' ? 'REPORT_APPROVED' : 'REPORT_REJECTED',
+      afterJson: saved,
+    });
+
+    return saved;
+  }
+
+  async archive(id: string): Promise<Report> {
+    const report = await this.reportsRepository.findOne({ where: { id } });
+    if (!report) throw new NotFoundException('Report not found');
+
+    const saved = await this.reportsRepository.save({
+      ...report,
+      reportStatus: 'archived',
+      archivedAt: new Date(),
+    });
+
+    await this.auditService.log({
+      entityType: 'REPORT',
+      entityId: saved.id,
+      actionCode: 'REPORT_ARCHIVED',
+      afterJson: saved,
+    });
+
+    return saved;
+  }
+
+  async softDelete(id: string): Promise<Report> {
+    const report = await this.reportsRepository.findOne({ where: { id } });
+    if (!report) throw new NotFoundException('Report not found');
+
+    const saved = await this.reportsRepository.save({
+      ...report,
+      reportStatus: 'deleted',
+      deletedAt: new Date(),
+    });
+
+    await this.auditService.log({
+      entityType: 'REPORT',
+      entityId: saved.id,
+      actionCode: 'REPORT_DELETED',
       afterJson: saved,
     });
 
