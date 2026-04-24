@@ -79,7 +79,7 @@ export default function Home() {
             <Image
               source={require('../../assets/images/logo.png')}
               style={styles.logo}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </View>
 
@@ -221,8 +221,8 @@ const styles = StyleSheet.create({
     marginBottom: tokens.spacing.md,
     alignItems: 'center',
     borderRadius: 24,
-    paddingTop: 0,
-    paddingBottom: 8,
+    paddingTop: 4,
+    paddingBottom: 10,
     paddingHorizontal: 10,
     shadowColor: '#000',
     shadowOpacity: 0.14,
@@ -230,12 +230,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
   },
   logoWrap: {
-    marginBottom: -30,
-    marginTop: -10,
+    width: '100%',
+    height: 150,
+    marginBottom: -22,
+    marginTop: -4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   logo: {
-    width: 390,
-    height: 175,
+    width: '100%',
+    height: 190,
   },
   brandTitle: {
     fontSize: 30,
@@ -244,11 +249,11 @@ const styles = StyleSheet.create({
     marginTop: tokens.spacing.sm,
   },
   brandSubtitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '900',
-    marginTop: -16,
+    marginTop: -10,
     textAlign: 'center',
-    letterSpacing: -0.6,
+    letterSpacing: -0.7,
   },
   heroDivider: {
     height: 2,
