@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
@@ -21,7 +29,10 @@ type ReportItem = {
   eventTypeCode?: string;
   reportedDatetime?: string;
   createdAt?: string;
+  attachments?: any[];
 };
+
+const filters = ['all', 'draft', 'submitted', 'approved', 'rejected', 'closed'];
 
 export default function HistoryScreen() {
   const { colors } = useAppTheme();
@@ -30,6 +41,8 @@ export default function HistoryScreen() {
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const loadReports = async () => {
     try {
@@ -38,7 +51,7 @@ export default function HistoryScreen() {
 
       const result = await apiClient.getReports({
         page: 1,
-        limit: 50,
+        limit: 100,
       });
 
       const rows = Array.isArray(result) ? result : result?.data || [];
@@ -55,21 +68,71 @@ export default function HistoryScreen() {
     loadReports();
   }, []);
 
+  const filteredReports = useMemo(() => {
+    const q = query.trim().toLowerCase();
+
+    return reports
+      .filter((report) => {
+        const status = String(report.reportStatus || 'draft').toLowerCase();
+        return activeFilter === 'all' || status === activeFilter;
+      })
+      .filter((report) => {
+        if (!q) return true;
+
+        const blob = [
+          report.id,
+          report.title,
+          report.hazardDescription,
+          report.narrative,
+          report.area,
+          report.siteName,
+          report.severity,
+          report.reportStatus,
+          report.eventTypeCode,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        return blob.includes(q);
+      })
+      .sort((a, b) => {
+        const aTime = new Date(a.reportedDatetime || a.createdAt || 0).getTime();
+        const bTime = new Date(b.reportedDatetime || b.createdAt || 0).getTime();
+        return bTime - aTime;
+      });
+  }, [reports, query, activeFilter]);
+
   const stats = useMemo(() => {
     const total = reports.length;
-    const draft = reports.filter((r) => String(r.reportStatus || '').toLowerCase() === 'draft').length;
+    const approved = reports.filter((r) => String(r.reportStatus || '').toLowerCase() === 'approved').length;
     const submitted = reports.filter((r) => String(r.reportStatus || '').toLowerCase() === 'submitted').length;
-    const closed = reports.filter((r) => String(r.reportStatus || '').toLowerCase() === 'closed').length;
+    const highRisk = reports.filter((r) => {
+      const sev = String(r.severity || '').toLowerCase();
+      return sev === 'high' || sev === 'critical';
+    }).length;
 
-    return { total, draft, submitted, closed };
+    return { total, approved, submitted, highRisk };
   }, [reports]);
 
   const statusColor = (status?: string) => {
     const value = String(status || '').toLowerCase();
 
-    if (value === 'submitted' || value === 'published') return colors.accent;
-    if (value === 'draft' || value === 'in_review' || value === 'in review') return '#f59e0b';
-    if (value === 'closed' || value === 'approved') return '#10b981';
+    if (value === 'approved' || value === 'closed') return '#10b981';
+    if (value === 'submitted') return colors.accent;
+    if (value === 'rejected') return '#ef4444';
+    if (value === 'draft') return '#f59e0b';
+
+    return colors.muted;
+  };
+
+  const severityColor = (severity?: string) => {
+    const value = String(severity || '').toLowerCase();
+
+    if (value === 'critical') return '#ef4444';
+    if (value === 'high') return '#f97316';
+    if (value === 'medium') return '#f59e0b';
+    if (value === 'low') return '#10b981';
 
     return colors.muted;
   };
@@ -88,12 +151,7 @@ export default function HistoryScreen() {
   };
 
   const getTitle = (report: ReportItem) => {
-    return (
-      report.title ||
-      report.hazardDescription ||
-      report.narrative ||
-      'Untitled Safety Report'
-    );
+    return report.title || report.hazardDescription || report.narrative || 'Untitled Safety Report';
   };
 
   const getLocation = (report: ReportItem) => {
@@ -112,8 +170,8 @@ export default function HistoryScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
-        title="Operational Record"
-        subtitle="Live reports from SafeScope intake, review, and corrective action workflows."
+        title="Reports Center"
+        subtitle="Search, filter, review, and open executive-grade safety reports."
       />
 
       <View style={styles.kpiRow}>
@@ -123,32 +181,64 @@ export default function HistoryScreen() {
         </AppCard>
 
         <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.draft}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Draft</Text>
-        </AppCard>
-
-        <AppCard style={styles.kpiCard}>
           <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.submitted}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Submitted</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>In Review</Text>
         </AppCard>
 
         <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.closed}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Closed</Text>
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.approved}</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Approved</Text>
+        </AppCard>
+
+        <AppCard style={styles.kpiCard}>
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.highRisk}</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>High Risk</Text>
         </AppCard>
       </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Reports</Text>
+      <AppCard style={styles.controlsCard}>
+        <View style={[styles.searchBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+          <Ionicons name="search-outline" size={18} color={colors.muted} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search reports, hazards, areas, IDs..."
+            placeholderTextColor={colors.muted}
+            value={query}
+            onChangeText={setQuery}
+          />
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          {filters.map((filter) => {
+            const active = activeFilter === filter;
+            return (
+              <TouchableOpacity
+                key={filter}
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: active ? colors.accent : colors.cardAlt,
+                    borderColor: active ? colors.accent : colors.border,
+                  },
+                ]}
+                onPress={() => setActiveFilter(filter)}
+              >
+                <Text style={[styles.filterText, { color: active ? '#fff' : colors.text }]}>
+                  {filter === 'all' ? 'All' : filter.replace(/_/g, ' ')}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
         <TouchableOpacity
           onPress={loadReports}
-          style={[styles.filterButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+          style={[styles.refreshButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
         >
           <Ionicons name="refresh-outline" size={16} color={colors.text} />
-          <Text style={[styles.filterText, { color: colors.text }]}>Refresh</Text>
+          <Text style={[styles.refreshText, { color: colors.text }]}>Refresh Live Data</Text>
         </TouchableOpacity>
-      </View>
+      </AppCard>
 
       {error ? (
         <AppCard style={styles.reportCard}>
@@ -156,74 +246,98 @@ export default function HistoryScreen() {
           <Text style={[styles.emptyTitle, { color: colors.text }]}>Reports unavailable</Text>
           <Text style={[styles.emptyText, { color: colors.sub }]}>{error}</Text>
         </AppCard>
-      ) : reports.length === 0 ? (
+      ) : filteredReports.length === 0 ? (
         <AppCard style={styles.reportCard}>
-          <Ionicons name="document-text-outline" size={24} color={colors.accent} />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>No reports yet</Text>
+          <Ionicons name="document-text-outline" size={26} color={colors.accent} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>No matching reports</Text>
           <Text style={[styles.emptyText, { color: colors.sub }]}>
             Your operational record will build automatically as inspections are submitted, reviewed, and closed.
           </Text>
+          <TouchableOpacity
+            onPress={() => router.push('/tabs/camera')}
+            style={[styles.emptyAction, { backgroundColor: colors.accent }]}
+          >
+            <Text style={styles.emptyActionText}>Start Inspection</Text>
+          </TouchableOpacity>
         </AppCard>
       ) : (
-        reports.map((report) => {
+        filteredReports.map((report) => {
           const status = report.reportStatus || 'draft';
+          const severity = report.severity || 'N/A';
 
           return (
-            <TouchableOpacity key={report.id} onPress={() => router.push(`/tabs/report?id=${report.id}` as any)}>
+            <TouchableOpacity
+              key={report.id}
+              activeOpacity={0.85}
+              onPress={() => router.push(`/tabs/report?id=${report.id}` as any)}
+            >
               <AppCard style={styles.reportCard}>
-              <View style={styles.reportTop}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.reportTitle, { color: colors.text }]}>{getTitle(report)}</Text>
-                  <Text style={[styles.reportMeta, { color: colors.sub }]}>
-                    {report.id} • {getLocation(report)}
-                  </Text>
+                <View style={styles.reportTop}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.reportId, { color: colors.accent }]}>{report.id}</Text>
+                    <Text style={[styles.reportTitle, { color: colors.text }]}>{getTitle(report)}</Text>
+                    <Text style={[styles.reportMeta, { color: colors.sub }]}>
+                      {getLocation(report)} • {report.eventTypeCode || 'Safety Report'}
+                    </Text>
+                  </View>
+
+                  <Ionicons name="chevron-forward-outline" size={22} color={colors.muted} />
                 </View>
 
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: colors.cardAlt, borderColor: colors.border },
-                  ]}
-                >
+                <View style={styles.badgeRow}>
                   <View
                     style={[
-                      styles.statusDot,
-                      { backgroundColor: statusColor(status) },
+                      styles.statusBadge,
+                      { backgroundColor: colors.cardAlt, borderColor: colors.border },
                     ]}
-                  />
-                  <Text style={[styles.statusText, { color: colors.text }]}>
-                    {String(status).replace(/_/g, ' ')}
-                  </Text>
-                </View>
-              </View>
+                  >
+                    <View style={[styles.statusDot, { backgroundColor: statusColor(status) }]} />
+                    <Text style={[styles.statusText, { color: colors.text }]}>
+                      {String(status).replace(/_/g, ' ')}
+                    </Text>
+                  </View>
 
-              <View style={styles.metricsRow}>
-                <View style={styles.metricBlock}>
-                  <Text style={[styles.metricValue, { color: colors.text }]}>
-                    {report.severity || 'N/A'}
-                  </Text>
-                  <Text style={[styles.metricLabel, { color: colors.sub }]}>Severity</Text>
-                </View>
-
-                <View style={styles.metricBlock}>
-                  <Text style={[styles.metricValue, { color: colors.text }]}>
-                    {report.eventTypeCode || 'Report'}
-                  </Text>
-                  <Text style={[styles.metricLabel, { color: colors.sub }]}>Type</Text>
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                    ]}
+                  >
+                    <View style={[styles.statusDot, { backgroundColor: severityColor(severity) }]} />
+                    <Text style={[styles.statusText, { color: colors.text }]}>
+                      {String(severity)}
+                    </Text>
+                  </View>
                 </View>
 
-                <View style={styles.metricBlock}>
-                  <Text style={[styles.metricValue, { color: colors.text }]}>
-                    {formatDate(report.reportedDatetime || report.createdAt)}
-                  </Text>
-                  <Text style={[styles.metricLabel, { color: colors.sub }]}>Reported</Text>
+                <View style={styles.metricsRow}>
+                  <View style={styles.metricBlock}>
+                    <Text style={[styles.metricValue, { color: colors.text }]}>
+                      {report.attachments?.length || 0}
+                    </Text>
+                    <Text style={[styles.metricLabel, { color: colors.sub }]}>Evidence</Text>
+                  </View>
+
+                  <View style={styles.metricBlock}>
+                    <Text style={[styles.metricValue, { color: colors.text }]}>
+                      {formatDate(report.reportedDatetime || report.createdAt)}
+                    </Text>
+                    <Text style={[styles.metricLabel, { color: colors.sub }]}>Reported</Text>
+                  </View>
+
+                  <View style={styles.metricBlock}>
+                    <Text style={[styles.metricValue, { color: colors.text }]}>
+                      Open
+                    </Text>
+                    <Text style={[styles.metricLabel, { color: colors.sub }]}>Detail</Text>
+                  </View>
                 </View>
-              </View>
               </AppCard>
             </TouchableOpacity>
           );
         })
       )}
+
       <AppFooter />
     </ScrollView>
   );
@@ -232,7 +346,7 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: tokens.spacing.md,
-    paddingBottom: tokens.spacing.xxl,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   centerState: {
@@ -259,36 +373,59 @@ const styles = StyleSheet.create({
   },
   kpiValue: {
     fontSize: tokens.type.kpi,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   kpiLabel: {
     fontSize: tokens.type.small,
     fontWeight: '700',
     marginTop: 4,
   },
-  sectionHeader: {
-    marginBottom: tokens.spacing.sm,
+  controlsCard: {
+    marginBottom: tokens.spacing.lg,
+  },
+  searchBox: {
+    minHeight: 50,
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.md,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: tokens.spacing.sm,
+    gap: 8,
+    marginBottom: tokens.spacing.md,
   },
-  sectionTitle: {
-    fontSize: tokens.type.h2,
-    fontWeight: '800',
+  searchInput: {
+    flex: 1,
+    fontSize: tokens.type.body,
+    fontWeight: '700',
   },
-  filterButton: {
-    minHeight: 38,
+  filterRow: {
+    gap: 8,
+    paddingBottom: tokens.spacing.md,
+  },
+  filterChip: {
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
   filterText: {
     fontSize: tokens.type.small,
-    fontWeight: '700',
+    fontWeight: '800',
+    textTransform: 'capitalize',
+  },
+  refreshButton: {
+    minHeight: 42,
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  refreshText: {
+    fontSize: tokens.type.small,
+    fontWeight: '800',
   },
   reportCard: {
     marginBottom: tokens.spacing.md,
@@ -299,20 +436,32 @@ const styles = StyleSheet.create({
     gap: tokens.spacing.sm,
     marginBottom: tokens.spacing.md,
   },
-  reportTitle: {
-    fontSize: tokens.type.body,
-    fontWeight: '800',
+  reportId: {
+    fontSize: 11,
+    fontWeight: '900',
     marginBottom: 4,
   },
+  reportTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    marginBottom: 5,
+    lineHeight: 22,
+  },
   reportMeta: {
-    fontSize: tokens.type.small,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: tokens.spacing.md,
   },
   statusBadge: {
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 7,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -323,8 +472,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   statusText: {
-    fontSize: tokens.type.small,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
     textTransform: 'capitalize',
   },
   metricsRow: {
@@ -337,22 +486,35 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     fontSize: tokens.type.body,
-    fontWeight: '800',
+    fontWeight: '900',
     marginBottom: 4,
     textTransform: 'capitalize',
   },
   metricLabel: {
     fontSize: tokens.type.small,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   emptyTitle: {
     fontSize: tokens.type.h2,
-    fontWeight: '800',
+    fontWeight: '900',
     marginTop: tokens.spacing.sm,
     marginBottom: 4,
   },
   emptyText: {
     fontSize: tokens.type.body,
     lineHeight: 20,
+    fontWeight: '600',
+  },
+  emptyAction: {
+    marginTop: tokens.spacing.md,
+    minHeight: 46,
+    borderRadius: tokens.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyActionText: {
+    color: '#fff',
+    fontSize: tokens.type.body,
+    fontWeight: '900',
   },
 });
