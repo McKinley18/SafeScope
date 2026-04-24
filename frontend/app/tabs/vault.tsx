@@ -107,7 +107,7 @@ export default function VaultScreen() {
             <View style={styles.actions}>
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: colors.accent }]}
-                onPress={() => router.push('/tabs/camera')}
+                onPress={() => router.push(`/tabs/camera?localVaultId=${report.id}` as any)}
               >
                 <Text style={styles.primaryText}>Resume in Inspect</Text>
               </TouchableOpacity>

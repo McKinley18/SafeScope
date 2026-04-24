@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../../src/api/client';
 import { LocalVault } from '../../src/storage/LocalVault';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
@@ -67,6 +67,7 @@ const severityOptions: HazardDraft['severity'][] = ['low', 'medium', 'high', 'cr
 export default function CameraScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [draft, setDraft] = useState<HazardDraft>(emptyDraft);
   const [detecting, setDetecting] = useState(false);
   const [suggestion, setSuggestion] = useState<HazardSuggestion | null>(null);
@@ -74,6 +75,35 @@ export default function CameraScreen() {
   useEffect(() => {
     const loadDraft = async () => {
       try {
+        const localVaultId = typeof params.localVaultId === 'string' ? params.localVaultId : '';
+
+        if (localVaultId) {
+          const vaultReport = await LocalVault.getReport(localVaultId);
+
+          if (vaultReport) {
+            const restoredDraft: HazardDraft = {
+              id: vaultReport.backendReportId,
+              localVaultId: vaultReport.id,
+              hazardDescription: vaultReport.hazardDescription || '',
+              area: vaultReport.area || '',
+              equipment: vaultReport.equipment || '',
+              workActivity: vaultReport.workActivity || '',
+              severity: (vaultReport.severity as HazardDraft['severity']) || 'medium',
+              immediateDanger: !!vaultReport.immediateDanger,
+              notes: vaultReport.notes || vaultReport.narrative || '',
+              images: vaultReport.evidence.map((item) => ({
+                uri: item.uri,
+                fileName: item.fileName,
+                mimeType: item.mimeType,
+              })),
+            };
+
+            setDraft(restoredDraft);
+            await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(restoredDraft));
+            return;
+          }
+        }
+
         const raw = await AsyncStorage.getItem(DRAFT_KEY);
         if (raw) {
           setDraft(JSON.parse(raw));
@@ -84,7 +114,7 @@ export default function CameraScreen() {
     };
 
     loadDraft();
-  }, []);
+  }, [params.localVaultId]);
 
   const persistDraft = async (nextDraft: HazardDraft) => {
     const savedLocal = await LocalVault.saveReport({
