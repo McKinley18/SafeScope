@@ -129,6 +129,34 @@ export class ReportsService {
     return saved;
   }
 
+  async decideReview(
+    id: string,
+    dto: { decision: 'approved' | 'rejected'; notes?: string },
+  ): Promise<Report> {
+    const report = await this.reportsRepository.findOne({ where: { id } });
+    if (!report) throw new NotFoundException('Report not found');
+
+    const decision = dto.decision;
+
+    const saved = await this.reportsRepository.save({
+      ...report,
+      reportStatus: decision,
+      reviewDecision: decision,
+      reviewDecisionNotes: dto.notes || report.reviewDecisionNotes || report.notes,
+      notes: dto.notes || report.notes,
+      reviewedAt: new Date(),
+    });
+
+    await this.auditService.log({
+      entityType: 'REPORT',
+      entityId: saved.id,
+      actionCode: decision === 'approved' ? 'REPORT_APPROVED' : 'REPORT_REJECTED',
+      afterJson: saved,
+    });
+
+    return saved;
+  }
+
   async addEvidence(reportId: string, dto: AddReportEvidenceDto) {
     const report = await this.reportsRepository.findOne({ where: { id: reportId } });
     if (!report) throw new NotFoundException('Report not found');

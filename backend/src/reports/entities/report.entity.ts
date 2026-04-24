@@ -70,6 +70,15 @@ export class Report {
   @Column('text', { nullable: true })
   notes: string;
 
+  @Column({ nullable: true })
+  reviewDecision: string;
+
+  @Column('text', { nullable: true })
+  reviewDecisionNotes: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  reviewedAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

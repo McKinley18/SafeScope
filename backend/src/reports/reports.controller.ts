@@ -52,6 +52,14 @@ export class ReportsController {
     return this.reportsService.update(id, updateReportDto);
   }
 
+  @Post(':id/review-decision')
+  decideReview(
+    @Param('id') id: string,
+    @Body() body: { decision: 'approved' | 'rejected'; notes?: string },
+  ) {
+    return this.reportsService.decideReview(id, body);
+  }
+
   @Post(':reportId/evidence')
   addEvidence(
     @Param('reportId') reportId: string,
