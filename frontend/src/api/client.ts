@@ -1,3 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const AUTH_TOKEN_KEY = 'safescope_auth_token_v1';
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
 
 const getHeaders = () => {
@@ -182,7 +185,7 @@ export const apiClient = {
     return res.text();
   },
 
-  importRules: async (csv: string) => {
+importRules: async (csv: string) => {
     const res = await fetch(`${BASE_URL}/taxonomy/rules/import`, {
       method: 'POST',
       headers: getHeaders(),

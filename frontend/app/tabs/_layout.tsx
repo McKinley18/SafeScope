@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeProvider, useAppTheme } from '../../src/theme/ThemeContext';
+import AuthGate from '../../src/auth/AuthGate';
 
 function TabsNavigator() {
   const { colors, dark } = useAppTheme();
@@ -128,7 +129,9 @@ function TabsNavigator() {
 export default function TabsLayout() {
   return (
     <ThemeProvider>
-      <TabsNavigator />
+      <AuthGate>
+        <TabsNavigator />
+      </AuthGate>
     </ThemeProvider>
   );
 }
