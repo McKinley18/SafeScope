@@ -319,12 +319,15 @@ const useSuggestion = async () => {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <PageHeader
-        title="Inspect"
-        subtitle="Capture evidence, describe the condition, and generate a smart hazard suggestion."
-      />
+      <View style={styles.screenHeader}>
+        <Text style={[styles.headerKicker, { color: colors.accent }]}>Field Inspection</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Inspect</Text>
+        <Text style={[styles.headerSub, { color: colors.sub }]}>
+          Capture evidence, describe the condition, and prepare the report for review.
+        </Text>
+      </View>
 
-      <AppCard style={styles.sectionCard}>
+      <View style={styles.sectionBlock}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Evidence</Text>
 
         <View style={styles.actionStack}>
@@ -380,7 +383,7 @@ const useSuggestion = async () => {
           )}
           
     </ScrollView>
-      </AppCard>
+      </View>
 
       {suggestion && (
         <AppCard style={styles.suggestionCard}>
@@ -408,7 +411,7 @@ const useSuggestion = async () => {
         </AppCard>
       )}
 
-      <AppCard style={styles.sectionCard}>
+      <View style={styles.sectionBlock}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Hazard Details</Text>
 
         <Text style={[styles.fieldLabel, { color: colors.sub }]}>Hazard Description</Text>
@@ -521,9 +524,9 @@ const useSuggestion = async () => {
           value={draft.notes}
           onChangeText={(t) => updateField('notes', t)}
         />
-      </AppCard>
+      </View>
 
-      <AppCard style={styles.sectionCard}>
+      <View style={styles.sectionBlock}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Likely Standards</Text>
 
         {standardMatches.length === 0 ? (
@@ -554,7 +557,7 @@ const useSuggestion = async () => {
             </View>
           ))
         )}
-      </AppCard>
+      </View>
 
       <AppFooter />
     </ScrollView>
@@ -569,6 +572,31 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     marginBottom: tokens.spacing.lg,
+  },
+  screenHeader: {
+    paddingTop: 4,
+    paddingBottom: 18,
+  },
+  headerKicker: {
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: -0.8,
+  },
+  headerSub: {
+    marginTop: 6,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
+  sectionBlock: {
+    marginBottom: tokens.spacing.xl,
   },
   vaultLink: {
     minHeight: 46,
@@ -586,8 +614,8 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   sectionTitle: {
-    fontSize: tokens.type.h2,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
     marginBottom: tokens.spacing.md,
   },
   actionStack: {
