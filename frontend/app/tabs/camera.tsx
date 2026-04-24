@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../../src/api/client';
+import { LocalVault } from '../../src/storage/LocalVault';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
@@ -31,6 +32,7 @@ type DraftImage = {
 
 type HazardDraft = {
   id?: string;
+  localVaultId?: string;
   hazardDescription: string;
   area: string;
   equipment: string;
@@ -85,8 +87,36 @@ export default function CameraScreen() {
   }, []);
 
   const persistDraft = async (nextDraft: HazardDraft) => {
-    setDraft(nextDraft);
-    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(nextDraft));
+    const savedLocal = await LocalVault.saveReport({
+      id: nextDraft.localVaultId,
+      backendReportId: nextDraft.id,
+      title: nextDraft.hazardDescription || 'Hazard Draft',
+      hazardDescription: nextDraft.hazardDescription,
+      narrative: nextDraft.notes || nextDraft.hazardDescription,
+      area: nextDraft.area,
+      equipment: nextDraft.equipment,
+      workActivity: nextDraft.workActivity,
+      severity: nextDraft.severity,
+      immediateDanger: nextDraft.immediateDanger,
+      notes: nextDraft.notes,
+      reportStatus: 'draft',
+      syncStatus: nextDraft.id ? 'synced' : 'local_only',
+      evidence: nextDraft.images.map((img, index) => ({
+        id: `${nextDraft.localVaultId || 'draft'}_evidence_${index}`,
+        uri: img.uri,
+        fileName: img.fileName,
+        mimeType: img.mimeType,
+        createdAt: new Date().toISOString(),
+      })),
+    });
+
+    const draftWithVaultId = {
+      ...nextDraft,
+      localVaultId: savedLocal.id,
+    };
+
+    setDraft(draftWithVaultId);
+    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draftWithVaultId));
   };
 
   const updateField = async <K extends keyof HazardDraft>(
