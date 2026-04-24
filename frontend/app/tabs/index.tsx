@@ -16,39 +16,37 @@ const ANALYTICS_CACHE_TIME_KEY = 'safescope_dashboard_cache_time';
 
 const kpis = [
   {
-    label: 'Risk Index',
-    value: '82',
-    trend: '+4%',
+    label: 'Company Risk Score',
+    value: '0',
+    trend: '0%',
     icon: 'shield-checkmark-outline' as const,
     help: 'Overall risk indicator based on open issues, severity, and action status.',
   },
   {
     label: 'Open Actions',
-    value: '14',
-    trend: '-2',
+    value: '0',
+    trend: '0',
     icon: 'construct-outline' as const,
     help: 'Corrective actions still unresolved or awaiting verification.',
   },
   {
-    label: 'Inspections',
-    value: '27',
-    trend: '+6',
+    label: 'Audits This Month',
+    value: '0',
+    trend: '0',
     icon: 'document-text-outline' as const,
     help: 'Audit sessions started during the current month.',
   },
   {
-    label: 'High-Risk',
-    value: '5',
-    trend: '-1',
+    label: 'High-Risk Findings',
+    value: '0',
+    trend: '0',
     icon: 'warning-outline' as const,
     help: 'Findings marked severe, critical, or priority review.',
   },
 ];
 
 const activity = [
-  { title: 'North Plant audit published', meta: '12 minutes ago' },
-  { title: '3 corrective actions overdue', meta: 'Processing Area B' },
-  { title: 'Fall protection finding escalated', meta: 'South Mezzanine' },
+  { title: 'No recent activity yet', meta: 'Submit your first inspection to begin tracking activity.' },
 ];
 
 export default function Home() {
