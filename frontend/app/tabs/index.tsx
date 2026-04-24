@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: '100%',
-    height: 190,
+    height: 165,
   },
   brandTitle: {
     fontSize: 30,
