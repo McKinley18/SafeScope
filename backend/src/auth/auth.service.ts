@@ -53,6 +53,11 @@ export class AuthService {
     };
   }
 
+  async resetUsers() {
+    await this.userRepo.clear();
+    return { ok: true, message: 'All users deleted.' };
+  }
+
   async login(dto: { email: string; password: string }) {
     const user = await this.userRepo.findOne({
       where: { email: dto.email.toLowerCase().trim() },
