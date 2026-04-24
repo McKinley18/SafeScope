@@ -205,10 +205,13 @@ export default function HistoryScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <PageHeader
-        title="Reports Center"
-        subtitle="Search, filter, review, and open executive-grade safety reports."
-      />
+      <View style={styles.screenHeader}>
+        <Text style={[styles.headerKicker, { color: colors.accent }]}>Records Intelligence</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Reports Center</Text>
+        <Text style={[styles.headerSub, { color: colors.sub }]}>
+          Search, filter, archive, and open executive-grade safety records.
+        </Text>
+      </View>
 
       <View style={styles.kpiRow}>
         <AppCard style={styles.kpiCard}>
@@ -407,6 +410,28 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     flexGrow: 1,
   },
+  screenHeader: {
+    paddingTop: 4,
+    paddingBottom: 18,
+  },
+  headerKicker: {
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: -0.8,
+  },
+  headerSub: {
+    marginTop: 6,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
   centerState: {
     flex: 1,
     justifyContent: 'center',
@@ -487,6 +512,7 @@ const styles = StyleSheet.create({
   },
   reportCard: {
     marginBottom: tokens.spacing.md,
+    borderRadius: 18,
   },
   reportTop: {
     flexDirection: 'row',
@@ -500,10 +526,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   reportTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
     marginBottom: 5,
-    lineHeight: 22,
+    lineHeight: 23,
   },
   reportMeta: {
     fontSize: 12,
