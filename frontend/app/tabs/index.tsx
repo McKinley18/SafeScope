@@ -73,7 +73,7 @@ export default function Home() {
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
         <LegalDisclaimer onAccept={() => {}} />
 
-        <View style={[styles.heroShell, { backgroundColor: colors.cardAlt }]}>
+        <View style={styles.heroShell}>
           <View style={styles.logoWrap}>
             <Image
               source={require('../../assets/images/logo.png')}
@@ -220,27 +220,22 @@ const styles = StyleSheet.create({
   heroShell: {
     marginBottom: tokens.spacing.md,
     alignItems: 'center',
-    borderRadius: 24,
-    paddingTop: 4,
-    paddingBottom: 10,
-    paddingHorizontal: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
+    paddingTop: 0,
+    paddingBottom: 4,
+    paddingHorizontal: 0,
   },
   logoWrap: {
     width: '100%',
-    height: 152,
-    marginBottom: -6,
-    marginTop: 0,
+    height: 170,
+    marginTop: -8,
+    marginBottom: -18,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'visible',
   },
   logo: {
-    width: '88%',
-    height: 155,
+    width: '100%',
+    height: 190,
   },
   brandTitle: {
     fontSize: 30,
@@ -249,9 +244,9 @@ const styles = StyleSheet.create({
     marginTop: tokens.spacing.sm,
   },
   brandSubtitle: {
-    fontSize: 28,
+    fontSize: 29,
     fontWeight: '900',
-    marginTop: -6,
+    marginTop: -8,
     textAlign: 'center',
     letterSpacing: -0.7,
   },
