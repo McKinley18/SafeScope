@@ -383,22 +383,48 @@ export default function ReportDetailScreen() {
       </AppCard>
 
       <AppCard style={styles.sectionCard}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Reviewer Notes</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Review Decision</Text>
 
-        {reviews.length === 0 ? (
-          <Text style={[styles.bodyText, { color: colors.sub }]}>No reviewer notes recorded.</Text>
-        ) : (
-          reviews.map((item: any, index: number) => (
-            <View key={item.id || index} style={[styles.row, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.rowTitle, { color: colors.text }]}>
-                {item.reviewStatus || 'Review'}
-              </Text>
-              <Text style={[styles.rowSub, { color: colors.sub }]}>
-                {item.notes || item.comment || 'No notes provided.'}
-              </Text>
-            </View>
-          ))
-        )}
+        <View style={[styles.decisionPanel, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+          <View style={[styles.statusDot, { backgroundColor: statusColor() }]} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowTitle, { color: colors.text }]}>
+              {report?.reviewDecision ? String(report.reviewDecision).toUpperCase() : 'No decision recorded'}
+            </Text>
+            <Text style={[styles.rowSub, { color: colors.sub }]}>
+              {report?.reviewedAt ? `Reviewed ${new Date(report.reviewedAt).toLocaleString()}` : 'Awaiting supervisory review'}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={[styles.bodyText, { color: colors.sub, marginTop: 12 }]}>
+          {report?.reviewDecisionNotes || report?.notes || 'No reviewer notes recorded.'}
+        </Text>
+      </AppCard>
+
+      <AppCard style={styles.sectionCard}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Lifecycle Timeline</Text>
+
+        <TimelineItem
+          label="Report Created"
+          value={report?.createdAt ? new Date(report.createdAt).toLocaleString() : 'Not recorded'}
+          active
+        />
+        <TimelineItem
+          label="Submitted for Review"
+          value={String(report?.reportStatus || '').toLowerCase() !== 'draft' ? 'Submitted' : 'Not submitted'}
+          active={String(report?.reportStatus || '').toLowerCase() !== 'draft'}
+        />
+        <TimelineItem
+          label="Review Decision"
+          value={report?.reviewDecision ? String(report.reviewDecision) : 'Pending'}
+          active={!!report?.reviewDecision}
+        />
+        <TimelineItem
+          label="Last Updated"
+          value={report?.updatedAt ? new Date(report.updatedAt).toLocaleString() : 'Not recorded'}
+          active={!!report?.updatedAt}
+        />
       </AppCard>
 
       <AppCard style={styles.sectionCard}>
@@ -428,6 +454,31 @@ export default function ReportDetailScreen() {
       <AppFooter />
     </ScrollView>
   );
+
+  function TimelineItem({
+    label,
+    value,
+    active,
+  }: {
+    label: string;
+    value: string;
+    active: boolean;
+  }) {
+    return (
+      <View style={styles.timelineRow}>
+        <View
+          style={[
+            styles.timelineDot,
+            { backgroundColor: active ? colors.accent : colors.border },
+          ]}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.timelineLabel, { color: colors.text }]}>{label}</Text>
+          <Text style={[styles.timelineValue, { color: colors.sub }]}>{value}</Text>
+        </View>
+      </View>
+    );
+  }
 
   function Metric({ label, value }: { label: string; value: string }) {
     return (
@@ -569,6 +620,35 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.small,
     lineHeight: 18,
     fontWeight: '600',
+  },
+  decisionPanel: {
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    padding: tokens.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.spacing.sm,
+  },
+  timelineRow: {
+    flexDirection: 'row',
+    gap: tokens.spacing.sm,
+    paddingVertical: 10,
+    alignItems: 'flex-start',
+  },
+  timelineDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    marginTop: 4,
+  },
+  timelineLabel: {
+    fontSize: tokens.type.body,
+    fontWeight: '900',
+    marginBottom: 3,
+  },
+  timelineValue: {
+    fontSize: tokens.type.small,
+    fontWeight: '700',
   },
   buttonRow: {
     flexDirection: 'row',
