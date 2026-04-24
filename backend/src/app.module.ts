@@ -11,6 +11,8 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { RiskModule } from './risk/risk.module';
 import { CorrectiveActionsModule } from './corrective-actions/corrective-actions.module';
 import { AuditSessionModule } from './audit-session/audit-session.module';
+import { AuthModule } from './auth/auth.module';
+import { User } from './users/entities/user.entity';
 
 import { Report } from './reports/entities/report.entity';
 import { ReportAttachment } from './reports/entities/attachment.entity';
@@ -54,6 +56,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
           AuditEntry,
           AuditEntryAttachment,
           AuditEntryFinding,
+          User,
         ],
         synchronize: true,
         ssl:
@@ -72,6 +75,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     RiskModule,
     CorrectiveActionsModule,
     AuditSessionModule,
+    AuthModule,
   ],
 })
 export class AppModule implements NestModule {
