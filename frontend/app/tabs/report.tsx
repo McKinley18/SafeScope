@@ -77,13 +77,12 @@ export default function ReportDetailScreen() {
           report.narrative ||
           report.hazardDescription ||
           'Generated from approved safety report.',
-        priority:
+        priorityCode:
           String(report.severity || '').toLowerCase() === 'critical'
-            ? 'critical'
+            ? 'urgent'
             : String(report.severity || '').toLowerCase() === 'high'
             ? 'high'
             : 'medium',
-        ownerName: 'Unassigned',
         dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
       });
 
