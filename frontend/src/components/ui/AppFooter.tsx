@@ -25,7 +25,7 @@ export default function AppFooter() {
       </Text>
 
       <Text style={[styles.meta, { color: colors.muted }]}>
-        Version 0.1.0 • © 2026 SafeScope
+        Version 0.1.0 • © 2026 Monolith Studios
       </Text>
     </View>
   );
