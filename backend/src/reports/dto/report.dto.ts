@@ -11,6 +11,14 @@ import { Type } from 'class-transformer';
 export class CreateReportDto {
   @IsString()
   @IsOptional()
+  tenantId?: string;
+
+  @IsString()
+  @IsOptional()
+  createdByUserId?: string;
+
+  @IsString()
+  @IsOptional()
   siteId?: string;
 
   @IsString()

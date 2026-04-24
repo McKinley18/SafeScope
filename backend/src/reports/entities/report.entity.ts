@@ -19,6 +19,12 @@ export class Report {
   @OneToMany(() => ReportAttachment, (attachment) => attachment.report, { cascade: true })
   attachments: ReportAttachment[];
 
+  @Column({ default: 'default' })
+  tenantId: string;
+
+  @Column({ nullable: true })
+  createdByUserId: string;
+
   @Column({ nullable: true })
   siteId: string;
 
