@@ -56,9 +56,10 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
           AuditEntryFinding,
         ],
         synchronize: true,
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        ssl:
+          configService.get<string>('NODE_ENV') === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
     }),
     HealthModule,
