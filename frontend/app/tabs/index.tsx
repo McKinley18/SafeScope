@@ -231,8 +231,8 @@ const styles = StyleSheet.create({
   },
   logoWrap: {
     width: '100%',
-    height: 165,
-    marginBottom: -8,
+    height: 152,
+    marginBottom: -6,
     marginTop: 0,
     alignItems: 'center',
     justifyContent: 'center',
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   brandSubtitle: {
     fontSize: 28,
     fontWeight: '900',
-    marginTop: 2,
+    marginTop: -6,
     textAlign: 'center',
     letterSpacing: -0.7,
   },
