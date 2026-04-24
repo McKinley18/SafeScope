@@ -117,6 +117,20 @@ export default function ReviewScreen() {
         subtitle="Submitted reports awaiting supervisory approval, rejection, or escalation."
       />
 
+      <View style={[styles.queueBand, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+        <View>
+          <Text style={[styles.queueLabel, { color: colors.sub }]}>Pending Review</Text>
+          <Text style={[styles.queueValue, { color: colors.text }]}>{queue.length}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={loadQueue}
+          style={[styles.refreshButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <Ionicons name="refresh-outline" size={16} color={colors.accent} />
+          <Text style={[styles.refreshText, { color: colors.text }]}>Refresh</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.kpiRow}>
         <AppCard style={styles.kpiCard}>
           <Text style={[styles.kpiValue, { color: colors.text }]}>{queue.length}</Text>
@@ -134,17 +148,7 @@ export default function ReviewScreen() {
         </AppCard>
       </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Submitted Reports</Text>
-
-        <TouchableOpacity
-          onPress={loadQueue}
-          style={[styles.refreshButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-        >
-          <Ionicons name="refresh-outline" size={16} color={colors.text} />
-          <Text style={[styles.refreshText, { color: colors.text }]}>Refresh</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Submitted Reports</Text>
 
       {loading ? (
         <View style={styles.center}>
@@ -254,6 +258,48 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     alignItems: 'center',
   },
+  screenHeader: {
+    paddingTop: 4,
+    paddingBottom: 18,
+  },
+  headerKicker: {
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: -0.8,
+  },
+  headerSub: {
+    marginTop: 6,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
+  queueBand: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: tokens.spacing.md,
+    marginBottom: tokens.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  queueLabel: {
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  queueValue: {
+    fontSize: 32,
+    fontWeight: '900',
+    marginTop: 2,
+  },
   kpiRow: {
     flexDirection: 'row',
     gap: tokens.spacing.sm,
@@ -280,8 +326,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: tokens.type.h2,
+    fontSize: 20,
     fontWeight: '900',
+    marginBottom: tokens.spacing.sm,
   },
   refreshButton: {
     minHeight: 38,
