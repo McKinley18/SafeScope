@@ -1,159 +1,224 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import PageHeader from '../../src/components/ui/PageHeader';
+import { apiClient } from '../../src/api/client';
 
 type ReportItem = {
   id: string;
-  title: string;
-  site: string;
-  status: 'Published' | 'In Review' | 'Closed';
-  highRiskFindings: number;
-  totalFindings: number;
-  date: string;
+  title?: string;
+  narrative?: string;
+  hazardDescription?: string;
+  area?: string;
+  siteName?: string;
+  reportStatus?: string;
+  severity?: string;
+  eventTypeCode?: string;
+  reportedDatetime?: string;
+  createdAt?: string;
 };
-
-const reports: ReportItem[] = [
-  {
-    id: 'RPT-2401',
-    title: 'North Plant Weekly Audit',
-    site: 'North Ridge Plant',
-    status: 'Published',
-    highRiskFindings: 2,
-    totalFindings: 12,
-    date: 'Apr 22, 2026',
-  },
-  {
-    id: 'RPT-2402',
-    title: 'Processing Area B Walkthrough',
-    site: 'Processing Area B',
-    status: 'In Review',
-    highRiskFindings: 1,
-    totalFindings: 6,
-    date: 'Apr 21, 2026',
-  },
-  {
-    id: 'RPT-2403',
-    title: 'South Mezzanine Safety Check',
-    site: 'South Mezzanine',
-    status: 'Closed',
-    highRiskFindings: 0,
-    totalFindings: 3,
-    date: 'Apr 19, 2026',
-  },
-  {
-    id: 'RPT-2404',
-    title: 'Crusher Platform Inspection',
-    site: 'Crusher Platform',
-    status: 'Published',
-    highRiskFindings: 3,
-    totalFindings: 9,
-    date: 'Apr 18, 2026',
-  },
-];
 
 export default function HistoryScreen() {
   const { colors } = useAppTheme();
 
-  const publishedCount = reports.filter((r) => r.status === 'Published').length;
-  const reviewCount = reports.filter((r) => r.status === 'In Review').length;
-  const closedCount = reports.filter((r) => r.status === 'Closed').length;
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const statusColor = (status: ReportItem['status']) => {
-    if (status === 'Published') return colors.accent;
-    if (status === 'In Review') return '#f59e0b';
-    return '#10b981';
+  const loadReports = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const result = await apiClient.getReports({
+        page: 1,
+        limit: 50,
+      });
+
+      const rows = Array.isArray(result) ? result : result?.data || [];
+      setReports(rows);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || 'Unable to load reports.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  const stats = useMemo(() => {
+    const total = reports.length;
+    const draft = reports.filter((r) => String(r.reportStatus || '').toLowerCase() === 'draft').length;
+    const submitted = reports.filter((r) => String(r.reportStatus || '').toLowerCase() === 'submitted').length;
+    const closed = reports.filter((r) => String(r.reportStatus || '').toLowerCase() === 'closed').length;
+
+    return { total, draft, submitted, closed };
+  }, [reports]);
+
+  const statusColor = (status?: string) => {
+    const value = String(status || '').toLowerCase();
+
+    if (value === 'submitted' || value === 'published') return colors.accent;
+    if (value === 'draft' || value === 'in_review' || value === 'in review') return '#f59e0b';
+    if (value === 'closed' || value === 'approved') return '#10b981';
+
+    return colors.muted;
+  };
+
+  const formatDate = (value?: string) => {
+    if (!value) return 'Not dated';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not dated';
+
+    return date.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const getTitle = (report: ReportItem) => {
+    return (
+      report.title ||
+      report.hazardDescription ||
+      report.narrative ||
+      'Untitled Safety Report'
+    );
+  };
+
+  const getLocation = (report: ReportItem) => {
+    return report.area || report.siteName || 'Unassigned Area';
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.centerState, { backgroundColor: colors.bg }]}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={[styles.stateTitle, { color: colors.text }]}>Loading reports…</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
         title="Operational Record"
-        subtitle="Track completed audits, active reviews, and historical reporting performance."
+        subtitle="Live reports from SafeScope intake, review, and corrective action workflows."
       />
 
       <View style={styles.kpiRow}>
         <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{reports.length}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Total Reports</Text>
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.total}</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Total</Text>
         </AppCard>
 
         <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{publishedCount}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Published</Text>
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.draft}</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Draft</Text>
         </AppCard>
 
         <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{reviewCount}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>In Review</Text>
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.submitted}</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Submitted</Text>
         </AppCard>
 
         <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{closedCount}</Text>
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.closed}</Text>
           <Text style={[styles.kpiLabel, { color: colors.sub }]}>Closed</Text>
         </AppCard>
       </View>
 
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Reports</Text>
-        <TouchableOpacity style={[styles.filterButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-          <Ionicons name="options-outline" size={16} color={colors.text} />
-          <Text style={[styles.filterText, { color: colors.text }]}>Filters</Text>
+
+        <TouchableOpacity
+          onPress={loadReports}
+          style={[styles.filterButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+        >
+          <Ionicons name="refresh-outline" size={16} color={colors.text} />
+          <Text style={[styles.filterText, { color: colors.text }]}>Refresh</Text>
         </TouchableOpacity>
       </View>
 
-      {reports.map((report) => (
-        <AppCard key={report.id} style={styles.reportCard}>
-          <View style={styles.reportTop}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.reportTitle, { color: colors.text }]}>{report.title}</Text>
-              <Text style={[styles.reportMeta, { color: colors.sub }]}>
-                {report.id} • {report.site}
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: colors.cardAlt, borderColor: colors.border },
-              ]}
-            >
-              <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: statusColor(report.status) },
-                ]}
-              />
-              <Text style={[styles.statusText, { color: colors.text }]}>{report.status}</Text>
-            </View>
-          </View>
-
-          <View style={styles.metricsRow}>
-            <View style={styles.metricBlock}>
-              <Text style={[styles.metricValue, { color: colors.text }]}>
-                {report.highRiskFindings}
-              </Text>
-              <Text style={[styles.metricLabel, { color: colors.sub }]}>High-Risk</Text>
-            </View>
-
-            <View style={styles.metricBlock}>
-              <Text style={[styles.metricValue, { color: colors.text }]}>
-                {report.totalFindings}
-              </Text>
-              <Text style={[styles.metricLabel, { color: colors.sub }]}>Findings</Text>
-            </View>
-
-            <View style={styles.metricBlock}>
-              <Text style={[styles.metricValue, { color: colors.text }]}>
-                {report.date}
-              </Text>
-              <Text style={[styles.metricLabel, { color: colors.sub }]}>Reported</Text>
-            </View>
-          </View>
+      {error ? (
+        <AppCard style={styles.reportCard}>
+          <Ionicons name="alert-circle-outline" size={24} color={colors.accent} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Reports unavailable</Text>
+          <Text style={[styles.emptyText, { color: colors.sub }]}>{error}</Text>
         </AppCard>
-      ))}
+      ) : reports.length === 0 ? (
+        <AppCard style={styles.reportCard}>
+          <Ionicons name="document-text-outline" size={24} color={colors.accent} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>No reports yet</Text>
+          <Text style={[styles.emptyText, { color: colors.sub }]}>
+            Captured hazards and submitted inspections will appear here.
+          </Text>
+        </AppCard>
+      ) : (
+        reports.map((report) => {
+          const status = report.reportStatus || 'draft';
+
+          return (
+            <AppCard key={report.id} style={styles.reportCard}>
+              <View style={styles.reportTop}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.reportTitle, { color: colors.text }]}>{getTitle(report)}</Text>
+                  <Text style={[styles.reportMeta, { color: colors.sub }]}>
+                    {report.id} • {getLocation(report)}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.statusDot,
+                      { backgroundColor: statusColor(status) },
+                    ]}
+                  />
+                  <Text style={[styles.statusText, { color: colors.text }]}>
+                    {String(status).replace(/_/g, ' ')}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.metricsRow}>
+                <View style={styles.metricBlock}>
+                  <Text style={[styles.metricValue, { color: colors.text }]}>
+                    {report.severity || 'N/A'}
+                  </Text>
+                  <Text style={[styles.metricLabel, { color: colors.sub }]}>Severity</Text>
+                </View>
+
+                <View style={styles.metricBlock}>
+                  <Text style={[styles.metricValue, { color: colors.text }]}>
+                    {report.eventTypeCode || 'Report'}
+                  </Text>
+                  <Text style={[styles.metricLabel, { color: colors.sub }]}>Type</Text>
+                </View>
+
+                <View style={styles.metricBlock}>
+                  <Text style={[styles.metricValue, { color: colors.text }]}>
+                    {formatDate(report.reportedDatetime || report.createdAt)}
+                  </Text>
+                  <Text style={[styles.metricLabel, { color: colors.sub }]}>Reported</Text>
+                </View>
+              </View>
+            </AppCard>
+          );
+        })
+      )}
     </ScrollView>
   );
 }
@@ -163,6 +228,17 @@ const styles = StyleSheet.create({
     padding: tokens.spacing.md,
     paddingBottom: tokens.spacing.xxl,
     flexGrow: 1,
+  },
+  centerState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: tokens.spacing.xl,
+  },
+  stateTitle: {
+    marginTop: tokens.spacing.sm,
+    fontSize: tokens.type.h2,
+    fontWeight: '800',
   },
   kpiRow: {
     flexDirection: 'row',
@@ -243,6 +319,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: tokens.type.small,
     fontWeight: '700',
+    textTransform: 'capitalize',
   },
   metricsRow: {
     flexDirection: 'row',
@@ -256,9 +333,20 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.body,
     fontWeight: '800',
     marginBottom: 4,
+    textTransform: 'capitalize',
   },
   metricLabel: {
     fontSize: tokens.type.small,
     fontWeight: '600',
+  },
+  emptyTitle: {
+    fontSize: tokens.type.h2,
+    fontWeight: '800',
+    marginTop: tokens.spacing.sm,
+    marginBottom: 4,
+  },
+  emptyText: {
+    fontSize: tokens.type.body,
+    lineHeight: 20,
   },
 });
