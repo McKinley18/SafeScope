@@ -7,6 +7,7 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import PageHeader from '../../src/components/ui/PageHeader';
 import { LocalVault } from '../../src/storage/LocalVault';
+import { SecurityVault } from '../../src/security/SecurityVault';
 import AppFooter from '../../src/components/ui/AppFooter';
 
 const standardsModes = ['MSHA First', 'OSHA First', 'Hybrid', 'Company Rules'];
@@ -201,6 +202,25 @@ export default function SettingsScreen() {
         <ChipGroup label="Standards Priority" options={standardsModes} value={standardsMode} onChange={setStandardsMode} />
         <ChipGroup label="Default Inspection Type" options={inspectionTypes} value={inspectionType} onChange={setInspectionType} />
         <ChipGroup label="Report Style" options={reportStyles} value={reportStyle} onChange={setReportStyle} />
+      </AppCard>
+
+      <AppCard style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Security</Text>
+            <Text style={[styles.sectionSub, { color: colors.sub }]}>
+              Protect local reports with app lock and encrypted vault storage.
+            </Text>
+          </View>
+          <Ionicons name="lock-closed-outline" size={24} color={colors.accent} />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.vaultButton, { backgroundColor: colors.accent }]}
+          onPress={() => SecurityVault.lock()}
+        >
+          <Text style={styles.vaultButtonText}>Lock App</Text>
+        </TouchableOpacity>
       </AppCard>
 
       <AppCard style={styles.sectionCard}>
