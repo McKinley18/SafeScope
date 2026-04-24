@@ -35,7 +35,6 @@ export default function HomeScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={[styles.title, { color: colors.text }]}>SafeScope</Text>
         <Text style={[styles.subtitle, { color: colors.sub }]}>
           Enterprise Safety Intelligence Platform
         </Text>
@@ -84,24 +83,20 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingTop: 6,
-    marginBottom: 22,
+    paddingTop: 4,
+    marginBottom: 24,
   },
   logo: {
-    width: 210,
-    height: 110,
-    marginBottom: -10,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: -0.8,
+    width: 265,
+    height: 135,
+    marginBottom: -12,
   },
   subtitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    marginTop: 4,
+    fontSize: 15,
+    fontWeight: '800',
+    marginTop: 0,
     textAlign: 'center',
+    letterSpacing: 0.2,
   },
   sectionTitle: {
     fontSize: 18,
