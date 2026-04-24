@@ -74,7 +74,7 @@ export const apiClient = {
   },
 
   createCorrectiveAction: async (data: any) => {
-    const res = await fetch(`${BASE_URL}/corrective-actions`, {
+    const res = await fetch(`${BASE_URL}/actions`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(data),
