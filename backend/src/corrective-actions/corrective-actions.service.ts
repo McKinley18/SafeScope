@@ -43,7 +43,13 @@ export class CorrectiveActionsService {
   }
 
   async create(dto: CreateCorrectiveActionDto) {
-    const action = this.actionRepo.create(dto);
+    const count = await this.actionRepo.count();
+    const displayId = `ACT-${String(count + 2001).padStart(4, '0')}`;
+
+    const action = this.actionRepo.create({
+      ...dto,
+      displayId,
+    });
     const saved = await this.actionRepo.save(action);
     await this.auditService.log({
       entityType: 'CORRECTIVE_ACTION',

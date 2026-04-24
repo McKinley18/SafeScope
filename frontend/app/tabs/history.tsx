@@ -303,14 +303,14 @@ export default function HistoryScreen() {
 
           return (
             <TouchableOpacity
-              key={report.id}
+              key={report.displayId || report.id}
               activeOpacity={0.85}
-              onPress={() => router.push(`/tabs/report?id=${report.id}` as any)}
+              onPress={() => router.push(`/tabs/report?id=${report.displayId || report.id}` as any)}
             >
               <AppCard style={styles.reportCard}>
                 <View style={styles.reportTop}>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.reportId, { color: colors.accent }]}>{report.id}</Text>
+                    <Text style={[styles.reportId, { color: colors.accent }]}>{report.displayId || report.id}</Text>
                     <Text style={[styles.reportTitle, { color: colors.text }]}>{getTitle(report)}</Text>
                     <Text style={[styles.reportMeta, { color: colors.sub }]}>
                       {getLocation(report)} • {report.eventTypeCode || 'Safety Report'}

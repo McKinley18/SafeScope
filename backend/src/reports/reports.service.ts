@@ -90,8 +90,12 @@ export class ReportsService {
   }
 
   async create(dto: CreateReportDto): Promise<Report> {
+    const count = await this.reportsRepository.count();
+    const displayId = `RPT-${String(count + 1001).padStart(4, '0')}`;
+
     const report = this.reportsRepository.create({
       ...dto,
+      displayId,
       eventDatetime: dto.eventDatetime ? new Date(dto.eventDatetime) : undefined,
       reportedDatetime: new Date(),
       reportStatus: dto.reportStatus ?? 'draft',

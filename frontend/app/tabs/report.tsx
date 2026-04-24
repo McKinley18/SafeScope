@@ -348,7 +348,7 @@ export default function ReportDetailScreen() {
       <AppCard style={styles.heroCard}>
         <View style={styles.reportHeader}>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.reportId, { color: colors.accent }]}>{report?.id}</Text>
+            <Text style={[styles.reportId, { color: colors.accent }]}>{report?.displayId || report?.id}</Text>
             <Text style={[styles.reportTitle, { color: colors.text }]}>{title}</Text>
             <Text style={[styles.reportMeta, { color: colors.sub }]}>
               {report?.area || report?.siteName || 'Unassigned Area'} • {report?.eventTypeCode || 'Safety Report'}

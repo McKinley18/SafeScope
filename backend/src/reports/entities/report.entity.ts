@@ -13,6 +13,9 @@ export class Report {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, unique: true })
+  displayId: string;
+
   @OneToMany(() => ReportAttachment, (attachment) => attachment.report, { cascade: true })
   attachments: ReportAttachment[];
 

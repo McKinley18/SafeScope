@@ -170,7 +170,7 @@ export default function ReviewScreen() {
           const updating = updatingId === item.id;
 
           return (
-            <AppCard key={item.id} style={styles.card}>
+            <AppCard key={item.displayId || item.id} style={styles.card}>
               <View style={styles.cardTop}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.title, { color: colors.text }]}>
@@ -178,7 +178,7 @@ export default function ReviewScreen() {
                   </Text>
 
                   <Text style={[styles.meta, { color: colors.sub }]}>
-                    {item.id} • {item.area || 'Unassigned Area'} • {getAge(item)}
+                    {item.displayId || item.id} • {item.area || 'Unassigned Area'} • {getAge(item)}
                   </Text>
                 </View>
 
@@ -227,7 +227,7 @@ export default function ReviewScreen() {
 
               <TouchableOpacity
                 style={styles.detailLink}
-                onPress={() => router.push(`/tabs/report?id=${item.id}` as any)}
+                onPress={() => router.push(`/tabs/report?id=${item.displayId || item.id}` as any)}
               >
                 <Text style={[styles.detailLinkText, { color: colors.accent }]}>
                   Open Executive Report

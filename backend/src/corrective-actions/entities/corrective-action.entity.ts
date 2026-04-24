@@ -5,6 +5,9 @@ export class CorrectiveAction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, unique: true })
+  displayId: string;
+
   @Column()
   reportId: string;
 

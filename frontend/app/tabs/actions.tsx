@@ -115,12 +115,12 @@ export default function ActionsScreen() {
         </AppCard>
       ) : (
         actions.map((action) => (
-          <AppCard key={action.id} style={styles.card}>
+          <AppCard key={action.displayId || action.id} style={styles.card}>
             <View style={styles.cardTop}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.title, { color: colors.text }]}>{action.title}</Text>
                 <Text style={[styles.meta, { color: colors.sub }]}>
-                  Report {action.reportId} • Due {action.dueDate ? new Date(action.dueDate).toLocaleDateString() : 'Not set'}
+                  Report {action.reportDisplayId || action.reportId} • Due {action.dueDate ? new Date(action.dueDate).toLocaleDateString() : 'Not set'}
                 </Text>
               </View>
 
