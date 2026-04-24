@@ -301,7 +301,7 @@ const useSuggestion = async () => {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
-        title="AI Hazard Capture"
+        title="Inspect"
         subtitle="Capture evidence, describe the condition, and generate a smart hazard suggestion."
       />
 
