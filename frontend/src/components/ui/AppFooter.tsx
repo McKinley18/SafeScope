@@ -33,31 +33,31 @@ export default function AppFooter() {
 
 const styles = StyleSheet.create({
   wrap: {
-    marginTop: 28,
-    paddingTop: 18,
-    paddingBottom: 110,
-    paddingHorizontal: 18,
+    marginTop: 40,
+    paddingTop: 12,
+    paddingBottom: 96,
+    paddingHorizontal: 14,
     borderTopWidth: 1,
     alignItems: 'center',
   },
   accent: {
-    width: 54,
-    height: 4,
+    width: 38,
+    height: 3,
     borderRadius: 99,
-    marginBottom: 14,
+    marginBottom: 8,
   },
   brand: {
-    fontSize: 18,
+    fontSize: 10,
     fontWeight: '900',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   sub: {
-    fontSize: 13,
+    fontSize: 10,
     fontWeight: '700',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   meta: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: '600',
   },
 });

@@ -292,7 +292,7 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: tokens.spacing.md,
-    paddingBottom: tokens.spacing.xxl,
+    paddingBottom: 20,
     flexGrow: 1,
   },
   centerState: {

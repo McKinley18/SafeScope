@@ -493,7 +493,7 @@ export default function ReportDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: tokens.spacing.md,
-    paddingBottom: 120,
+    paddingBottom: 20,
     flexGrow: 1,
   },
   centerState: {
