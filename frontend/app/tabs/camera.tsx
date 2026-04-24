@@ -157,23 +157,30 @@ export default function CameraScreen() {
     await persistDraft({ ...draft, [key]: value });
   };
 
-  const buildPayload = () => ({
+  const buildPayload = async () => {
+  const rawUser = await AsyncStorage.getItem(AUTH_USER_KEY);
+  const user = rawUser ? JSON.parse(rawUser) : {};
+
+  return {
+    tenantId: user.tenantId || 'default',
+    createdByUserId: user.id || undefined,
+    sourceType: 'mobile',
+    title: draft.hazardDescription || 'Hazard Draft',
+    narrative: draft.notes || draft.hazardDescription || '',
+    reportStatus: 'draft',
     hazardDescription: draft.hazardDescription || undefined,
     area: draft.area || undefined,
     equipment: draft.equipment || undefined,
     workActivity: draft.workActivity || undefined,
     severity: draft.severity || undefined,
-    immediateDanger: draft.immediateDanger,
     notes: draft.notes || undefined,
     likelyStandards: matchStandards(
       [draft.hazardDescription, draft.notes, draft.equipment, draft.workActivity]
         .filter(Boolean)
         .join(' ')
     ),
-    reportStatus: 'draft',
-    title: draft.hazardDescription || 'Hazard Draft',
-    narrative: draft.notes || draft.hazardDescription || '',
-  });
+  };
+};
 
   const ensureReportExists = async () => {
     let reportId = draft.id;
