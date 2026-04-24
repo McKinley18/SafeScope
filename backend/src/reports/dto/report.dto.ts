@@ -64,6 +64,8 @@ export class CreateReportDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  likelyStandards?: any[];
 }
 
 export class UpdateReportDto {
@@ -122,6 +124,8 @@ export class UpdateReportDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  likelyStandards?: any[];
 }
 
 export class CreateReportAttachmentDto {

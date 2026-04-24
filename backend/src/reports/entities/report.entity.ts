@@ -73,6 +73,9 @@ export class Report {
   @Column('text', { nullable: true })
   notes: string;
 
+  @Column({ type: 'jsonb', nullable: true })
+  likelyStandards: any[];
+
   @Column({ nullable: true })
   reviewDecision: string;
 

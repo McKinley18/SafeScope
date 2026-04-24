@@ -165,6 +165,11 @@ export default function CameraScreen() {
     severity: draft.severity || undefined,
     immediateDanger: draft.immediateDanger,
     notes: draft.notes || undefined,
+    likelyStandards: matchStandards(
+      [draft.hazardDescription, draft.notes, draft.equipment, draft.workActivity]
+        .filter(Boolean)
+        .join(' ')
+    ),
     reportStatus: 'draft',
     title: draft.hazardDescription || 'Hazard Draft',
     narrative: draft.notes || draft.hazardDescription || '',
