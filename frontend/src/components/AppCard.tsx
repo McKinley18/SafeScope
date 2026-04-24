@@ -29,11 +29,7 @@ export default function AppCard({
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: 22,
-    padding: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
+    borderRadius: 18,
+    padding: 16,
   },
 });
