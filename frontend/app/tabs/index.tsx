@@ -231,16 +231,16 @@ const styles = StyleSheet.create({
   },
   logoWrap: {
     width: '100%',
-    height: 125,
-    marginBottom: -18,
-    marginTop: -2,
+    height: 165,
+    marginBottom: -8,
+    marginTop: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   logo: {
-    width: '92%',
-    height: 150,
+    width: '88%',
+    height: 155,
   },
   brandTitle: {
     fontSize: 30,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   brandSubtitle: {
     fontSize: 28,
     fontWeight: '900',
-    marginTop: -10,
+    marginTop: 2,
     textAlign: 'center',
     letterSpacing: -0.7,
   },
