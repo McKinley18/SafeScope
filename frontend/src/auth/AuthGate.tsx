@@ -129,7 +129,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         <Text style={[styles.kicker, { color: colors.accent }]}>Secure Workspace Access</Text>
 
         <Text style={[styles.title, { color: colors.text }]}>
-          {mode === 'login' ? 'Welcome back' : 'Create your SafeScope workspace'}
+          {mode === 'login' ? 'Welcome back' : 'Create your Sentinel Safety workspace'}
         </Text>
 
         <Text style={[styles.subtitle, { color: colors.sub }]}>

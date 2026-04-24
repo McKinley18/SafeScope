@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SafeScope",
-    "slug": "safescope",
+    "name": "Sentinel Safety",
+    "slug": "sentinel-safety",
     "version": "1.0.0",
     "icon": "./assets/images/icon.png",
     "splash": {
