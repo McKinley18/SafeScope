@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SecurityVault } from '../security/SecurityVault';
 
 const VAULT_VERSION = 'v1';
 const VAULT_PREFIX = `safescope_local_vault_${VAULT_VERSION}`;
@@ -43,6 +44,13 @@ const REPORTS_KEY = key('reports');
 
 const readJson = async <T>(storageKey: string, fallback: T): Promise<T> => {
   try {
+    const encrypted = await AsyncStorage.getItem(`${storageKey}:encrypted`);
+
+    if (encrypted && SecurityVault.isUnlocked()) {
+      const decrypted = SecurityVault.decrypt(encrypted);
+      return decrypted ? JSON.parse(decrypted) : fallback;
+    }
+
     const raw = await AsyncStorage.getItem(storageKey);
     return raw ? JSON.parse(raw) : fallback;
   } catch {
@@ -51,7 +59,15 @@ const readJson = async <T>(storageKey: string, fallback: T): Promise<T> => {
 };
 
 const writeJson = async <T>(storageKey: string, value: T) => {
-  await AsyncStorage.setItem(storageKey, JSON.stringify(value));
+  const raw = JSON.stringify(value);
+
+  if (SecurityVault.isUnlocked()) {
+    await AsyncStorage.setItem(`${storageKey}:encrypted`, SecurityVault.encrypt(raw));
+    await AsyncStorage.removeItem(storageKey);
+    return;
+  }
+
+  await AsyncStorage.setItem(storageKey, raw);
 };
 
 const createId = () => {
