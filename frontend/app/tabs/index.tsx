@@ -231,16 +231,16 @@ const styles = StyleSheet.create({
   },
   logoWrap: {
     width: '100%',
-    height: 150,
-    marginBottom: -22,
-    marginTop: -4,
+    height: 125,
+    marginBottom: -18,
+    marginTop: -2,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   logo: {
-    width: '100%',
-    height: 165,
+    width: '92%',
+    height: 150,
   },
   brandTitle: {
     fontSize: 30,
