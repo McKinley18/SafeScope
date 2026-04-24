@@ -84,11 +84,14 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             });
 
       if (!result?.token) {
+        const message = Array.isArray(result?.message)
+          ? result.message.join('\n')
+          : result?.message || JSON.stringify(result || {}) || 'Unable to continue.';
+
         Alert.alert(
           mode === 'login' ? 'Sign in failed' : 'Account creation failed',
-          result?.message || 'Unable to continue.'
+          message
         );
-        resetSensitiveFields();
         return;
       }
 
@@ -103,7 +106,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       setAuthenticated(true);
     } catch (error: any) {
       Alert.alert('Authentication failed', error?.message || 'Unable to continue.');
-      resetSensitiveFields();
     } finally {
       setLoading(false);
     }
