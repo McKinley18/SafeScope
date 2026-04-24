@@ -73,6 +73,15 @@ export const apiClient = {
     return res.json();
   },
 
+  decideReview: async (reportId: string, data: { decision: 'approved' | 'rejected'; notes?: string }) => {
+    const res = await fetch(`${BASE_URL}/reports/${reportId}/review-decision`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
   getReportDetail: async (reportId: string) => {
     const res = await fetch(`${BASE_URL}/reports/${reportId}`, { headers: getHeaders() });
     return res.json();

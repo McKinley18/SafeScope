@@ -48,7 +48,7 @@ export default function ReviewScreen() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await apiClient.updateReport(id, { reportStatus: status });
+      await apiClient.decideReview(id, { decision: status as 'approved' | 'rejected' });
       loadQueue();
     } catch {
       Alert.alert('Update failed');
