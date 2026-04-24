@@ -64,65 +64,101 @@ export default function ReportDetailScreen() {
   const actions = report?.actions || [];
 
 
-  const exportExecutivePdf = () => {
+  const exportExecutivePdf = async () => {
     const doc = new jsPDF();
 
     const safeText = (value: any, fallback = 'N/A') =>
       value === undefined || value === null || value === '' ? fallback : String(value);
 
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    doc.setFillColor(16, 24, 40);
-    doc.rect(0, 0, pageWidth, 34, 'F');
+    const addFooter = () => {
+      doc.setDrawColor(229, 231, 235);
+      doc.line(14, pageHeight - 16, pageWidth - 14, pageHeight - 16);
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(
+        'SafeScope • Operational Safety Intelligence • Monolith Studios',
+        14,
+        pageHeight - 9
+      );
+      doc.text(`Generated ${new Date().toLocaleString()}`, pageWidth - 14, pageHeight - 9, {
+        align: 'right',
+      });
+    };
 
-    doc.setTextColor(255, 106, 0);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SafeScope', 14, 14);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text('Executive Safety Intelligence Report', 14, 24);
-
-    doc.setTextColor(17, 24, 39);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text(safeText(title, 'Safety Report'), 14, 48, { maxWidth: 180 });
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(71, 85, 105);
-    doc.text(`Report ID: ${safeText(report?.id)}`, 14, 60);
-    doc.text(`Status: ${safeText(status)}`, 14, 67);
-    doc.text(`Severity: ${safeText(severity)}`, 14, 74);
-    doc.text(`Area: ${safeText(report?.area || report?.siteName, 'Unassigned Area')}`, 14, 81);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 88);
-
-    doc.setDrawColor(255, 106, 0);
-    doc.setLineWidth(0.7);
-    doc.line(14, 96, pageWidth - 14, 96);
-
-    doc.setTextColor(17, 24, 39);
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Executive Summary', 14, 108);
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(51, 65, 85);
-    const summary = safeText(
-      report?.narrative || report?.hazardDescription,
-      'No executive summary has been provided for this report.'
-    );
-    doc.text(doc.splitTextToSize(summary, 180), 14, 116);
-
-    let y = 142;
-
-    const section = (heading: string, lines: string[]) => {
-      if (y > 250) {
+    const addNewPageIfNeeded = (needed = 24) => {
+      if (y + needed > pageHeight - 24) {
+        addFooter();
         doc.addPage();
         y = 24;
       }
+    };
+
+    const imageToDataUrl = async (uri?: string) => {
+      if (!uri || !/^https?:|^data:/.test(uri)) return null;
+
+      try {
+        if (uri.startsWith('data:')) return uri;
+        const res = await fetch(uri);
+        const blob = await res.blob();
+
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(String(reader.result));
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return null;
+      }
+    };
+
+    doc.setFillColor(16, 24, 40);
+    doc.rect(0, 0, pageWidth, 38, 'F');
+
+    try {
+      const logoAsset = Image.resolveAssetSource(require('../../assets/images/logo.png'));
+      const logoData = await imageToDataUrl(logoAsset?.uri);
+      if (logoData) {
+        doc.addImage(logoData, 'PNG', 12, 7, 34, 20);
+      }
+    } catch {}
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Executive Safety Intelligence Report', 52, 16);
+
+    doc.setTextColor(255, 106, 0);
+    doc.setFontSize(10);
+    doc.text('SafeScope Verified Report Package', 52, 26);
+
+    doc.setTextColor(17, 24, 39);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text(safeText(title, 'Safety Report'), 14, 54, { maxWidth: 180 });
+
+    doc.setFillColor(255, 247, 237);
+    doc.setDrawColor(255, 106, 0);
+    doc.roundedRect(14, 64, pageWidth - 28, 38, 3, 3, 'FD');
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(154, 52, 18);
+    doc.text(`Report ID: ${safeText(report?.id)}`, 20, 76);
+    doc.text(`Status: ${safeText(status)}`, 20, 84);
+    doc.text(`Severity: ${safeText(severity)}`, 20, 92);
+
+    doc.text(`Area: ${safeText(report?.area || report?.siteName, 'Unassigned Area')}`, 108, 76);
+    doc.text(`Type: ${safeText(report?.eventTypeCode, 'Safety Report')}`, 108, 84);
+    doc.text(`Evidence Files: ${attachments.length}`, 108, 92);
+
+    let y = 118;
+
+    const section = (heading: string, lines: string[]) => {
+      addNewPageIfNeeded(26);
 
       doc.setTextColor(17, 24, 39);
       doc.setFontSize(13);
@@ -130,17 +166,22 @@ export default function ReportDetailScreen() {
       doc.text(heading, 14, y);
       y += 8;
 
+      doc.setDrawColor(255, 106, 0);
+      doc.setLineWidth(0.4);
+      doc.line(14, y - 3, 54, y - 3);
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(51, 65, 85);
 
       if (!lines.length) {
         doc.text('No records available.', 14, y);
-        y += 8;
+        y += 10;
         return;
       }
 
       lines.forEach((line) => {
+        addNewPageIfNeeded(16);
         const wrapped = doc.splitTextToSize(`• ${line}`, 178);
         doc.text(wrapped, 14, y);
         y += wrapped.length * 6 + 2;
@@ -148,6 +189,13 @@ export default function ReportDetailScreen() {
 
       y += 4;
     };
+
+    const summary = safeText(
+      report?.narrative || report?.hazardDescription,
+      'No executive summary has been provided for this report.'
+    );
+
+    section('Executive Summary', [summary]);
 
     section(
       'AI Classification',
@@ -170,18 +218,61 @@ export default function ReportDetailScreen() {
       )
     );
 
-    section(
-      'Evidence',
-      attachments.map((item: any, index: number) =>
-        safeText(item.fileName || item.imageUri || item.uri, `Evidence file ${index + 1}`)
-      )
-    );
+    addNewPageIfNeeded(60);
+    doc.setTextColor(17, 24, 39);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Evidence', 14, y);
+    y += 10;
 
-    doc.setFontSize(8);
-    doc.setTextColor(100, 116, 139);
-    doc.text('Generated by SafeScope - Operational Safety Intelligence - Monolith Studios', 14, 286);
+    if (!attachments.length) {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(51, 65, 85);
+      doc.text('No evidence files attached.', 14, y);
+      y += 10;
+    } else {
+      let x = 14;
+      for (let index = 0; index < attachments.length; index++) {
+        const item = attachments[index];
+        const uri = item.imageUri || item.uri;
+        const imgData = await imageToDataUrl(uri);
 
-    doc.save(`SafeScope-Report-${safeText(report?.id, 'export')}.pdf`);
+        addNewPageIfNeeded(62);
+
+        if (imgData) {
+          try {
+            doc.addImage(imgData, 'JPEG', x, y, 54, 42);
+          } catch {
+            try {
+              doc.addImage(imgData, 'PNG', x, y, 54, 42);
+            } catch {
+              doc.text(`Evidence ${index + 1}: ${safeText(item.fileName || uri)}`, x, y + 8);
+            }
+          }
+        } else {
+          doc.setFontSize(9);
+          doc.setTextColor(51, 65, 85);
+          doc.text(`Evidence ${index + 1}`, x, y + 8);
+          doc.text(safeText(item.fileName || uri), x, y + 15, { maxWidth: 52 });
+        }
+
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Evidence ${index + 1}`, x, y + 48);
+
+        x += 62;
+        if (x > pageWidth - 60) {
+          x = 14;
+          y += 58;
+        }
+      }
+
+      y += 64;
+    }
+
+    addFooter();
+    doc.save(`SafeScope-Executive-Report-${safeText(report?.id, 'export')}.pdf`);
   };
 
   const statusColor = () => {
