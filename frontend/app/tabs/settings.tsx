@@ -5,6 +5,7 @@ import { useAppTheme, ThemeMode } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import PageHeader from '../../src/components/ui/PageHeader';
+import AppFooter from '../../src/components/ui/AppFooter';
 
 const standardsModes = ['MSHA First', 'OSHA First', 'Hybrid', 'Company Rules'];
 const inspectionTypes = ['Full Site', 'Area Walkthrough', 'Equipment', 'Incident Follow-up'];
@@ -227,6 +228,7 @@ export default function SettingsScreen() {
           Premium Safety Intelligence Build • Sprint UI Overhaul
         </Text>
       </AppCard>
+      <AppFooter />
     </ScrollView>
   );
 }

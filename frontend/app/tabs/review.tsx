@@ -13,6 +13,7 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import PageHeader from '../../src/components/ui/PageHeader';
+import AppFooter from '../../src/components/ui/AppFooter';
 import { apiClient } from '../../src/api/client';
 
 export default function ReviewScreen() {
@@ -99,6 +100,7 @@ export default function ReviewScreen() {
           </AppCard>
         ))
       )}
+      <AppFooter />
     </ScrollView>
   );
 }

@@ -18,6 +18,7 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import PageHeader from '../../src/components/ui/PageHeader';
+import AppFooter from '../../src/components/ui/AppFooter';
 
 const DRAFT_KEY = 'safescope_hazard_draft_v1';
 
@@ -296,7 +297,8 @@ const useSuggestion = async () => {
               </View>
             ))
           )}
-        </ScrollView>
+          <AppFooter />
+    </ScrollView>
       </AppCard>
 
       {suggestion && (
@@ -439,6 +441,7 @@ const useSuggestion = async () => {
           onChangeText={(t) => updateField('notes', t)}
         />
       </AppCard>
+      <AppFooter />
     </ScrollView>
   );
 }
