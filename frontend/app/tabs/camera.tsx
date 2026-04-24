@@ -487,6 +487,21 @@ const styles = StyleSheet.create({
   sectionCard: {
     marginBottom: tokens.spacing.lg,
   },
+  vaultLink: {
+    minHeight: 46,
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.md,
+    marginBottom: tokens.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  vaultLinkText: {
+    fontSize: tokens.type.body,
+    fontWeight: '900',
+  },
   sectionTitle: {
     fontSize: tokens.type.h2,
     fontWeight: '800',
