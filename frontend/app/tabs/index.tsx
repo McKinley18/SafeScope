@@ -93,9 +93,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logo: {
-    width: 430,
-    height: 190,
-    marginBottom: -34,
+    width: 320,
+    height: 150,
+    marginBottom: -18,
   },
   heroKicker: {
     fontSize: 11,
