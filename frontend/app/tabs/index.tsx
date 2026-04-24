@@ -89,7 +89,6 @@ export default function Home() {
           <View style={[styles.heroDivider, { backgroundColor: colors.accent }]} />
 
           <View style={styles.metaRow}>
-            <View style={styles.liveDot} />
             <Text style={[styles.metaText, { color: colors.sub }]}>
               Enterprise Safety Platform
             </Text>
@@ -262,12 +261,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 99,
-    backgroundColor: '#FF6A00',
-  },
+
   metaText: {
     fontSize: 11,
     fontWeight: '800',
