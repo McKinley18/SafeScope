@@ -29,7 +29,12 @@ export class ReportsController {
     @Query('status') status?: string,
     @Query('eventTypeCode') eventTypeCode?: string,
   ) {
-    return this.reportsService.findAll({ page, limit, status, eventTypeCode });
+    return this.reportsService.findAll({
+      page: Number(page) || 1,
+      limit: Number(limit) || 20,
+      status,
+      eventTypeCode,
+    });
   }
 
   @Get(':id')
