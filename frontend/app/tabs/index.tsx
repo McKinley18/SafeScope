@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
-import AppCard from '../../src/components/ui/AppCard';
+import AppCard from '../../src/components/AppCard';
 import AppFooter from '../../src/components/ui/AppFooter';
 import LegalDisclaimer from '../../components/LegalDisclaimer';
 
@@ -12,10 +12,10 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const quick = [
-    { title: 'Start Inspection', icon: 'camera-outline', route: '/tabs/camera' },
-    { title: 'Pending Reviews', icon: 'shield-checkmark-outline', route: '/tabs/review' },
-    { title: 'Reports Center', icon: 'document-text-outline', route: '/tabs/history' },
-    { title: 'Control Center', icon: 'settings-outline', route: '/tabs/settings' },
+    { title: 'Inspect', sub: 'Capture hazard evidence', icon: 'camera-outline', route: '/tabs/camera' },
+    { title: 'Review', sub: 'Approve submitted reports', icon: 'shield-checkmark-outline', route: '/tabs/review' },
+    { title: 'Reports', sub: 'Open executive records', icon: 'document-text-outline', route: '/tabs/history' },
+    { title: 'Control', sub: 'Security and settings', icon: 'settings-outline', route: '/tabs/settings' },
   ];
 
   const stats = [
@@ -29,37 +29,15 @@ export default function HomeScreen() {
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <LegalDisclaimer />
 
-      <View style={styles.hero}>
-        <Image
-          source={require('../../assets/images/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={[styles.subtitle, { color: colors.sub }]}>
-          Enterprise Safety Intelligence Platform
+      <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+
+        <Text style={[styles.heroKicker, { color: colors.accent }]}>Operational Safety Intelligence</Text>
+        <Text style={[styles.heroTitle, { color: colors.text }]}>Command Center</Text>
+        <Text style={[styles.heroSub, { color: colors.sub }]}>
+          Inspect conditions, manage review workflow, and track safety execution from one secure workspace.
         </Text>
       </View>
-
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Launch</Text>
-
-      <View style={styles.grid}>
-        {quick.map((item) => (
-          <TouchableOpacity
-            key={item.title}
-            onPress={() => router.push(item.route as any)}
-            style={{ width: '48%' }}
-          >
-            <AppCard style={styles.launchCard}>
-              <Ionicons name={item.icon as any} size={24} color={colors.accent} />
-              <Text style={[styles.launchTitle, { color: colors.text }]}>
-                {item.title}
-              </Text>
-            </AppCard>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Operational Snapshot</Text>
 
       <View style={styles.grid}>
         {stats.map(([label, value]) => (
@@ -69,6 +47,33 @@ export default function HomeScreen() {
           </AppCard>
         ))}
       </View>
+
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Launch</Text>
+
+      <View style={styles.grid}>
+        {quick.map((item) => (
+          <TouchableOpacity
+            key={item.title}
+            onPress={() => router.push(item.route as any)}
+            style={styles.launchWrap}
+          >
+            <AppCard style={styles.launchCard}>
+              <View style={[styles.iconBadge, { backgroundColor: colors.cardAlt }]}>
+                <Ionicons name={item.icon as any} size={24} color={colors.accent} />
+              </View>
+              <Text style={[styles.launchTitle, { color: colors.text }]}>{item.title}</Text>
+              <Text style={[styles.launchSub, { color: colors.sub }]}>{item.sub}</Text>
+            </AppCard>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <AppCard style={styles.activityCard}>
+        <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 0 }]}>Recent Activity</Text>
+        <Text style={[styles.emptyText, { color: colors.sub }]}>
+          Submit your first inspection to begin building the operational timeline.
+        </Text>
+      </AppCard>
 
       <AppFooter />
     </ScrollView>
@@ -82,27 +87,47 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   hero: {
+    borderWidth: 1,
+    borderRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 10,
+    paddingBottom: 24,
     alignItems: 'center',
-    paddingTop: 4,
-    marginBottom: 24,
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.09,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
   },
   logo: {
-    width: 265,
-    height: 135,
-    marginBottom: -12,
+    width: 300,
+    height: 150,
+    marginBottom: -18,
   },
-  subtitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: 0,
+  heroKicker: {
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 7,
+  },
+  heroTitle: {
+    fontSize: 31,
+    fontWeight: '900',
+    letterSpacing: -0.8,
+  },
+  heroSub: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '700',
     textAlign: 'center',
-    letterSpacing: 0.2,
+    lineHeight: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '900',
+    marginTop: 8,
     marginBottom: 10,
-    marginTop: 6,
   },
   grid: {
     flexDirection: 'row',
@@ -110,31 +135,53 @@ const styles = StyleSheet.create({
     gap: tokens.spacing.sm,
     marginBottom: 18,
   },
-  launchCard: {
-    minHeight: 110,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  launchTitle: {
-    marginTop: 10,
-    fontSize: 14,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
   statCard: {
     width: '48%',
-    minHeight: 92,
+    minHeight: 94,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statValue: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '900',
   },
   statLabel: {
     marginTop: 5,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
     textAlign: 'center',
+  },
+  launchWrap: {
+    width: '48%',
+  },
+  launchCard: {
+    minHeight: 150,
+    justifyContent: 'center',
+  },
+  iconBadge: {
+    width: 46,
+    height: 46,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  launchTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 5,
+  },
+  launchSub: {
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 17,
+  },
+  activityCard: {
+    marginBottom: 18,
+  },
+  emptyText: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '700',
   },
 });
