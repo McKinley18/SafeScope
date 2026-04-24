@@ -299,7 +299,7 @@ const useSuggestion = async () => {
               </View>
             ))
           )}
-          <AppFooter />
+          
     </ScrollView>
       </AppCard>
 
