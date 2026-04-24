@@ -102,6 +102,13 @@ function TabsNavigator() {
       />
 
       <Tabs.Screen
+        name="actions"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="vault"
         options={{
           href: null,

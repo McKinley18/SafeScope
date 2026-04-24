@@ -73,6 +73,23 @@ export const apiClient = {
     return res.json();
   },
 
+  getCorrectiveActions: async (params?: { page?: number; limit?: number; statusCode?: string; priorityCode?: string }) => {
+    const query = new URLSearchParams(params as Record<string, string>).toString();
+    const res = await fetch(`${BASE_URL}/actions${query ? `?${query}` : ''}`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  closeCorrectiveAction: async (actionId: string, closureNotes: string) => {
+    const res = await fetch(`${BASE_URL}/actions/${actionId}/close`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify({ closureNotes }),
+    });
+    return res.json();
+  },
+
   createCorrectiveAction: async (data: any) => {
     const res = await fetch(`${BASE_URL}/actions`, {
       method: 'POST',
