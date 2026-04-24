@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
@@ -24,6 +25,7 @@ type ReportItem = {
 
 export default function HistoryScreen() {
   const { colors } = useAppTheme();
+  const router = useRouter();
 
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +169,8 @@ export default function HistoryScreen() {
           const status = report.reportStatus || 'draft';
 
           return (
-            <AppCard key={report.id} style={styles.reportCard}>
+            <TouchableOpacity key={report.id} onPress={() => router.push(`/tabs/report?id=${report.id}` as any)}>
+              <AppCard style={styles.reportCard}>
               <View style={styles.reportTop}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.reportTitle, { color: colors.text }]}>{getTitle(report)}</Text>
@@ -216,7 +219,8 @@ export default function HistoryScreen() {
                   <Text style={[styles.metricLabel, { color: colors.sub }]}>Reported</Text>
                 </View>
               </View>
-            </AppCard>
+              </AppCard>
+            </TouchableOpacity>
           );
         })
       )}
