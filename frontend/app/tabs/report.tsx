@@ -64,6 +64,38 @@ export default function ReportDetailScreen() {
   const actions = report?.actions || [];
 
 
+  const createCorrectiveAction = async () => {
+    if (!report?.id) return;
+
+    try {
+      setCreatingAction(true);
+
+      await apiClient.createCorrectiveAction({
+        reportId: report.id,
+        title: report.title || report.hazardDescription || 'Corrective Action',
+        description:
+          report.narrative ||
+          report.hazardDescription ||
+          'Generated from approved safety report.',
+        priority:
+          String(report.severity || '').toLowerCase() === 'critical'
+            ? 'critical'
+            : String(report.severity || '').toLowerCase() === 'high'
+            ? 'high'
+            : 'medium',
+        ownerName: 'Unassigned',
+        dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+      });
+
+      Alert.alert('Corrective Action Created');
+      loadReport();
+    } catch (error) {
+      Alert.alert('Unable to create corrective action');
+    } finally {
+      setCreatingAction(false);
+    }
+  };
+
   const exportExecutivePdf = async () => {
     const doc = new jsPDF();
 

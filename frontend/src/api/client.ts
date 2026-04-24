@@ -73,6 +73,15 @@ export const apiClient = {
     return res.json();
   },
 
+  createCorrectiveAction: async (data: any) => {
+    const res = await fetch(`${BASE_URL}/corrective-actions`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
   decideReview: async (reportId: string, data: { decision: 'approved' | 'rejected'; notes?: string }) => {
     const res = await fetch(`${BASE_URL}/reports/${reportId}/review-decision`, {
       method: 'POST',
