@@ -1,10 +1,12 @@
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Switch } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useAppTheme, ThemeMode } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import PageHeader from '../../src/components/ui/PageHeader';
+import { LocalVault } from '../../src/storage/LocalVault';
 import AppFooter from '../../src/components/ui/AppFooter';
 
 const standardsModes = ['MSHA First', 'OSHA First', 'Hybrid', 'Company Rules'];
@@ -55,6 +57,8 @@ function ChipGroup({
 
 export default function SettingsScreen() {
   const { colors, themeMode, setThemeMode } = useAppTheme();
+  const router = useRouter();
+  const [localDraftCount, setLocalDraftCount] = useState(0);
 
   const [name, setName] = useState('Christopher McKinley');
   const [title, setTitle] = useState('Safety Manager');
@@ -69,6 +73,16 @@ export default function SettingsScreen() {
   const [autoDrafts, setAutoDrafts] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [highVisibility, setHighVisibility] = useState(false);
+
+  useEffect(() => {
+    const loadVaultCount = async () => {
+      const rows = await LocalVault.getReports();
+      setLocalDraftCount(rows.length);
+    };
+
+    loadVaultCount();
+  }, []);
+
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
@@ -187,6 +201,32 @@ export default function SettingsScreen() {
         <ChipGroup label="Standards Priority" options={standardsModes} value={standardsMode} onChange={setStandardsMode} />
         <ChipGroup label="Default Inspection Type" options={inspectionTypes} value={inspectionType} onChange={setInspectionType} />
         <ChipGroup label="Report Style" options={reportStyles} value={reportStyle} onChange={setReportStyle} />
+      </AppCard>
+
+      <AppCard style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Local Vault</Text>
+            <Text style={[styles.sectionSub, { color: colors.sub }]}>
+              Recover device-saved drafts and offline inspections.
+            </Text>
+          </View>
+          <Ionicons name="file-tray-full-outline" size={24} color={colors.accent} />
+        </View>
+
+        <View style={[styles.vaultPanel, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+          <View>
+            <Text style={[styles.vaultCount, { color: colors.text }]}>{localDraftCount}</Text>
+            <Text style={[styles.vaultLabel, { color: colors.sub }]}>Saved local drafts</Text>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.vaultButton, { backgroundColor: colors.accent }]}
+            onPress={() => router.push('/tabs/vault' as any)}
+          >
+            <Text style={styles.vaultButtonText}>Open Vault</Text>
+          </TouchableOpacity>
+        </View>
       </AppCard>
 
       <AppCard style={styles.sectionCard}>
@@ -356,6 +396,36 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.small,
     lineHeight: 18,
     fontWeight: '600',
+  },
+  vaultPanel: {
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    padding: tokens.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: tokens.spacing.md,
+  },
+  vaultCount: {
+    fontSize: 28,
+    fontWeight: '900',
+  },
+  vaultLabel: {
+    fontSize: tokens.type.small,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  vaultButton: {
+    minHeight: 44,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vaultButtonText: {
+    color: '#fff',
+    fontSize: tokens.type.small,
+    fontWeight: '900',
   },
   footerCard: {
     alignItems: 'center',
