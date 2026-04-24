@@ -29,7 +29,7 @@ export default function HomeScreen() {
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <LegalDisclaimer />
 
-      <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={styles.hero}>
         <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
 
         <Text style={[styles.heroKicker, { color: colors.accent }]}>Operational Safety Intelligence</Text>
@@ -87,22 +87,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   hero: {
-    borderWidth: 1,
-    borderRadius: 28,
-    paddingHorizontal: 22,
-    paddingTop: 10,
-    paddingBottom: 24,
+    paddingTop: 0,
+    paddingBottom: 18,
     alignItems: 'center',
-    marginBottom: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.09,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
+    marginBottom: 10,
   },
   logo: {
-    width: 300,
-    height: 150,
-    marginBottom: -18,
+    width: 430,
+    height: 190,
+    marginBottom: -34,
   },
   heroKicker: {
     fontSize: 11,
