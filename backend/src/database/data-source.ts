@@ -15,5 +15,5 @@ export const dataSource = new DataSource({
   database: 'safescope',
   entities: [Report, Classification, AuditLog, Review, RiskScore, CorrectiveAction],
   migrations: ['src/database/migrations/*.ts'],
-  synchronize: false,
+  synchronize: true,
 });

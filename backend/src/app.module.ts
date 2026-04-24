@@ -55,7 +55,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
           AuditEntryAttachment,
           AuditEntryFinding,
         ],
-        synchronize: false,
+        synchronize: true,
         ssl: {
           rejectUnauthorized: false,
         },
