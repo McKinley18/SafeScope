@@ -299,6 +299,12 @@ const useSuggestion = async () => {
     Alert.alert('Suggestion applied', 'Review and edit the hazard description as needed.');
   };
 
+  const standardMatches = matchStandards(
+    [draft.hazardDescription, draft.notes, draft.equipment, draft.workActivity]
+      .filter(Boolean)
+      .join(' ')
+  );
+
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
@@ -504,6 +510,40 @@ const useSuggestion = async () => {
           onChangeText={(t) => updateField('notes', t)}
         />
       </AppCard>
+
+      <AppCard style={styles.sectionCard}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Likely Standards</Text>
+
+        {standardMatches.length === 0 ? (
+          <Text style={[styles.standardEmpty, { color: colors.sub }]}>
+            Add a hazard description to see likely standards.
+          </Text>
+        ) : (
+          standardMatches.map((item) => (
+            <View
+              key={item.id}
+              style={[styles.standardCard, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+            >
+              <Text style={[styles.standardCitation, { color: colors.accent }]}>
+                {item.citation}
+              </Text>
+
+              <Text style={[styles.standardTitle, { color: colors.text }]}>
+                {item.title}
+              </Text>
+
+              <Text style={[styles.standardMeta, { color: colors.sub }]}>
+                {item.source} • {item.category} • {item.confidence.toUpperCase()}
+              </Text>
+
+              <Text style={[styles.standardWhy, { color: colors.muted }]}>
+                {item.rationale}
+              </Text>
+            </View>
+          ))
+        )}
+      </AppCard>
+
       <AppFooter />
     </ScrollView>
   );
@@ -671,5 +711,35 @@ image: {
   chipText: {
     fontSize: tokens.type.small,
     fontWeight: '800',
+  },
+  standardEmpty: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  standardCard: {
+    borderWidth: 1,
+    borderRadius: tokens.radius.md,
+    padding: tokens.spacing.md,
+    marginBottom: tokens.spacing.sm,
+  },
+  standardCitation: {
+    fontSize: 12,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  standardTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  standardMeta: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  standardWhy: {
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 16,
   },
 });
