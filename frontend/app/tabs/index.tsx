@@ -18,13 +18,13 @@ export default function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={[styles.hero, { backgroundColor: colors.cardAlt }]}>
+      <View style={[styles.hero, { backgroundColor: '#111827' }]}>
         <Image
           source={require('../../assets/images/logo-header.png')}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={[styles.title, { color: colors.text }]}>Command Center</Text>
+        <Text style={[styles.title, { color: '#FFFFFF' }]}>Command Center</Text>
         <Text style={[styles.subtitle, { color: colors.sub }]}>
           Safety intelligence for inspections, reporting, and corrective action management.
         </Text>
@@ -71,18 +71,19 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 16,
+    paddingTop: 0,
+    paddingBottom: 8,
     paddingHorizontal: 12,
-    marginBottom: 18,
+    marginBottom: 16,
     borderRadius: 24,
   },
   logo: {
     width: '100%',
-    height: 165,
-    maxWidth: 620,
+    height: 220,
+    maxWidth: 760,
     alignSelf: 'center',
-    marginBottom: -10,
+    marginTop: -36,
+    marginBottom: -42,
   },
   title: {
     fontSize: 38,
