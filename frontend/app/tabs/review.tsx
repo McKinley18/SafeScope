@@ -1,66 +1,114 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
+import { apiClient } from '../../src/api/client';
+
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import AppFooter from '../../src/components/ui/AppFooter';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
-import StatusPill from '../../src/components/ui/StatusPill';
-import { apiClient } from '../../src/api/client';
 
-type QueueItem = any;
-type ActionItem = any;
+type QueueItem = {
+  id: string;
+  title?: string;
+  hazardDescription?: string;
+  narrative?: string;
+  area?: string;
+  severity?: string;
+  reportStatus?: string;
+  confidenceScore?: number;
+  reportedDatetime?: string;
+  createdAt?: string;
+  attachments?: any[];
+};
 
-export default function WorkScreen() {
+type ActionItem = {
+  id: string;
+  title?: string;
+  priorityCode?: string;
+  statusCode?: string;
+  dueDate?: string;
+};
+
+export default function ReviewScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
 
-  const [reviews, setReviews] = useState<QueueItem[]>([]);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState('');
 
-  const loadWork = async () => {
+  const loadAll = async () => {
     try {
       setLoading(true);
 
-      const [reviewRes, actionRes] = await Promise.all([
-        apiClient.getReports({ page: 1, limit: 50, status: 'submitted' }),
-        apiClient.getCorrectiveActions({ page: 1, limit: 50 }),
-      ]);
+      const reports = await apiClient.getReports({
+        page: 1,
+        limit: 50,
+        status: 'submitted',
+      });
 
-      setReviews(Array.isArray(reviewRes) ? reviewRes : reviewRes?.data || []);
-      setActions(Array.isArray(actionRes) ? actionRes : actionRes?.data || []);
+      const corrective = await apiClient.getCorrectiveActions({
+        page: 1,
+        limit: 100,
+      });
+
+      setQueue(Array.isArray(reports) ? reports : reports?.data || []);
+      setActions(Array.isArray(corrective) ? corrective : corrective?.data || []);
     } catch (e) {
-      console.error(e);
-      Alert.alert('Unable to load work queue');
+      Alert.alert('Unable to load dashboard');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadWork();
+    loadAll();
   }, []);
 
+  const pendingReviews = queue.length;
+
   const openActions = useMemo(
-    () => actions.filter((item) => item.statusCode !== 'closed'),
+    () => actions.filter((a) => a.statusCode !== 'closed').length,
     [actions]
   );
 
-  const highRiskReviews = useMemo(
-    () => reviews.filter((item) => ['high', 'critical'].includes(String(item.severity || '').toLowerCase())).length,
-    [reviews]
+  const overdueActions = useMemo(
+    () =>
+      actions.filter((a) => {
+        if (!a.dueDate) return false;
+        if (a.statusCode === 'closed') return false;
+        return new Date(a.dueDate).getTime() < Date.now();
+      }).length,
+    [actions]
   );
 
-  const decide = async (id: string, decision: 'approved' | 'rejected') => {
+  const criticalItems = useMemo(
+    () =>
+      queue.filter((q) => {
+        const sev = String(q.severity || '').toLowerCase();
+        return sev === 'critical' || sev === 'high';
+      }).length,
+    [queue]
+  );
+
+  const updateStatus = async (id: string, decision: 'approved' | 'rejected') => {
     try {
       setUpdatingId(id);
       await apiClient.decideReview(id, { decision });
-      await loadWork();
+      await loadAll();
     } catch {
       Alert.alert('Update failed');
     } finally {
@@ -68,147 +116,126 @@ export default function WorkScreen() {
     }
   };
 
-  const closeAction = async (id: string) => {
-    try {
-      setUpdatingId(id);
-      await apiClient.closeCorrectiveAction(id, 'Closed from Sentinel Safety work queue.');
-      await loadWork();
-    } catch {
-      Alert.alert('Unable to close action');
-    } finally {
-      setUpdatingId('');
-    }
-  };
-
-  const getTitle = (item: any) =>
-    item.title || item.hazardDescription || item.narrative || 'Safety Report';
+  const topQueue = queue.slice(0, 5);
+  const topActions = actions
+    .filter((a) => a.statusCode !== 'closed')
+    .slice(0, 5);
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <BrandedHeader
-        title="Work Queue"
-        subtitle="Review submitted reports and close corrective actions from one place."
+        title="Supervisor Cockpit"
+        subtitle="Live operational oversight for reviews, actions, overdue work, and critical risk."
       />
 
       <View style={styles.kpiRow}>
-        <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{reviews.length}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Reviews</Text>
-        </AppCard>
-
-        <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{openActions.length}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Open Actions</Text>
-        </AppCard>
-
-        <AppCard style={styles.kpiCard}>
-          <Text style={[styles.kpiValue, { color: colors.text }]}>{highRiskReviews}</Text>
-          <Text style={[styles.kpiLabel, { color: colors.sub }]}>High Risk</Text>
-        </AppCard>
+        {[
+          ['Pending Reviews', pendingReviews, 'shield-checkmark-outline'],
+          ['Open Actions', openActions, 'construct-outline'],
+          ['Overdue', overdueActions, 'time-outline'],
+          ['Critical', criticalItems, 'warning-outline'],
+        ].map(([label, value, icon]) => (
+          <AppCard key={String(label)} style={styles.kpiCard}>
+            <Ionicons name={icon as any} size={18} color={colors.accent} />
+            <Text style={[styles.kpiValue, { color: colors.text }]}>{value}</Text>
+            <Text style={[styles.kpiLabel, { color: colors.sub }]}>{label}</Text>
+          </AppCard>
+        ))}
       </View>
 
       <TouchableOpacity
-        onPress={loadWork}
-        style={[styles.refreshRow, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+        style={[styles.refreshBar, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+        onPress={loadAll}
       >
-        <Ionicons name="refresh-outline" size={17} color={colors.accent} />
-        <Text style={[styles.refreshText, { color: colors.text }]}>Refresh Work Queue</Text>
+        <Ionicons name="refresh-outline" size={18} color={colors.accent} />
+        <Text style={[styles.refreshText, { color: colors.text }]}>Refresh Dashboard</Text>
       </TouchableOpacity>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={colors.accent} size="large" />
+          <ActivityIndicator size="large" color={colors.accent} />
         </View>
       ) : (
         <>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Pending Reviews</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Priority Reviews</Text>
 
-          {reviews.length === 0 ? (
-            <AppCard style={styles.emptyCard}>
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>No reports waiting for review</Text>
+          {topQueue.length === 0 ? (
+            <AppCard>
               <Text style={[styles.emptyText, { color: colors.sub }]}>
-                Submitted inspection reports will appear here.
+                No submitted reports awaiting review.
               </Text>
             </AppCard>
           ) : (
-            reviews.map((item) => (
-              <AppCard key={item.displayId || item.id} style={styles.card}>
-                <View style={styles.cardTop}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.title, { color: colors.text }]}>{getTitle(item)}</Text>
-                    <Text style={[styles.meta, { color: colors.sub }]}>
-                      {item.displayId || item.id} • {item.area || 'Unassigned Area'}
-                    </Text>
-                  </View>
-                  <StatusPill
-                    label={item.severity || 'medium'}
-                    tone={['high', 'critical'].includes(String(item.severity).toLowerCase()) ? 'danger' : 'warning'}
-                  />
-                </View>
+            topQueue.map((item) => (
+              <AppCard key={item.id} style={styles.card}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  {item.title || item.hazardDescription || 'Safety Report'}
+                </Text>
 
-                <Text style={[styles.description, { color: colors.sub }]}>
-                  {item.narrative || item.hazardDescription || 'No summary provided.'}
+                <Text style={[styles.cardMeta, { color: colors.sub }]}>
+                  {item.area || 'Unassigned Area'} • {String(item.severity || 'low').toUpperCase()}
                 </Text>
 
                 <View style={styles.actionRow}>
                   <AppButton
                     label={updatingId === item.id ? 'Updating…' : 'Approve'}
                     style={{ flex: 1 }}
-                    onPress={() => decide(item.id, 'approved')}
+                    onPress={() => updateStatus(item.id, 'approved')}
                   />
+
                   <AppButton
                     label="Reject"
                     variant="secondary"
                     style={{ flex: 1 }}
-                    onPress={() => decide(item.id, 'rejected')}
+                    onPress={() => updateStatus(item.id, 'rejected')}
                   />
                 </View>
-
-                <TouchableOpacity
-                  style={styles.detailLink}
-                  onPress={() => router.push(`/tabs/report?id=${item.displayId || item.id}` as any)}
-                >
-                  <Text style={[styles.detailLinkText, { color: colors.accent }]}>Open Report</Text>
-                  <Ionicons name="arrow-forward-outline" size={16} color={colors.accent} />
-                </TouchableOpacity>
               </AppCard>
             ))
           )}
 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Corrective Actions</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Open Corrective Actions</Text>
 
-          {openActions.length === 0 ? (
-            <AppCard style={styles.emptyCard}>
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>No open corrective actions</Text>
+          {topActions.length === 0 ? (
+            <AppCard>
               <Text style={[styles.emptyText, { color: colors.sub }]}>
-                Approved findings can generate actions for closure tracking.
+                No open corrective actions.
               </Text>
             </AppCard>
           ) : (
-            openActions.map((action) => (
-              <AppCard key={action.displayId || action.id} style={styles.card}>
-                <View style={styles.cardTop}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.title, { color: colors.text }]}>{action.title}</Text>
-                    <Text style={[styles.meta, { color: colors.sub }]}>
-                      Report {action.reportDisplayId || action.reportId} • Due {action.dueDate ? new Date(action.dueDate).toLocaleDateString() : 'Not set'}
-                    </Text>
-                  </View>
-                  <StatusPill
-                    label={action.priorityCode || 'medium'}
-                    tone={['urgent', 'high'].includes(String(action.priorityCode).toLowerCase()) ? 'danger' : 'warning'}
-                  />
-                </View>
+            topActions.map((item) => (
+              <AppCard key={item.id} style={styles.card}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  {item.title || 'Corrective Action'}
+                </Text>
 
-                <Text style={[styles.description, { color: colors.sub }]}>{action.description}</Text>
-
-                <AppButton
-                  label={updatingId === action.id ? 'Closing…' : 'Close Action'}
-                  onPress={() => closeAction(action.id)}
-                />
+                <Text style={[styles.cardMeta, { color: colors.sub }]}>
+                  {item.priorityCode || 'standard'} • Due{' '}
+                  {item.dueDate
+                    ? new Date(item.dueDate).toLocaleDateString()
+                    : 'Not set'}
+                </Text>
               </AppCard>
             ))
           )}
+
+          <View style={styles.quickLinks}>
+            <TouchableOpacity
+              style={[styles.quickLink, { backgroundColor: colors.card }]}
+              onPress={() => router.push('/tabs/history')}
+            >
+              <Ionicons name="documents-outline" size={18} color={colors.accent} />
+              <Text style={[styles.quickText, { color: colors.text }]}>Open Records</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.quickLink, { backgroundColor: colors.card }]}
+              onPress={() => router.push('/tabs/camera')}
+            >
+              <Ionicons name="camera-outline" size={18} color={colors.accent} />
+              <Text style={[styles.quickText, { color: colors.text }]}>Start Inspection</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
 
@@ -218,28 +245,110 @@ export default function WorkScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: tokens.spacing.md, paddingBottom: 20, flexGrow: 1 },
-  center: { paddingTop: 80, alignItems: 'center' },
-  screenHeader: { paddingTop: 4, paddingBottom: 18 },
-  headerKicker: { fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
-  headerTitle: { fontSize: 36, fontWeight: '900', letterSpacing: -0.8 },
-  headerSub: { marginTop: 6, fontSize: 14, lineHeight: 20, fontWeight: '700' },
-  kpiRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  kpiCard: { flex: 1, alignItems: 'center', paddingVertical: 14 },
-  kpiValue: { fontSize: 26, fontWeight: '900' },
-  kpiLabel: { fontSize: 11, fontWeight: '800', marginTop: 4, textAlign: 'center' },
-  refreshRow: { borderWidth: 1, borderRadius: 16, minHeight: 52, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 20 },
-  refreshText: { fontSize: 13, fontWeight: '900' },
-  sectionTitle: { fontSize: 22, fontWeight: '900', marginTop: 8, marginBottom: 10 },
-  card: { marginBottom: tokens.spacing.md },
-  emptyCard: { marginBottom: tokens.spacing.lg },
-  cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: tokens.spacing.sm, marginBottom: tokens.spacing.sm },
-  title: { fontSize: 17, fontWeight: '900', marginBottom: 5, lineHeight: 22 },
-  meta: { fontSize: 12, fontWeight: '700', lineHeight: 18 },
-  description: { fontSize: 13, lineHeight: 19, fontWeight: '700', marginBottom: tokens.spacing.md },
-  actionRow: { flexDirection: 'row', gap: tokens.spacing.sm },
-  detailLink: { marginTop: tokens.spacing.md, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  detailLinkText: { fontSize: 13, fontWeight: '900' },
-  emptyTitle: { fontSize: 17, fontWeight: '900', marginBottom: 6 },
-  emptyText: { fontSize: 13, lineHeight: 19, fontWeight: '700' },
+  container: {
+    padding: tokens.spacing.md,
+    paddingBottom: 20,
+    flexGrow: 1,
+  },
+
+  center: {
+    paddingTop: 80,
+    alignItems: 'center',
+  },
+
+  kpiRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: tokens.spacing.sm,
+    marginBottom: tokens.spacing.md,
+  },
+
+  kpiCard: {
+    width: '48%',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+
+  kpiValue: {
+    marginTop: 6,
+    fontSize: 28,
+    fontWeight: '900',
+  },
+
+  kpiLabel: {
+    marginTop: 4,
+    fontSize: 11,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+
+  refreshBar: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+  },
+
+  refreshText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    marginBottom: 12,
+  },
+
+  card: {
+    marginBottom: 12,
+  },
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 5,
+  },
+
+  cardMeta: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+
+  emptyText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+
+  quickLinks: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+
+  quickLink: {
+    flex: 1,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  quickText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
 });
