@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   brandHeader: {
-    backgroundColor: '#0b1120',
+    backgroundColor: '#05070d',
     marginHorizontal: -tokens.spacing.md,
     marginTop: -tokens.spacing.md,
     height: 150,
@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   logo: {
-    width: '155%',
-    height: 285,
-    maxWidth: 1500,
+    width: '165%',
+    height: 305,
+    maxWidth: 1600,
     alignSelf: 'center',
-    marginTop: -34,
-    marginBottom: -20,
+    marginTop: -42,
+    marginBottom: -24,
   },
   titleBlock: {
     marginBottom: 24,
