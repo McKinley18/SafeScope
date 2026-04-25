@@ -18,7 +18,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={[styles.hero, { backgroundColor: '#111827' }]}>
+      <View style={[styles.hero, { backgroundColor: '#0b1120' }]}>
         <Image
           source={require('../../assets/images/logo-header.png')}
           style={styles.logo}
