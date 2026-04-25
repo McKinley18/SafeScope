@@ -80,10 +80,10 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: '100%',
-    height: 170,
-    maxWidth: 760,
+    height: 260,
+    maxWidth: 980,
     alignSelf: 'center',
-    marginBottom: 2,
+    marginBottom: -8,
   },
   title: {
     fontSize: 32,
