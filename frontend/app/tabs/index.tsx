@@ -106,15 +106,18 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   logo: {
-    width: '100%',
-    height: 148,
-    maxWidth: 860,
+    width: '132%',
+    height: 230,
+    maxWidth: 1280,
+    alignSelf: 'center',
+    marginTop: -18,
+    marginBottom: -10,
   },
   titleBlock: {
     marginBottom: 24,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '900',
     letterSpacing: -0.9,
   },
