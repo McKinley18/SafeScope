@@ -107,14 +107,14 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: '100%',
-    height: 135,
-    maxWidth: 760,
+    height: 148,
+    maxWidth: 860,
   },
   titleBlock: {
     marginBottom: 24,
   },
   pageTitle: {
-    fontSize: 40,
+    fontSize: 34,
     fontWeight: '900',
     letterSpacing: -0.9,
   },
