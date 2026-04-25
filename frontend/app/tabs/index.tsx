@@ -71,11 +71,12 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingTop: 0,
-    paddingBottom: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-    borderRadius: 24,
+    marginHorizontal: -16,
+    marginTop: -16,
+    paddingTop: 10,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    marginBottom: 18,
   },
   logo: {
     width: '100%',
