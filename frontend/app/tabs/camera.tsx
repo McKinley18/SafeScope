@@ -358,7 +358,7 @@ const useSuggestion = async () => {
       </View>
 
       <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Finding Evidence</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Photos</Text>
         <Text style={[styles.helperText, { color: colors.sub }]}>
           Attach one or more photos for this finding. Use additional findings for separate hazards.
         </Text>
@@ -432,7 +432,7 @@ Add photo(s), complete this finding, then continue to the next finding or save d
       )}
 
       <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Finding Details</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Finding Information</Text>
 
         <Text style={[styles.fieldLabel, { color: colors.sub }]}>Hazard Description</Text>
         <TextInput
@@ -772,12 +772,13 @@ image: {
   chip: {
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   chipText: {
-    fontSize: tokens.type.small,
-    fontWeight: '800',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.4,
   },
   standardEmpty: {
     fontSize: 13,
