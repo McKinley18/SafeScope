@@ -335,7 +335,7 @@ export default function ReportDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
+      <TouchableOpacity style={styles.backRow} onPress={() => router.push('/tabs/history' as any)}>
         <Ionicons name="arrow-back-outline" size={18} color={colors.accent} />
         <Text style={[styles.backText, { color: colors.accent }]}>Back</Text>
       </TouchableOpacity>
