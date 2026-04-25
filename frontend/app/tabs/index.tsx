@@ -11,20 +11,23 @@ export default function HomeScreen() {
 
   const actions = [
     ['Inspect', 'camera-outline', '/tabs/camera'],
-    ['Review', 'shield-checkmark-outline', '/tabs/review'],
-    ['Reports', 'document-text-outline', '/tabs/history'],
-    ['Settings', 'settings-outline', '/tabs/settings'],
+    ['Work', 'shield-checkmark-outline', '/tabs/review'],
+    ['Records', 'document-text-outline', '/tabs/history'],
+    ['Control', 'settings-outline', '/tabs/settings'],
   ];
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={[styles.hero, { backgroundColor: '#0b1120' }]}>
+      <View style={styles.logoBanner}>
         <Image
           source={require('../../assets/images/logo-header.png')}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={[styles.title, { color: '#FFFFFF' }]}>Command Center</Text>
+      </View>
+
+      <View style={styles.titleBlock}>
+        <Text style={[styles.title, { color: colors.text }]}>Command Center</Text>
         <Text style={[styles.subtitle, { color: colors.sub }]}>
           Safety intelligence for inspections, reporting, and corrective action management.
         </Text>
@@ -69,35 +72,33 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     flexGrow: 1,
   },
-  hero: {
+  logoBanner: {
+    backgroundColor: '#0b1120',
+    marginHorizontal: -tokens.spacing.md,
+    marginTop: -tokens.spacing.md,
+    height: 138,
     alignItems: 'center',
-    marginHorizontal: -16,
-    marginTop: -16,
-    paddingTop: 14,
-    paddingBottom: 18,
-    paddingHorizontal: 16,
+    justifyContent: 'center',
     marginBottom: 18,
   },
   logo: {
-    width: '100%',
-    height: 260,
-    maxWidth: 980,
-    alignSelf: 'center',
-    marginBottom: -8,
+    width: '96%',
+    height: 118,
+    maxWidth: 680,
+  },
+  titleBlock: {
+    marginBottom: 22,
   },
   title: {
-    fontSize: 32,
+    fontSize: 42,
     fontWeight: '900',
-    marginTop: -4,
-    letterSpacing: -0.6,
+    letterSpacing: -0.9,
   },
   subtitle: {
-    textAlign: 'center',
     marginTop: 8,
-    marginBottom: 8,
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: 350,
+    fontSize: 15,
+    lineHeight: 21,
+    maxWidth: 380,
     fontWeight: '700',
   },
   sectionTitle: {
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   list: {
-    marginBottom: 12,
+    marginBottom: 22,
   },
   row: {
     minHeight: 64,
