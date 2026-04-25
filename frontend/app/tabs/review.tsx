@@ -7,6 +7,7 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import AppFooter from '../../src/components/ui/AppFooter';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import StatusPill from '../../src/components/ui/StatusPill';
 import { apiClient } from '../../src/api/client';
 
@@ -84,13 +85,10 @@ export default function WorkScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.screenHeader}>
-        <Text style={[styles.headerKicker, { color: colors.accent }]}>Operational Workflow</Text>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Work Queue</Text>
-        <Text style={[styles.headerSub, { color: colors.sub }]}>
-          Review submitted reports and close corrective actions from one place.
-        </Text>
-      </View>
+      <BrandedHeader
+        title="Work Queue"
+        subtitle="Review submitted reports and close corrective actions from one place."
+      />
 
       <View style={styles.kpiRow}>
         <AppCard style={styles.kpiCard}>

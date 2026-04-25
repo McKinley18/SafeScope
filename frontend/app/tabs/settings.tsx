@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppFooter from '../../src/components/ui/AppFooter';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import { LocalVault } from '../../src/storage/LocalVault';
 import { SecurityVault } from '../../src/security/SecurityVault';
 
@@ -49,13 +50,10 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.screenHeader}>
-        <Text style={[styles.headerKicker, { color: colors.accent }]}>Workspace Administration</Text>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Control Center</Text>
-        <Text style={[styles.headerSub, { color: colors.sub }]}>
-          Manage workspace access, security, local records, and preferences.
-        </Text>
-      </View>
+      <BrandedHeader
+        title="Control Center"
+        subtitle="Manage workspace access, security, local records, and preferences."
+      />
 
       <View style={[styles.profileBand, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
         <View style={[styles.avatar, { backgroundColor: colors.accent }]}>

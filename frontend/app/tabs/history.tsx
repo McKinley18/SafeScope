@@ -16,6 +16,7 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import PageHeader from '../../src/components/ui/PageHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import StatusPill from '../../src/components/ui/StatusPill';
 import { apiClient } from '../../src/api/client';
 
@@ -206,13 +207,10 @@ export default function HistoryScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.screenHeader}>
-        <Text style={[styles.headerKicker, { color: colors.accent }]}>Records Intelligence</Text>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Reports Center</Text>
-        <Text style={[styles.headerSub, { color: colors.sub }]}>
-          Search, filter, archive, and open executive-grade safety records.
-        </Text>
-      </View>
+      <BrandedHeader
+        title="Records Center"
+        subtitle="Search, filter, archive, and open executive-grade safety records."
+      />
 
       <View style={styles.kpiRow}>
         <AppCard style={styles.kpiCard}>

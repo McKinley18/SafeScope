@@ -20,8 +20,8 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
-import PageHeader from '../../src/components/ui/PageHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 
 const DRAFT_KEY = 'safescope_hazard_draft_v1';
 const AUTH_USER_KEY = 'safescope_auth_user_v1';
@@ -346,13 +346,10 @@ const useSuggestion = async () => {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.screenHeader}>
-        <Text style={[styles.headerKicker, { color: colors.accent }]}>Field Inspection</Text>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Inspect</Text>
-        <Text style={[styles.headerSub, { color: colors.sub }]}>
-          Add photos to this finding, complete the details, then save or submit the report.
-        </Text>
-      </View>
+      <BrandedHeader
+        title="Inspect"
+        subtitle="Add photos to this finding, complete the details, then save or submit the report."
+      />
 
       <View style={styles.actionStack}>
         <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
