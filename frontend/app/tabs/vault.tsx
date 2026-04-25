@@ -47,15 +47,15 @@ export default function VaultScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
-        <Ionicons name="arrow-back-outline" size={18} color={colors.accent} />
-        <Text style={[styles.backText, { color: colors.accent }]}>Back</Text>
-      </TouchableOpacity>
-
       <BrandedHeader
         title="Local Vault"
         subtitle="Offline drafts, stored reports, and field records saved on device."
       />
+
+      <TouchableOpacity style={styles.backRow} onPress={() => router.push('/tabs/settings' as any)}>
+        <Ionicons name="arrow-back-outline" size={18} color={colors.accent} />
+        <Text style={[styles.backText, { color: colors.accent }]}>Back to Control</Text>
+      </TouchableOpacity>
 
       {reports.length === 0 ? (
         <AppCard>
@@ -113,10 +113,10 @@ export default function VaultScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: colors.cardAlt, borderColor: colors.border, borderWidth: 1 }]}
+                style={[styles.actionButton, { backgroundColor: '#fee2e2', borderColor: '#fecaca', borderWidth: 1 }]}
                 onPress={() => deleteReport(report.id)}
               >
-                <Text style={[styles.secondaryText, { color: colors.text }]}>Delete</Text>
+                <Text style={[styles.secondaryText, { color: '#991b1b' }]}>Delete Draft</Text>
               </TouchableOpacity>
             </View>
           </AppCard>
