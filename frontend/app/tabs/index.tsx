@@ -24,7 +24,6 @@ export default function HomeScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={[styles.kicker, { color: colors.accent }]}>Sentinel Safety</Text>
         <Text style={[styles.title, { color: colors.text }]}>Command Center</Text>
         <Text style={[styles.subtitle, { color: colors.sub }]}>
           Safety intelligence for inspections, reporting, and corrective action management.
@@ -71,57 +70,14 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingVertical: 8,
-    marginBottom: 14,
+    paddingTop: 0,
+    paddingBottom: 6,
+    marginBottom: 6,
   },
   logo: {
-    width: '100%',
+    width: 460,
     height: 220,
-    maxWidth: 520,
-    alignSelf: 'center',
-    marginBottom: -35,
-  },
-  kicker: {
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  title: {
-    fontSize: 34,
-    fontWeight: '900',
-    marginTop: 4,
-  },
-  subtitle: {
-    textAlign: 'center',
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: 340,
-    fontWeight: '700',
-  },
-  statusBar: {
-    minHeight: 58,
-    borderRadius: 16,
-    paddingHorizontal: 18,
-    marginBottom: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  statusText: {
-    fontWeight: '900',
-    fontSize: 16,
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 999,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    marginBottom: 8,
+    marginBottom: -18,
   },
   list: {
     marginBottom: 18,
