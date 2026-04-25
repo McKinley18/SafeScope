@@ -16,6 +16,7 @@ import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import PageHeader from '../../src/components/ui/PageHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
+import StatusPill from '../../src/components/ui/StatusPill';
 import { apiClient } from '../../src/api/client';
 
 type QueueItem = {
