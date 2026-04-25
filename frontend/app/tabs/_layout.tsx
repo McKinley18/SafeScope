@@ -65,7 +65,7 @@ function TabsNavigator() {
       <Tabs.Screen
         name="review"
         options={{
-          title: 'Review',
+          title: 'Work',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="shield-checkmark-outline" size={size} color={color} />
           ),
@@ -75,17 +75,14 @@ function TabsNavigator() {
       <Tabs.Screen
         name="analytics"
         options={{
-          title: 'Intel',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" size={size} color={color} />
-          ),
+          href: null,
         }}
       />
 
       <Tabs.Screen
         name="history"
         options={{
-          title: 'Reports',
+          title: 'Records',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="time-outline" size={size} color={color} />
           ),
