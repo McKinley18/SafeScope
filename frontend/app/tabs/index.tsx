@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   logo: {
-    width: '132%',
-    height: 230,
-    maxWidth: 1280,
+    width: '155%',
+    height: 285,
+    maxWidth: 1500,
     alignSelf: 'center',
-    marginTop: -18,
-    marginBottom: -10,
+    marginTop: -34,
+    marginBottom: -20,
   },
   titleBlock: {
     marginBottom: 24,
