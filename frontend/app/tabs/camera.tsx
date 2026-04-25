@@ -303,7 +303,7 @@ export default function CameraScreen() {
 
     if (!reportId) {
       const created = await apiClient.createReport(await buildPayload());
-      reportId = created?.id;
+      reportId = created?.id || created?.data?.id || created?.report?.id;
       const nextDraft = { ...draft, id: reportId };
       await persistDraft(nextDraft);
       return reportId;
@@ -439,7 +439,8 @@ export default function CameraScreen() {
         reportStatus: 'submitted',
       });
 
-      Alert.alert('Report submitted', 'This report has been sent to the Work Queue.');
+      Alert.alert('Report submitted', 'This report has been sent to the Work Center.');
+      await AsyncStorage.removeItem(DRAFT_KEY);
       router.push('/tabs/review');
     } catch (error) {
       console.error(error);
@@ -468,7 +469,7 @@ const useSuggestion = async () => {
 
       <View style={styles.actionStack}>
         <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
-        <AppButton label="Save & Add Finding" variant="secondary" onPress={saveCurrentFinding} />
+        <AppButton label="Add Finding" variant="secondary" onPress={saveCurrentFinding} />
         <AppButton label="Submit Report" onPress={submitForReview} />
       </View>
 
@@ -718,6 +719,12 @@ Add photo(s), complete this finding, then continue to the next finding or save d
           value={draft.notes}
           onChangeText={(t) => updateField('notes', t)}
         />
+      </View>
+
+      <View style={styles.builderActions}>
+        <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
+        <AppButton label="Add Finding" variant="secondary" onPress={saveCurrentFinding} />
+        <AppButton label="Submit Report" onPress={submitForReview} />
       </View>
 
       <AppFooter />
