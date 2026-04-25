@@ -6,7 +6,7 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
-import PageHeader from '../../src/components/ui/PageHeader';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
 import { apiClient } from '../../src/api/client';
 
@@ -82,9 +82,9 @@ export default function ActionsScreen() {
         <Text style={[styles.backText, { color: colors.accent }]}>Back</Text>
       </TouchableOpacity>
 
-      <PageHeader
-        title="Corrective Actions"
-        subtitle="Track closure, priority, due dates, and corrective action accountability."
+      <BrandedHeader
+        title="Work Actions"
+        subtitle="Track ownership, due dates, overdue items, and closure progress."
       />
 
       <View style={styles.kpiRow}>

@@ -14,7 +14,7 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
-import PageHeader from '../../src/components/ui/PageHeader';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
 import { apiClient } from '../../src/api/client';
 import jsPDF from 'jspdf';
@@ -340,9 +340,9 @@ export default function ReportDetailScreen() {
         <Text style={[styles.backText, { color: colors.accent }]}>Back</Text>
       </TouchableOpacity>
 
-      <PageHeader
+      <BrandedHeader
         title="Executive Report"
-        subtitle="C-suite summary, evidence, classification detail, and corrective action status."
+        subtitle="Detailed report view, findings, evidence, and corrective actions."
       />
 
       <AppCard style={styles.heroCard}>

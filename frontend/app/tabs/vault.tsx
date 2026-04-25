@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
-import PageHeader from '../../src/components/ui/PageHeader';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
 import { LocalVault, LocalVaultReport } from '../../src/storage/LocalVault';
 
@@ -52,9 +52,9 @@ export default function VaultScreen() {
         <Text style={[styles.backText, { color: colors.accent }]}>Back</Text>
       </TouchableOpacity>
 
-      <PageHeader
+      <BrandedHeader
         title="Local Vault"
-        subtitle="Recover drafts and device-saved inspections stored locally on this device."
+        subtitle="Offline drafts, stored reports, and field records saved on device."
       />
 
       {reports.length === 0 ? (

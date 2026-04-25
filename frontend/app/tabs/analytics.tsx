@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
-import PageHeader from '../../src/components/ui/PageHeader';
+import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
@@ -145,9 +145,9 @@ export default function AnalyticsScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <PageHeader
-        title="Executive Analytics"
-        subtitle="Live operational intelligence from reports, reviews, and action performance."
+      <BrandedHeader
+        title="Intel Center"
+        subtitle="Operational trends, recurring hazards, and safety performance insights."
       />
 
       <View style={styles.headerMetaRow}>
