@@ -18,9 +18,9 @@ export default function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.hero}>
+      <View style={[styles.hero, { backgroundColor: colors.cardAlt }]}>
         <Image
-          source={require('../../assets/images/logo.png')}
+          source={require('../../assets/images/logo-header.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -71,15 +71,17 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: 'center',
-    paddingTop: 0,
-    paddingBottom: 2,
-    marginBottom: 10,
+    paddingTop: 6,
+    paddingBottom: 10,
+    marginBottom: 18,
+    borderRadius: 22,
   },
   logo: {
-    width: 520,
-    height: 170,
+    width: '100%',
+    height: 130,
+    maxWidth: 560,
     alignSelf: 'center',
-    marginBottom: -12,
+    marginBottom: -4,
   },
   title: {
     fontSize: 36,
