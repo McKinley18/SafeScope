@@ -239,10 +239,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
   },
   logo: {
-    width: 245,
-    height: 118,
+    width: '100%',
+    height: 220,
+    maxWidth: 520,
     alignSelf: 'center',
-    marginBottom: -12,
+    marginBottom: -35,
   },
   kicker: {
     fontSize: 11,

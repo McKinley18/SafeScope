@@ -80,9 +80,11 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   logo: {
-    width: 340,
-    height: 150,
-    marginBottom: -28,
+    width: '100%',
+    height: 220,
+    maxWidth: 520,
+    alignSelf: 'center',
+    marginBottom: -35,
   },
   kicker: {
     fontSize: 12,
