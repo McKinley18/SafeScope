@@ -434,23 +434,6 @@ Add photo(s), complete this finding, then continue to the next finding or save d
       <View style={styles.sectionBlock}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Finding Information</Text>
 
-        <Text style={[styles.fieldLabel, { color: colors.sub }]}>Hazard Description</Text>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: colors.cardAlt,
-              borderColor: colors.border,
-              color: colors.text,
-            },
-          ]}
-          multiline
-          placeholder="Example: Missing guard on conveyor tail pulley"
-          placeholderTextColor={colors.muted}
-          value={draft.hazardDescription}
-          onChangeText={(t) => updateField('hazardDescription', t)}
-        />
-
         <Text style={[styles.fieldLabel, { color: colors.sub }]}>Area</Text>
         <TextInput
           style={[
@@ -499,6 +482,56 @@ Add photo(s), complete this finding, then continue to the next finding or save d
           onChangeText={(t) => updateField('workActivity', t)}
         />
 
+        <Text style={[styles.fieldLabel, { color: colors.sub }]}>Hazard Description</Text>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.cardAlt,
+              borderColor: colors.border,
+              color: colors.text,
+            },
+          ]}
+          multiline
+          placeholder="Example: Missing guard on conveyor tail pulley"
+          placeholderTextColor={colors.muted}
+          value={draft.hazardDescription}
+          onChangeText={(t) => updateField('hazardDescription', t)}
+        />
+
+        <View style={styles.inlineStandards}>
+          <Text style={[styles.subSectionTitle, { color: colors.text }]}>Suggested Standards</Text>
+
+          {standardMatches.length === 0 ? (
+            <Text style={[styles.standardEmpty, { color: colors.sub }]}>
+              Enter the finding details to see suggested standards.
+            </Text>
+          ) : (
+            standardMatches.map((item) => (
+              <View
+                key={item.id}
+                style={[styles.standardCard, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+              >
+                <Text style={[styles.standardCitation, { color: colors.accent }]}>
+                  {item.citation}
+                </Text>
+
+                <Text style={[styles.standardTitle, { color: colors.text }]}>
+                  {item.title}
+                </Text>
+
+                <Text style={[styles.standardMeta, { color: colors.sub }]}>
+                  {item.source} • {item.category} • {item.confidence.toUpperCase()}
+                </Text>
+
+                <Text style={[styles.standardWhy, { color: colors.muted }]}>
+                  {item.rationale}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+
         <Text style={[styles.fieldLabel, { color: colors.sub }]}>Severity</Text>
         <View style={styles.chipRow}>
           {severityOptions.map((option) => {
@@ -544,39 +577,6 @@ Add photo(s), complete this finding, then continue to the next finding or save d
           value={draft.notes}
           onChangeText={(t) => updateField('notes', t)}
         />
-      </View>
-
-      <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Suggested Standards</Text>
-
-        {standardMatches.length === 0 ? (
-          <Text style={[styles.standardEmpty, { color: colors.sub }]}>
-            Enter the finding details to see suggested standards.
-          </Text>
-        ) : (
-          standardMatches.map((item) => (
-            <View
-              key={item.id}
-              style={[styles.standardCard, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-            >
-              <Text style={[styles.standardCitation, { color: colors.accent }]}>
-                {item.citation}
-              </Text>
-
-              <Text style={[styles.standardTitle, { color: colors.text }]}>
-                {item.title}
-              </Text>
-
-              <Text style={[styles.standardMeta, { color: colors.sub }]}>
-                {item.source} • {item.category} • {item.confidence.toUpperCase()}
-              </Text>
-
-              <Text style={[styles.standardWhy, { color: colors.muted }]}>
-                {item.rationale}
-              </Text>
-            </View>
-          ))
-        )}
       </View>
 
       <AppFooter />
@@ -743,6 +743,15 @@ image: {
   },
   useSuggestionButton: {
     marginTop: tokens.spacing.md,
+  },
+  inlineStandards: {
+    marginTop: tokens.spacing.md,
+    marginBottom: tokens.spacing.sm,
+  },
+  subSectionTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: tokens.spacing.sm,
   },
   fieldLabel: {
     fontSize: tokens.type.small,
