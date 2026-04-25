@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   pageTitle: {
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: '900',
     letterSpacing: -0.9,
   },
