@@ -47,7 +47,7 @@ export default function AppLockGate({ children }: { children: React.ReactNode })
     return (
       <View style={[styles.wrap, { backgroundColor: colors.bg }]}>
         <Text style={[styles.title, { color: colors.text }]}>
-          {configured ? 'Unlock SafeScope' : 'Create Security PIN'}
+          {configured ? 'Unlock Sentinel Safety' : 'Create Security PIN'}
         </Text>
 
         <Text style={[styles.sub, { color: colors.sub }]}>

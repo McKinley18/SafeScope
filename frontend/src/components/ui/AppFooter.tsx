@@ -17,7 +17,7 @@ export default function AppFooter() {
       <View style={[styles.accent, { backgroundColor: colors.accent }]} />
 
       <Text style={[styles.brand, { color: colors.text }]}>
-        SafeScope
+        Sentinel Safety
       </Text>
 
       <Text style={[styles.sub, { color: colors.sub }]}>

@@ -110,7 +110,7 @@ export default function ReportDetailScreen() {
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);
       doc.text(
-        'SafeScope • Operational Safety Intelligence • Monolith Studios',
+        'Sentinel Safety • Operational Safety Intelligence • Monolith Studios',
         14,
         pageHeight - 9
       );
@@ -164,7 +164,7 @@ export default function ReportDetailScreen() {
 
     doc.setTextColor(255, 106, 0);
     doc.setFontSize(10);
-    doc.text('SafeScope Verified Report Package', 52, 26);
+    doc.text('Sentinel Safety Verified Report Package', 52, 26);
 
     doc.setTextColor(17, 24, 39);
     doc.setFontSize(20);
@@ -303,7 +303,7 @@ export default function ReportDetailScreen() {
     }
 
     addFooter();
-    doc.save(`SafeScope-Executive-Report-${safeText(report?.id, 'export')}.pdf`);
+    doc.save(`Sentinel Safety-Executive-Report-${safeText(report?.id, 'export')}.pdf`);
   };
 
   const statusColor = () => {

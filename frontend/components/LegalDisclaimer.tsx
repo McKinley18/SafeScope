@@ -24,15 +24,15 @@ export default function LegalDisclaimer({ onAccept }: { onAccept?: () => void })
       <View style={styles.overlay}>
         <View style={styles.card}>
           <ScrollView>
-            <Text style={styles.title}>SafeScope Legal Notice</Text>
+            <Text style={styles.title}>Sentinel Safety Legal Notice</Text>
 
             <Text style={styles.body}>
-              SafeScope is an operational safety intelligence platform designed to assist with safety documentation,
+              Sentinel Safety is an operational safety intelligence platform designed to assist with safety documentation,
               hazard review, workflow tracking, and corrective action management.
             </Text>
 
             <Text style={styles.body}>
-              SafeScope does not replace competent persons, supervisors, engineers, certified inspectors,
+              Sentinel Safety does not replace competent persons, supervisors, engineers, certified inspectors,
               legal counsel, emergency responders, site safety procedures, or regulatory authorities.
             </Text>
 
@@ -50,7 +50,7 @@ export default function LegalDisclaimer({ onAccept }: { onAccept?: () => void })
             </Text>
 
             <Text style={styles.body}>
-              Users are responsible for all information, images, notes, and files entered into SafeScope and for
+              Users are responsible for all information, images, notes, and files entered into Sentinel Safety and for
               confirming they have permission to collect, store, share, or export such information.
             </Text>
 
@@ -60,7 +60,7 @@ export default function LegalDisclaimer({ onAccept }: { onAccept?: () => void })
             </Text>
 
             <Text style={styles.body}>
-              To the maximum extent permitted by law, SafeScope and Monolith Studios disclaim liability for indirect,
+              To the maximum extent permitted by law, Sentinel Safety and Monolith Studios disclaim liability for indirect,
               incidental, special, consequential, punitive, operational, regulatory, data-loss, downtime, or business
               interruption damages arising from use of the platform.
             </Text>

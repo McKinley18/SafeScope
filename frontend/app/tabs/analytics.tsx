@@ -183,7 +183,7 @@ export default function AnalyticsScreen() {
 
       <View style={styles.dualGrid}>
         <AppCard style={styles.metricCard}>
-          <Text style={[styles.metricTitle, { color: colors.text }]}>Avg Review Time</Text>
+          <Text style={[styles.metricTitle, { color: colors.text }]}>Open Reviews</Text>
           <Text style={[styles.metricValue, { color: colors.accent }]}>
             {data?.analytics?.avgReviewTime ? `${data.analytics.avgReviewTime.toFixed(1)} hrs` : 'N/A'}
           </Text>
@@ -193,7 +193,7 @@ export default function AnalyticsScreen() {
         </AppCard>
 
         <AppCard style={styles.metricCard}>
-          <Text style={[styles.metricTitle, { color: colors.text }]}>Avg Close Time</Text>
+          <Text style={[styles.metricTitle, { color: colors.text }]}>Open Actions</Text>
           <Text style={[styles.metricValue, { color: colors.accent }]}>
             {data?.analytics?.avgCloseTime ? `${data.analytics.avgCloseTime.toFixed(1)} days` : 'N/A'}
           </Text>
@@ -204,7 +204,7 @@ export default function AnalyticsScreen() {
       </View>
 
       <AppCard style={styles.sectionCard}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Top Hazard Recurrence</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>High Priority Signals</Text>
 
         {topHazards.length === 0 ? (
           <View style={[styles.emptyWrap, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
@@ -234,7 +234,7 @@ export default function AnalyticsScreen() {
       </AppCard>
 
       <AppCard style={styles.sectionCard}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Review Aging</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Review Readiness</Text>
 
         {reviewAging.length === 0 ? (
           <View style={[styles.emptyWrap, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
@@ -260,7 +260,7 @@ export default function AnalyticsScreen() {
       </AppCard>
 
       <AppCard style={styles.sectionCard}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Action Aging</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Corrective Action Health</Text>
 
         {actionAging.length === 0 ? (
           <View style={[styles.emptyWrap, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>

@@ -31,11 +31,6 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      <View style={[styles.statusBar, { backgroundColor: colors.cardAlt }]}>
-        <Text style={[styles.statusText, { color: colors.text }]}>System Ready</Text>
-        <View style={[styles.dot, { backgroundColor: colors.accent }]} />
-      </View>
-
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Quick Actions</Text>
 
       <View style={styles.list}>

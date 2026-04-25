@@ -114,7 +114,7 @@ export default function ReviewScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <PageHeader
-        title="AI Decision Queue"
+        title="Decision Queue"
         subtitle="Submitted reports awaiting supervisory approval, rejection, or escalation."
       />
 

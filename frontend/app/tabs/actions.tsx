@@ -66,7 +66,7 @@ export default function ActionsScreen() {
   const closeAction = async (id: string) => {
     try {
       setClosingId(id);
-      await apiClient.closeCorrectiveAction(id, 'Closed from SafeScope corrective action dashboard.');
+      await apiClient.closeCorrectiveAction(id, 'Closed from Sentinel Safety corrective action dashboard.');
       await loadActions();
     } catch {
       Alert.alert('Unable to close action');
