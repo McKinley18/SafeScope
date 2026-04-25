@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 8,
     paddingHorizontal: 12,
-    marginBottom: 18,
+    marginBottom: 12,
     borderRadius: 24,
   },
   logo: {
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   list: {
-    marginBottom: 18,
+    marginBottom: 12,
   },
   row: {
     minHeight: 64,
