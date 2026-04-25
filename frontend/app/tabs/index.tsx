@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 8,
     paddingHorizontal: 12,
-    marginBottom: 16,
+    marginBottom: 18,
     borderRadius: 24,
   },
   logo: {
