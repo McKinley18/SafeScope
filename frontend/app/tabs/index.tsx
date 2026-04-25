@@ -18,18 +18,16 @@ export default function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.logoBanner}>
+      <View style={styles.hero}>
         <Image
           source={require('../../assets/images/logo-header.png')}
           style={styles.logo}
           resizeMode="contain"
         />
-      </View>
 
-      <View style={styles.titleBlock}>
-        <Text style={[styles.title, { color: colors.text }]}>Command Center</Text>
-        <Text style={[styles.subtitle, { color: colors.sub }]}>
-          Safety intelligence for inspections, reporting, and corrective action management.
+        <Text style={styles.heroTitle}>Command Center</Text>
+        <Text style={styles.heroSub}>
+          Inspect, review, report, and close safety work from one secure workspace.
         </Text>
       </View>
 
@@ -50,7 +48,6 @@ export default function HomeScreen() {
       </View>
 
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Today</Text>
-      <View style={{ height: 12 }} />
 
       <View style={styles.metrics}>
         {['Open Actions', 'Pending Reviews', 'High Risk'].map((item) => (
@@ -72,34 +69,37 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     flexGrow: 1,
   },
-  logoBanner: {
+  hero: {
     backgroundColor: '#0b1120',
     marginHorizontal: -tokens.spacing.md,
     marginTop: -tokens.spacing.md,
-    height: 138,
+    paddingTop: 18,
+    paddingBottom: 24,
+    paddingHorizontal: tokens.spacing.md,
+    marginBottom: 24,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 18,
   },
   logo: {
-    width: '96%',
-    height: 118,
-    maxWidth: 680,
+    width: '100%',
+    height: 185,
+    maxWidth: 820,
+    marginBottom: -20,
   },
-  titleBlock: {
-    marginBottom: 22,
-  },
-  title: {
-    fontSize: 42,
+  heroTitle: {
+    color: '#FFFFFF',
+    fontSize: 40,
     fontWeight: '900',
     letterSpacing: -0.9,
+    textAlign: 'center',
   },
-  subtitle: {
+  heroSub: {
+    color: '#CBD5E1',
     marginTop: 8,
-    fontSize: 15,
-    lineHeight: 21,
-    maxWidth: 380,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: '700',
+    textAlign: 'center',
+    maxWidth: 360,
   },
   sectionTitle: {
     fontSize: 24,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   list: {
-    marginBottom: 22,
+    marginBottom: 24,
   },
   row: {
     minHeight: 64,
