@@ -939,13 +939,15 @@ image: {
   chip: {
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    flex: 1,
+    alignItems: 'center',
   },
   chipText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '900',
-    letterSpacing: 0.4,
+    letterSpacing: 0.2,
   },
   standardEmpty: {
     fontSize: 13,
