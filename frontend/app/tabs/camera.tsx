@@ -24,6 +24,7 @@ import PageHeader from '../../src/components/ui/PageHeader';
 import AppFooter from '../../src/components/ui/AppFooter';
 
 const DRAFT_KEY = 'safescope_hazard_draft_v1';
+const AUTH_USER_KEY = 'safescope_auth_user_v1';
 
 type DraftImage = {
   uri: string;
@@ -303,6 +304,32 @@ export default function CameraScreen() {
 
   const clearImages = async () => {
     await persistDraft({ ...draft, images: [] });
+  };
+
+  const saveDraft = async () => {
+    await persistDraft(draft);
+    Alert.alert('Draft saved', 'This finding has been saved to the local vault.');
+  };
+
+  const submitForReview = async () => {
+    try {
+      const reportId = await ensureReportExists();
+      if (!reportId) {
+        Alert.alert('Unable to submit', 'Could not create report.');
+        return;
+      }
+
+      await apiClient.updateReport(reportId, {
+        ...(await buildPayload()),
+        reportStatus: 'submitted',
+      });
+
+      Alert.alert('Report submitted', 'This report has been sent to the Work Queue.');
+      router.push('/tabs/review');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Submit failed', 'Unable to submit report for review.');
+    }
   };
 
 const useSuggestion = async () => {
