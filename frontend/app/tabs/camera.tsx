@@ -186,14 +186,14 @@ export default function CameraScreen() {
     let reportId = draft.id;
 
     if (!reportId) {
-      const created = await apiClient.createReport(buildPayload());
+      const created = await apiClient.createReport(await buildPayload());
       reportId = created?.id;
       const nextDraft = { ...draft, id: reportId };
       await persistDraft(nextDraft);
       return reportId;
     }
 
-    await apiClient.updateReport(reportId, buildPayload());
+    await apiClient.updateReport(reportId, await buildPayload());
     return reportId;
   };
 
@@ -323,7 +323,7 @@ const useSuggestion = async () => {
         <Text style={[styles.headerKicker, { color: colors.accent }]}>Field Inspection</Text>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Inspect</Text>
         <Text style={[styles.headerSub, { color: colors.sub }]}>
-          Capture evidence, describe the condition, and prepare the report for review.
+          Add photos to this finding, complete the details, then save or submit the report.
         </Text>
       </View>
 
@@ -334,7 +334,10 @@ const useSuggestion = async () => {
       </View>
 
       <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Evidence</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Finding Evidence</Text>
+        <Text style={[styles.helperText, { color: colors.sub }]}>
+          Attach one or more photos for this finding. Use additional findings for separate hazards.
+        </Text>
 <Text style={[styles.helperText, { color: colors.sub }]}>
 Add photo(s), complete this finding, then continue to the next finding or save draft.
 </Text>
@@ -342,22 +345,6 @@ Add photo(s), complete this finding, then continue to the next finding or save d
         <View style={styles.actionStack}>
           <AppButton label="Take Photo" onPress={takePhoto} />
           <AppButton label="Upload Photo" variant="secondary" onPress={chooseFromLibrary} />
-          <TouchableOpacity
-            style={[
-              styles.detectButton,
-              {
-                backgroundColor: colors.cardAlt,
-                borderColor: colors.border,
-              },
-            ]}
-            onPress={generateFromPhoto}
-            disabled={detecting}
-          >
-            <Ionicons name="sparkles-outline" size={18} color={colors.accent} />
-            <Text style={[styles.detectButtonText, { color: colors.text }]}>
-              {detecting ? 'Generating…' : 'Generate From Photo'}
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -540,7 +527,7 @@ Add photo(s), complete this finding, then continue to the next finding or save d
 
         {standardMatches.length === 0 ? (
           <Text style={[styles.standardEmpty, { color: colors.sub }]}>
-            Add a hazard description to see likely standards.
+            Enter the finding details to see suggested standards.
           </Text>
         ) : (
           standardMatches.map((item) => (
