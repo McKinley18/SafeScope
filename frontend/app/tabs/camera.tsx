@@ -32,6 +32,18 @@ type DraftImage = {
   mimeType?: string;
 };
 
+type InspectionFinding = {
+  id: string;
+  hazardDescription: string;
+  area: string;
+  equipment: string;
+  workActivity: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  immediateDanger: boolean;
+  notes: string;
+  images: DraftImage[];
+};
+
 type HazardDraft = {
   id?: string;
   localVaultId?: string;
@@ -43,6 +55,7 @@ type HazardDraft = {
   immediateDanger: boolean;
   notes: string;
   images: DraftImage[];
+  findings: InspectionFinding[];
 };
 
 type HazardSuggestion = {
@@ -62,6 +75,7 @@ const emptyDraft: HazardDraft = {
   immediateDanger: false,
   notes: '',
   images: [],
+  findings: [],
 };
 
 const severityOptions: HazardDraft['severity'][] = ['low', 'medium', 'high', 'critical'];
@@ -93,6 +107,7 @@ export default function CameraScreen() {
               severity: (vaultReport.severity as HazardDraft['severity']) || 'medium',
               immediateDanger: !!vaultReport.immediateDanger,
               notes: vaultReport.notes || vaultReport.narrative || '',
+              findings: [],
               images: vaultReport.evidence.map((item) => ({
                 uri: item.uri,
                 fileName: item.fileName,
@@ -108,7 +123,8 @@ export default function CameraScreen() {
 
         const raw = await AsyncStorage.getItem(DRAFT_KEY);
         if (raw) {
-          setDraft(JSON.parse(raw));
+          const parsed = JSON.parse(raw);
+          setDraft({ ...emptyDraft, ...parsed, findings: parsed.findings || [] });
         }
       } catch (error) {
         console.error('Failed to load draft', error);
@@ -133,7 +149,10 @@ export default function CameraScreen() {
       notes: nextDraft.notes,
       reportStatus: 'draft',
       syncStatus: nextDraft.id ? 'synced' : 'local_only',
-      evidence: nextDraft.images.map((img, index) => ({
+      evidence: [
+        ...(nextDraft.findings || []).flatMap((finding) => finding.images || []),
+        ...nextDraft.images,
+      ].map((img, index) => ({
         id: `${nextDraft.localVaultId || 'draft'}_evidence_${index}`,
         uri: img.uri,
         fileName: img.fileName,
@@ -158,23 +177,115 @@ export default function CameraScreen() {
     await persistDraft({ ...draft, [key]: value });
   };
 
+  const hasCurrentFinding = () => {
+    return Boolean(
+      draft.images.length ||
+      draft.hazardDescription.trim() ||
+      draft.area.trim() ||
+      draft.equipment.trim() ||
+      draft.workActivity.trim() ||
+      draft.notes.trim()
+    );
+  };
+
+  const getAllFindings = () => {
+    const saved = draft.findings || [];
+
+    if (!hasCurrentFinding()) return saved;
+
+    return [
+      ...saved,
+      {
+        id: `finding-current`,
+        hazardDescription: draft.hazardDescription,
+        area: draft.area,
+        equipment: draft.equipment,
+        workActivity: draft.workActivity,
+        severity: draft.severity,
+        immediateDanger: draft.immediateDanger,
+        notes: draft.notes,
+        images: draft.images,
+      },
+    ];
+  };
+
+  const saveCurrentFinding = async () => {
+    if (!hasCurrentFinding()) {
+      Alert.alert('Nothing to save', 'Add photos or finding details first.');
+      return;
+    }
+
+    const finding: InspectionFinding = {
+      id: `finding-${Date.now()}`,
+      hazardDescription: draft.hazardDescription,
+      area: draft.area,
+      equipment: draft.equipment,
+      workActivity: draft.workActivity,
+      severity: draft.severity,
+      immediateDanger: draft.immediateDanger,
+      notes: draft.notes,
+      images: draft.images,
+    };
+
+    await persistDraft({
+      ...draft,
+      findings: [...(draft.findings || []), finding],
+      hazardDescription: '',
+      area: '',
+      equipment: '',
+      workActivity: '',
+      severity: 'medium',
+      immediateDanger: false,
+      notes: '',
+      images: [],
+    });
+
+    setSuggestion(null);
+    Alert.alert('Finding saved', 'You can now add the next finding.');
+  };
+
+  const removeFinding = async (id: string) => {
+    await persistDraft({
+      ...draft,
+      findings: (draft.findings || []).filter((finding) => finding.id !== id),
+    });
+  };
+
   const buildPayload = async () => {
   const rawUser = await AsyncStorage.getItem(AUTH_USER_KEY);
   const user = rawUser ? JSON.parse(rawUser) : {};
+
+  const findings = getAllFindings();
+
+  const findingsSummary = findings
+    .map((finding, index) => {
+      return [
+        `Finding ${index + 1}: ${finding.hazardDescription || 'Untitled finding'}`,
+        finding.area ? `Area: ${finding.area}` : '',
+        finding.equipment ? `Equipment: ${finding.equipment}` : '',
+        finding.workActivity ? `Work Performed: ${finding.workActivity}` : '',
+        `Severity: ${finding.severity}`,
+        finding.notes ? `Notes: ${finding.notes}` : '',
+        `Photos: ${finding.images.length}`,
+      ]
+        .filter(Boolean)
+        .join('\n');
+    })
+    .join('\n\n');
 
   return {
     tenantId: user.tenantId || 'default',
     createdByUserId: user.id || undefined,
     sourceType: 'mobile',
-    title: draft.hazardDescription || 'Hazard Draft',
-    narrative: draft.notes || draft.hazardDescription || '',
+    title: findings[0]?.hazardDescription || draft.hazardDescription || 'Inspection Report Draft',
+    narrative: findingsSummary || draft.notes || draft.hazardDescription || '',
     reportStatus: 'draft',
-    hazardDescription: draft.hazardDescription || undefined,
+    hazardDescription: findings[0]?.hazardDescription || draft.hazardDescription || undefined,
     area: draft.area || undefined,
     equipment: draft.equipment || undefined,
     workActivity: draft.workActivity || undefined,
     severity: draft.severity || undefined,
-    notes: draft.notes || undefined,
+    notes: findingsSummary || draft.notes || undefined,
     likelyStandards: matchStandards(
       [draft.hazardDescription, draft.notes, draft.equipment, draft.workActivity]
         .filter(Boolean)
@@ -353,7 +464,7 @@ const useSuggestion = async () => {
 
       <View style={styles.actionStack}>
         <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
-        <AppButton label="Add Another Finding" variant="secondary" onPress={clearImages} />
+        <AppButton label="Save & Add Finding" variant="secondary" onPress={saveCurrentFinding} />
         <AppButton label="Submit Report" onPress={submitForReview} />
       </View>
 
@@ -403,6 +514,32 @@ Add photo(s), complete this finding, then continue to the next finding or save d
           )}
           
     </ScrollView>
+
+        {(draft.findings || []).length > 0 && (
+          <View style={styles.savedFindings}>
+            <Text style={[styles.subSectionTitle, { color: colors.text }]}>Saved Findings</Text>
+
+            {draft.findings.map((finding, index) => (
+              <View
+                key={finding.id}
+                style={[styles.savedFindingCard, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.savedFindingTitle, { color: colors.text }]}>
+                    Finding {index + 1}: {finding.hazardDescription || 'Untitled finding'}
+                  </Text>
+                  <Text style={[styles.savedFindingMeta, { color: colors.sub }]}>
+                    {finding.area || 'No area'} • {finding.images.length} photo(s) • {finding.severity.toUpperCase()}
+                  </Text>
+                </View>
+
+                <TouchableOpacity onPress={() => removeFinding(finding.id)}>
+                  <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
 
       {suggestion && (
@@ -752,6 +889,27 @@ image: {
     fontSize: 16,
     fontWeight: '900',
     marginBottom: tokens.spacing.sm,
+  },
+  savedFindings: {
+    marginTop: tokens.spacing.md,
+    gap: tokens.spacing.sm,
+  },
+  savedFindingCard: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  savedFindingTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    marginBottom: 3,
+  },
+  savedFindingMeta: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   fieldLabel: {
     fontSize: tokens.type.small,
