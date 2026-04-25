@@ -143,7 +143,7 @@ export default function SettingsScreen() {
       </View>
 
       <Text style={[styles.versionText, { color: colors.muted }]}>
-        Sentinel Safety Platform • v1.0.0 • Monolith Studios
+        Sentinel Safety Platform
       </Text>
 
       <AppFooter />
