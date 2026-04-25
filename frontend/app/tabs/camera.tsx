@@ -327,12 +327,21 @@ const useSuggestion = async () => {
         </Text>
       </View>
 
+      <View style={styles.actionStack}>
+        <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
+        <AppButton label="Add Another Finding" variant="secondary" onPress={clearImages} />
+        <AppButton label="Submit Report" onPress={submitForReview} />
+      </View>
+
       <View style={styles.sectionBlock}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Evidence</Text>
+<Text style={[styles.helperText, { color: colors.sub }]}>
+Add photo(s), complete this finding, then continue to the next finding or save draft.
+</Text>
 
         <View style={styles.actionStack}>
           <AppButton label="Take Photo" onPress={takePhoto} />
-          <AppButton label="Upload Evidence" variant="secondary" onPress={chooseFromLibrary} />
+          <AppButton label="Upload Photo" variant="secondary" onPress={chooseFromLibrary} />
           <TouchableOpacity
             style={[
               styles.detectButton,
@@ -412,7 +421,7 @@ const useSuggestion = async () => {
       )}
 
       <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Hazard Details</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Finding Details</Text>
 
         <Text style={[styles.fieldLabel, { color: colors.sub }]}>Hazard Description</Text>
         <TextInput
@@ -527,7 +536,7 @@ const useSuggestion = async () => {
       </View>
 
       <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Likely Standards</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Suggested Standards</Text>
 
         {standardMatches.length === 0 ? (
           <Text style={[styles.standardEmpty, { color: colors.sub }]}>
@@ -565,6 +574,13 @@ const useSuggestion = async () => {
 }
 
 const styles = StyleSheet.create({
+  helperText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 6,
+    marginBottom: 12,
+    fontWeight: '600',
+  },
   container: {
     padding: tokens.spacing.md,
     paddingBottom: 20,
