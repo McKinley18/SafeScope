@@ -124,7 +124,7 @@ export default function ReviewScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <BrandedHeader
-        title="Supervisor Cockpit"
+        title="Work Center"
         subtitle="Live operational oversight for reviews, actions, overdue work, and critical risk."
       />
 

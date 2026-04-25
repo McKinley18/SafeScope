@@ -138,7 +138,11 @@ export default function CameraScreen() {
     const savedLocal = await LocalVault.saveReport({
       id: nextDraft.localVaultId,
       backendReportId: nextDraft.id,
-      title: nextDraft.hazardDescription || 'Hazard Draft',
+      title:
+        nextDraft.hazardDescription ||
+        nextDraft.area ||
+        nextDraft.equipment ||
+        'Untitled Draft',
       hazardDescription: nextDraft.hazardDescription,
       narrative: nextDraft.notes || nextDraft.hazardDescription,
       area: nextDraft.area,
@@ -277,7 +281,7 @@ export default function CameraScreen() {
     tenantId: user.tenantId || 'default',
     createdByUserId: user.id || undefined,
     sourceType: 'mobile',
-    title: findings[0]?.hazardDescription || draft.hazardDescription || 'Inspection Report Draft',
+    title: findings[0]?.hazardDescription || draft.hazardDescription || 'Untitled Draft',
     narrative: findingsSummary || draft.notes || draft.hazardDescription || '',
     reportStatus: 'draft',
     hazardDescription: findings[0]?.hazardDescription || draft.hazardDescription || undefined,
