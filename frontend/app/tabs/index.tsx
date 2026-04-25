@@ -47,6 +47,7 @@ export default function HomeScreen() {
       </View>
 
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Today</Text>
+      <View style={{ height: 12 }} />
 
       <View style={styles.metrics}>
         {['Open Actions', 'Pending Reviews', 'High Risk'].map((item) => (
@@ -71,13 +72,14 @@ const styles = StyleSheet.create({
   hero: {
     alignItems: 'center',
     paddingTop: 0,
-    paddingBottom: 6,
-    marginBottom: 6,
+    paddingBottom: 2,
+    marginBottom: 10,
   },
   logo: {
-    width: 460,
-    height: 220,
-    marginBottom: -18,
+    width: 520,
+    height: 170,
+    alignSelf: 'center',
+    marginBottom: -12,
   },
   list: {
     marginBottom: 18,
