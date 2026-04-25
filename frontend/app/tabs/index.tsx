@@ -81,6 +81,26 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: -12,
   },
+  title: {
+    fontSize: 36,
+    fontWeight: '900',
+    marginTop: -4,
+    letterSpacing: -0.7,
+  },
+  subtitle: {
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 8,
+    fontSize: 14,
+    lineHeight: 20,
+    maxWidth: 350,
+    fontWeight: '700',
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 14,
+  },
   list: {
     marginBottom: 18,
   },
