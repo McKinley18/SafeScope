@@ -215,9 +215,12 @@ export class AuthService {
     });
 
     const currentUsers = await this.userRepo.count({ where: { tenantId: invite.tenantId } });
+    const pendingInvites = await this.inviteRepo.count({
+      where: { tenantId: invite.tenantId, status: 'pending' as any },
+    });
     const seatLimit = owner?.workspaceSeatLimit || 10;
 
-    if (currentUsers >= seatLimit) {
+    if (currentUsers >= seatLimit || currentUsers + pendingInvites > seatLimit) {
       throw new UnauthorizedException(`Workspace seat limit reached. Current limit is ${seatLimit} users.`);
     }
 
