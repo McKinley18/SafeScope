@@ -151,6 +151,55 @@ export class CorrectiveActionsService {
     return updated;
   }
 
+  async generateDueDateAlerts(authHeader: string) {
+    const auth = this.getAuthContext(authHeader);
+    const now = Date.now();
+    const oneDay = 1000 * 60 * 60 * 24;
+
+    const actions = await this.actionRepo.find({
+      where: { tenantId: auth.tenantId },
+      order: { dueDate: 'ASC' },
+    });
+
+    let created = 0;
+
+    for (const action of actions) {
+      if (!action.assignedToUserId || !action.dueDate) continue;
+      if (action.statusCode === 'closed' || action.statusCode === 'cancelled') continue;
+
+      const due = new Date(action.dueDate).getTime();
+      const isOverdue = due < now;
+      const isDueSoon = due >= now && due <= now + oneDay;
+
+      const type = isOverdue ? 'overdue_action' : isDueSoon ? 'due_soon_action' : null;
+      if (!type) continue;
+
+      const existing = await this.notificationsService.findExistingForEntity({
+        tenantId: auth.tenantId,
+        userId: action.assignedToUserId,
+        type: type as any,
+        entityType: 'CORRECTIVE_ACTION',
+        entityId: action.id,
+      });
+
+      if (existing) continue;
+
+      await this.notificationsService.create({
+        tenantId: auth.tenantId,
+        userId: action.assignedToUserId,
+        type: type as any,
+        title: isOverdue ? 'Corrective action overdue' : 'Corrective action due soon',
+        message: `${action.title || 'Corrective action'} is ${isOverdue ? 'overdue' : 'due within 24 hours'}.`,
+        entityType: 'CORRECTIVE_ACTION',
+        entityId: action.id,
+      });
+
+      created += 1;
+    }
+
+    return { ok: true, created };
+  }
+
   async close(id: string, dto: CloseCorrectiveActionDto) {
     const action = await this.actionRepo.findOne({ where: { id } });
     if (!action) throw new Error('Action not found');

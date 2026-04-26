@@ -32,6 +32,24 @@ export class NotificationsService {
     return this.notificationRepo.save(this.notificationRepo.create(data));
   }
 
+  async findExistingForEntity(data: {
+    tenantId: string;
+    userId: string;
+    type: Notification['type'];
+    entityType: string;
+    entityId: string;
+  }) {
+    return this.notificationRepo.findOne({
+      where: {
+        tenantId: data.tenantId,
+        userId: data.userId,
+        type: data.type,
+        entityType: data.entityType,
+        entityId: data.entityId,
+      },
+    });
+  }
+
   async findMine(authHeader: string) {
     const auth = this.getAuthContext(authHeader);
 

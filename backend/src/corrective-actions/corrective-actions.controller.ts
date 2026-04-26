@@ -32,6 +32,11 @@ export class CorrectiveActionsController {
     return this.service.updateStatus(authorization, id, body);
   }
 
+  @Post('alerts/scan')
+  generateDueDateAlerts(@Headers('authorization') authorization: string) {
+    return this.service.generateDueDateAlerts(authorization);
+  }
+
   @Get('export')
   async export(
     @Query('statusCode') statusCode?: string,
