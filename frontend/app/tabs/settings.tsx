@@ -154,12 +154,12 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: tokens.spacing.md,
-    paddingBottom: 20,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   screenHeader: {
     paddingTop: 4,
-    paddingBottom: 18,
+    paddingBottom: 120,
   },
   headerKicker: {
     fontSize: 11,

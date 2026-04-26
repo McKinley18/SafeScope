@@ -732,10 +732,10 @@ Add photo(s), complete this finding, then continue to the next finding or save d
         <View style={styles.builderActions}>
           <AppCard>
             <Text style={[styles.savedFindingTitle, { color: colors.text }]}>
-              Finding saved to report.
+              Finding saved and corrective action created.
             </Text>
             <Text style={[styles.savedFindingMeta, { color: colors.sub }]}>
-              Add another finding or submit the completed report.
+              Add another finding or submit the completed report. Tracker updated automatically.
             </Text>
           </AppCard>
 
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: tokens.spacing.md,
-    paddingBottom: 20,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   sectionCard: {

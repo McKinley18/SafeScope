@@ -155,7 +155,7 @@ export default function ActionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: tokens.spacing.md, paddingBottom: 20, flexGrow: 1 },
+  container: { padding: tokens.spacing.md, paddingBottom: 120, flexGrow: 1 },
   backRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: tokens.spacing.md },
   backText: { fontSize: tokens.type.small, fontWeight: '800' },
   center: { paddingTop: 80, alignItems: 'center' },

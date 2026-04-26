@@ -245,7 +245,7 @@ export default function ReviewScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: tokens.spacing.md,
-    paddingBottom: 20,
+    paddingBottom: 120,
     flexGrow: 1,
   },
 
