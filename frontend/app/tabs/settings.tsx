@@ -14,8 +14,8 @@ const AUTH_TOKEN_KEY = 'safescope_auth_token_v1';
 const AUTH_USER_KEY = 'safescope_auth_user_v1';
 
 export default function SettingsScreen() {
-  const { colors, themeMode, setThemeMode } = useAppTheme();
   const router = useRouter();
+  const { colors, themeMode, setThemeMode } = useAppTheme();
 
   const [localDraftCount, setLocalDraftCount] = useState(0);
   const [user, setUser] = useState<any>({});
