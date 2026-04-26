@@ -56,6 +56,7 @@ type HazardDraft = {
   notes: string;
   images: DraftImage[];
   findings: InspectionFinding[];
+  complianceMode?: 'hybrid' | 'msha' | 'osha';
 };
 
 type HazardSuggestion = {
@@ -76,6 +77,7 @@ const emptyDraft: HazardDraft = {
   notes: '',
   images: [],
   findings: [],
+  complianceMode: 'hybrid',
 };
 
 const severityOptions: HazardDraft['severity'][] = ['low', 'medium', 'high', 'critical'];
@@ -458,7 +460,11 @@ const useSuggestion = async () => {
     [draft.hazardDescription, draft.notes, draft.equipment, draft.workActivity]
       .filter(Boolean)
       .join(' ')
-  );
+  ).filter((match) => {
+    if (draft.complianceMode === 'msha') return match.source === 'MSHA';
+    if (draft.complianceMode === 'osha') return match.source === 'OSHA';
+    return true;
+  });
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
@@ -900,6 +906,9 @@ image: {
     fontSize: 16,
     fontWeight: '900',
     marginBottom: tokens.spacing.sm,
+  },
+  complianceBlock: {
+    marginBottom: tokens.spacing.md,
   },
   savedFindings: {
     marginTop: tokens.spacing.md,
