@@ -1,6 +1,6 @@
 type Standard = {
   id: string;
-  source: 'MSHA';
+  source: 'MSHA' | 'OSHA';
   citation: string;
   title: string;
   category: string;
@@ -30,6 +30,24 @@ const rules: HazardRule[] = [
         keywords: ['guard', 'unguarded', 'conveyor', 'pulley', 'belt'],
         verificationNote: 'Verify moving parts exposure and guarding requirements before submission.',
       },
+      {
+        id: 'osha-1910-212',
+        source: 'OSHA',
+        citation: '29 CFR 1910.212',
+        title: 'Machine guarding',
+        category: 'Machine Guarding',
+        keywords: ['guard', 'machine guarding', 'moving parts'],
+        verificationNote: 'Verify employee exposure to rotating or moving machine parts.',
+      },
+      {
+        id: 'osha-1910-212',
+        source: 'OSHA',
+        citation: '29 CFR 1910.212',
+        title: 'Machine guarding',
+        category: 'Machine Guarding',
+        keywords: ['guard', 'machine guarding', 'moving parts'],
+        verificationNote: 'Verify employee exposure to rotating or moving machine parts.',
+      },
     ],
   },
   {
@@ -45,6 +63,24 @@ const rules: HazardRule[] = [
         category: 'Housekeeping',
         keywords: ['housekeeping', 'debris', 'spillage', 'buildup'],
         verificationNote: 'Verify unsafe accumulation, access interference, or slip/trip exposure.',
+      },
+      {
+        id: 'osha-1910-22',
+        source: 'OSHA',
+        citation: '29 CFR 1910.22',
+        title: 'Walking-working surfaces / housekeeping',
+        category: 'Housekeeping',
+        keywords: ['housekeeping', 'trip hazard', 'walkway'],
+        verificationNote: 'Verify walking-working surface hazards or debris accumulation.',
+      },
+      {
+        id: 'osha-1910-22',
+        source: 'OSHA',
+        citation: '29 CFR 1910.22',
+        title: 'Walking-working surfaces / housekeeping',
+        category: 'Housekeeping',
+        keywords: ['housekeeping', 'trip hazard', 'walkway'],
+        verificationNote: 'Verify walking-working surface hazards or debris accumulation.',
       },
     ],
   },
@@ -77,6 +113,24 @@ const rules: HazardRule[] = [
         category: 'Electrical',
         keywords: ['electrical panel', 'cover', 'junction box', 'open panel'],
         verificationNote: 'Verify missing covers, open enclosures, or exposed electrical components.',
+      },
+      {
+        id: 'osha-1910-303',
+        source: 'OSHA',
+        citation: '29 CFR 1910.303',
+        title: 'Electrical equipment installation',
+        category: 'Electrical',
+        keywords: ['panel', 'cover', 'electrical'],
+        verificationNote: 'Verify electrical enclosure integrity and guarding.',
+      },
+      {
+        id: 'osha-1910-303',
+        source: 'OSHA',
+        citation: '29 CFR 1910.303',
+        title: 'Electrical equipment installation',
+        category: 'Electrical',
+        keywords: ['panel', 'cover', 'electrical'],
+        verificationNote: 'Verify electrical enclosure integrity and guarding.',
       },
       {
         id: 'msha-56-12004',
