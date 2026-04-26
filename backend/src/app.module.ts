@@ -1,6 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { HealthModule } from './health/health.module';
 import { ReportsModule } from './reports/reports.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
@@ -12,6 +13,7 @@ import { RiskModule } from './risk/risk.module';
 import { CorrectiveActionsModule } from './corrective-actions/corrective-actions.module';
 import { AuditSessionModule } from './audit-session/audit-session.module';
 import { AuthModule } from './auth/auth.module';
+import { AlertsModule } from './alerts/alerts.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { User } from './users/entities/user.entity';
 import { Notification } from './notifications/notification.entity';
@@ -35,6 +37,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -81,6 +84,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     CorrectiveActionsModule,
     AuditSessionModule,
     AuthModule,
+    AlertsModule,
     NotificationsModule,
   ],
 })
