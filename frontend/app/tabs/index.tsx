@@ -44,7 +44,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      <View style={[styles.primaryAction, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+      <View style={styles.primaryAction}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.primaryTitle, { color: colors.text }]}>Start a Field Inspection</Text>
           <Text style={[styles.primarySub, { color: colors.sub }]}>
@@ -158,10 +158,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   primaryAction: {
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 24,
+    paddingVertical: 6,
+    marginBottom: 26,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
