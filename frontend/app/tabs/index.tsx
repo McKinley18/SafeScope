@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
-import AppFooter from '../../src/components/ui/AppFooter';
 
 export default function HomeScreen() {
   const { colors } = useAppTheme();
@@ -85,7 +84,6 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      <AppFooter />
     </ScrollView>
   );
 }

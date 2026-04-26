@@ -20,7 +20,6 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
-import AppFooter from '../../src/components/ui/AppFooter';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
 
 const DRAFT_KEY = 'safescope_hazard_draft_v1';
@@ -89,6 +88,7 @@ export default function CameraScreen() {
   const [draft, setDraft] = useState<HazardDraft>(emptyDraft);
   const [detecting, setDetecting] = useState(false);
   const [suggestion, setSuggestion] = useState<HazardSuggestion | null>(null);
+  const [showPostSaveActions, setShowPostSaveActions] = useState(false);
 
   useEffect(() => {
     const loadDraft = async () => {
@@ -247,7 +247,7 @@ export default function CameraScreen() {
     });
 
     setSuggestion(null);
-    Alert.alert('Finding saved', 'You can now add the next finding.');
+    setShowPostSaveActions(true);
   };
 
   const removeFinding = async (id: string) => {
@@ -307,7 +307,8 @@ export default function CameraScreen() {
       const created = await apiClient.createReport(await buildPayload());
       reportId = created?.id || created?.data?.id || created?.report?.id;
       const nextDraft = { ...draft, id: reportId };
-      await persistDraft(nextDraft);
+      setShowPostSaveActions(false);
+    await persistDraft(nextDraft);
       return reportId;
     }
 
@@ -475,7 +476,7 @@ const useSuggestion = async () => {
 
       <View style={styles.actionStack}>
         <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
-        <AppButton label="Add Finding" variant="secondary" onPress={saveCurrentFinding} />
+        <AppButton label="Save to Report" variant="secondary" onPress={saveCurrentFinding} />
         <AppButton label="Submit Report" onPress={submitForReview} />
       </View>
 
@@ -489,8 +490,8 @@ Add photo(s), complete this finding, then continue to the next finding or save d
 </Text>
 
         <View style={styles.actionStack}>
-          <AppButton label="Take Photo" onPress={takePhoto} />
-          <AppButton label="Upload Photo" variant="secondary" onPress={chooseFromLibrary} />
+          <AppButton label={draft.images.length > 0 ? "Add Photo" : "Take Photo"} onPress={takePhoto} />
+          <AppButton label={draft.images.length > 0 ? "Upload More" : "Upload Photo"} variant="secondary" onPress={chooseFromLibrary} />
         </View>
 
         <ScrollView
@@ -727,13 +728,31 @@ Add photo(s), complete this finding, then continue to the next finding or save d
         />
       </View>
 
-      <View style={styles.builderActions}>
-        <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
-        <AppButton label="Add Finding" variant="secondary" onPress={saveCurrentFinding} />
-        <AppButton label="Submit Report" onPress={submitForReview} />
-      </View>
+      {showPostSaveActions ? (
+        <View style={styles.builderActions}>
+          <AppCard>
+            <Text style={[styles.savedFindingTitle, { color: colors.text }]}>
+              Finding saved to report.
+            </Text>
+            <Text style={[styles.savedFindingMeta, { color: colors.sub }]}>
+              Add another finding or submit the completed report.
+            </Text>
+          </AppCard>
 
-      <AppFooter />
+          <AppButton
+            label="Add Additional Finding"
+            variant="secondary"
+            onPress={() => setShowPostSaveActions(false)}
+          />
+          <AppButton label="Submit Report" onPress={submitForReview} />
+        </View>
+      ) : (
+        <View style={styles.builderActions}>
+          <AppButton label="Save Draft" variant="secondary" onPress={saveDraft} />
+          <AppButton label="Save to Report" onPress={saveCurrentFinding} />
+        </View>
+      )}
+
     </ScrollView>
   );
 }

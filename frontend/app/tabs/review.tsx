@@ -16,7 +16,6 @@ import { apiClient } from '../../src/api/client';
 
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
-import AppFooter from '../../src/components/ui/AppFooter';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
 
 type QueueItem = {
@@ -194,7 +193,7 @@ export default function ReviewScreen() {
             ))
           )}
 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Open Corrective Actions</Text>
+          <Text style={[styles.sectionTitle, styles.sectionGap, { color: colors.text }]}>Open Corrective Actions</Text>
 
           {topActions.length === 0 ? (
             <AppCard>
@@ -239,7 +238,6 @@ export default function ReviewScreen() {
         </>
       )}
 
-      <AppFooter />
     </ScrollView>
   );
 }
@@ -266,7 +264,7 @@ const styles = StyleSheet.create({
   kpiCard: {
     width: '48%',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 18,
   },
 
   kpiValue: {
@@ -298,14 +296,18 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
+  sectionGap: {
+    marginTop: 18,
+  },
+
   sectionTitle: {
     fontSize: 22,
     fontWeight: '900',
-    marginBottom: 12,
+    marginBottom: 16,
   },
 
   card: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
 
   cardTitle: {
@@ -317,7 +319,7 @@ const styles = StyleSheet.create({
   cardMeta: {
     fontSize: 12,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 16,
   },
 
   actionRow: {
@@ -340,7 +342,7 @@ const styles = StyleSheet.create({
   quickLink: {
     flex: 1,
     borderRadius: 16,
-    paddingVertical: 14,
+    paddingVertical: 18,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',

@@ -13,6 +13,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppTheme } from '../theme/ThemeContext';
 import { apiClient } from '../api/client';
 
+const logoHeader = require('../../assets/images/logo-header.png');
+
 const AUTH_TOKEN_KEY = 'safescope_auth_token_v1';
 const AUTH_USER_KEY = 'safescope_auth_user_v1';
 
@@ -129,6 +131,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         <Text style={[styles.kicker, { color: colors.accent }]}>Secure Workspace Access</Text>
 
         <Text style={[styles.title, { color: colors.text }]}>
+          <View style={styles.authBrandBanner}>
+            <Image source={logoHeader} style={styles.authBrandLogo} resizeMode="contain" />
+          </View>
+
           {mode === 'login' ? 'Welcome back' : 'Create your Sentinel Safety workspace'}
         </Text>
 
@@ -219,6 +225,19 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 const styles = StyleSheet.create({
+  authBrandBanner: {
+    backgroundColor: '#081827',
+    borderRadius: 24,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    marginBottom: 22,
+  },
+  authBrandLogo: {
+    width: '100%',
+    height: 120,
+    maxWidth: 420,
+  },
   center: {
     flex: 1,
     alignItems: 'center',

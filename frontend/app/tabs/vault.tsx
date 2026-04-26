@@ -6,7 +6,6 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
-import AppFooter from '../../src/components/ui/AppFooter';
 import { LocalVault, LocalVaultReport } from '../../src/storage/LocalVault';
 
 export default function VaultScreen() {
@@ -123,7 +122,6 @@ export default function VaultScreen() {
         ))
       )}
 
-      <AppFooter />
     </ScrollView>
   );
 }

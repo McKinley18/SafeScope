@@ -13,7 +13,6 @@ import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
-import AppFooter from '../../src/components/ui/AppFooter';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
 const ANALYTICS_CACHE_KEY = 'safescope_dashboard_cache';
@@ -284,7 +283,6 @@ export default function AnalyticsScreen() {
           ))
         )}
       </AppCard>
-      <AppFooter />
     </ScrollView>
   );
 }

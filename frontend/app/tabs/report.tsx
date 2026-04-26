@@ -15,7 +15,6 @@ import { tokens } from '../../src/theme/tokens';
 import AppCard from '../../src/components/ui/AppCard';
 import AppButton from '../../src/components/ui/AppButton';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
-import AppFooter from '../../src/components/ui/AppFooter';
 import { apiClient } from '../../src/api/client';
 import jsPDF from 'jspdf';
 
@@ -482,7 +481,6 @@ export default function ReportDetailScreen() {
         <AppButton label="Share Report" variant="secondary" onPress={() => {}} style={{ flex: 1 }} />
       </View>
 
-      <AppFooter />
     </ScrollView>
   );
 

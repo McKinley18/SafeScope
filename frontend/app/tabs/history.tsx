@@ -16,7 +16,6 @@ import { tokens } from '../../src/theme/tokens';
 import { apiClient } from '../../src/api/client';
 
 import AppCard from '../../src/components/ui/AppCard';
-import AppFooter from '../../src/components/ui/AppFooter';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
 
 type ReportItem = {
@@ -218,7 +217,6 @@ export default function HistoryScreen() {
         ))
       )}
 
-      <AppFooter />
     </ScrollView>
   );
 }
