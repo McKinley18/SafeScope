@@ -121,7 +121,7 @@ export const apiClient = {
     return res.json();
   },
 
-  getCorrectiveActions: async (params?: { page?: number; limit?: number; statusCode?: string; priorityCode?: string }) => {
+  getCorrectiveActions: async (params?: { page?: number; limit?: number; statusCode?: string; priorityCode?: string; assignedToMe?: boolean }) => {
     const query = new URLSearchParams(params as Record<string, string>).toString();
     const res = await fetch(`${BASE_URL}/actions${query ? `?${query}` : ''}`, {
       headers: getHeaders(),
@@ -129,11 +129,23 @@ export const apiClient = {
     return res.json();
   },
 
-  closeCorrectiveAction: async (actionId: string, closureNotes: string) => {
-    const res = await fetch(`${BASE_URL}/actions/${actionId}/close`, {
+  updateCorrectiveActionStatus: async (
+    actionId: string,
+    data: { statusCode: 'open' | 'in_progress' | 'closed' | 'cancelled'; closureNotes?: string }
+  ) => {
+    const res = await fetch(`${BASE_URL}/actions/${actionId}/status`, {
       method: 'PATCH',
       headers: getHeaders(),
-      body: JSON.stringify({ closureNotes }),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  closeCorrectiveAction: async (actionId: string, closureNotes: string) => {
+    const res = await fetch(`${BASE_URL}/actions/${actionId}/status`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify({ statusCode: 'closed', closureNotes }),
     });
     return res.json();
   },
