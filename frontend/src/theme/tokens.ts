@@ -1,13 +1,13 @@
 export const tokens = {
   color: {
     dark: {
-      bg: '#09090B',
-      surface: '#111214',
-      card: '#17181C',
-      border: '#272A31',
+      bg: '#081827',
+      surface: '#0D2236',
+      card: '#10263B',
+      border: '#1E3A56',
       text: '#F8FAFC',
-      sub: '#94A3B8',
-      muted: '#667085',
+      sub: '#A9B8C8',
+      muted: '#8A9AAF',
       accent: '#FF6A00',
       accentHover: '#FF812E',
       success: '#22C55E',
@@ -22,7 +22,7 @@ export const tokens = {
       border: '#D7DEE8',
       text: '#101828',
       sub: '#475467',
-      muted: '#667085',
+      muted: '#8A9AAF',
       accent: '#FF6A00',
       accentHover: '#FF812E',
       success: '#22C55E',

@@ -14,8 +14,29 @@ export class User {
   @Column()
   passwordHash: string;
 
+  @Column({ nullable: true })
+  passwordResetTokenHash: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  passwordResetExpiresAt: Date;
+
   @Column({ default: 'default' })
   tenantId: string;
+
+  @Column({ default: 'individual' })
+  workspaceType: 'individual' | 'company';
+
+  @Column({ nullable: true })
+  companyName: string;
+
+  @Column({ nullable: true })
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName: string;
+
+  @Column({ default: 1 })
+  workspaceSeatLimit: number;
 
   @Column({ default: 'inspector' })
   role: 'owner' | 'admin' | 'manager' | 'inspector' | 'viewer';

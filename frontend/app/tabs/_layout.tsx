@@ -57,7 +57,7 @@ function TabsNavigator() {
         options={{
           title: 'Inspect',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="camera-outline" size={size} color={color} />
+            <Ionicons name="search-outline" size={size} color={color} />
           ),
         }}
       />
@@ -115,6 +115,13 @@ function TabsNavigator() {
 
       <Tabs.Screen
         name="report"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="team"
         options={{
           href: null,
         }}

@@ -15,8 +15,8 @@ import AppCard from '../../src/components/ui/AppCard';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
-const ANALYTICS_CACHE_KEY = 'safescope_dashboard_cache';
-const ANALYTICS_CACHE_TIME_KEY = 'safescope_dashboard_cache_time';
+const ANALYTICS_CACHE_KEY = 'sentinel_safety_dashboard_cache';
+const ANALYTICS_CACHE_TIME_KEY = 'sentinel_safety_dashboard_cache_time';
 
 type AgingBucket = {
   bucket: string;

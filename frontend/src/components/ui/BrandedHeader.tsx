@@ -5,59 +5,65 @@ import { tokens } from '../../theme/tokens';
 export default function BrandedHeader({
   title,
   subtitle,
-  showLogo = false,
+  showLogo = true,
 }: {
   title: string;
   subtitle?: string;
   showLogo?: boolean;
 }) {
-  const { dark } = useAppTheme();
+  const { colors } = useAppTheme();
 
   return (
-    <View style={[styles.header, { backgroundColor: dark ? '#05070D' : '#0B1120' }]}>
+    <View style={styles.wrapper}>
       {showLogo ? (
-        <Image
-          source={require('../../../assets/images/logo-header.png')}
-          resizeMode="contain"
-          style={styles.logo}
-        />
+        <View style={styles.brandHeader}>
+          <Image
+            source={require('../../../assets/images/logo-final-navy-clean.png')}
+            resizeMode="contain"
+            style={styles.logo}
+          />
+        </View>
       ) : null}
 
-      <Text style={styles.title}>{title}</Text>
-
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      <View style={styles.titleBlock}>
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+        {subtitle ? <Text style={[styles.subtitle, { color: colors.sub }]}>{subtitle}</Text> : null}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginHorizontal: -tokens.spacing.md,
-    marginTop: -tokens.spacing.md,
-    paddingHorizontal: tokens.spacing.md,
-    paddingTop: 22,
-    paddingBottom: 22,
+  wrapper: {
     marginBottom: 22,
   },
+  brandHeader: {
+    backgroundColor: '#081827',
+    marginHorizontal: -tokens.spacing.md,
+    marginTop: -tokens.spacing.md,
+    marginBottom: 20,
+    height: 170,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
   logo: {
-    width: '140%',
-    height: 180,
-    maxWidth: 1200,
-    alignSelf: 'center',
-    marginTop: -34,
-    marginBottom: -28,
+    width: 520,
+    height: 240,
+  },
+  titleBlock: {
+    marginBottom: 2,
   },
   title: {
-    color: '#FFFFFF',
-    fontSize: 34,
+    fontSize: 24,
     fontWeight: '900',
-    letterSpacing: -0.8,
+    letterSpacing: -0.9,
   },
   subtitle: {
-    color: '#CBD5E1',
-    marginTop: 7,
-    fontSize: 14,
-    lineHeight: 20,
+    marginTop: 8,
+    fontSize: 15,
+    lineHeight: 21,
     fontWeight: '700',
+    maxWidth: 430,
   },
 });

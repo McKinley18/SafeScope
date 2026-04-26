@@ -11,6 +11,9 @@ export class CorrectiveAction {
   @Column()
   reportId: string;
 
+  @Column({ default: 'default' })
+  tenantId: string;
+
   @Column({ nullable: true })
   classificationId: string;
 
@@ -22,6 +25,12 @@ export class CorrectiveAction {
 
   @Column({ nullable: true })
   ownerUserId: string;
+
+  @Column({ nullable: true })
+  assignedToUserId: string;
+
+  @Column({ nullable: true })
+  assignedToName: string;
 
   @Column()
   priorityCode: 'low' | 'medium' | 'high' | 'urgent';

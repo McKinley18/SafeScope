@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch , Query} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Query, Headers } from '@nestjs/common';
 import { CorrectiveActionsService } from './corrective-actions.service';
 import { CreateCorrectiveActionDto, CloseCorrectiveActionDto } from './dto/corrective-action.dto';
 
@@ -8,17 +8,28 @@ export class CorrectiveActionsController {
 
   @Get()
   findAll(
+    @Headers('authorization') authorization: string,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
     @Query('statusCode') statusCode?: string,
     @Query('priorityCode') priorityCode?: string,
+    @Query('assignedToMe') assignedToMe?: string,
   ) {
-    return this.service.findAll({ page, limit, statusCode, priorityCode });
+    return this.service.findAll(authorization, { page, limit, statusCode, priorityCode, assignedToMe: assignedToMe === 'true' });
   }
 
   @Post()
-  create(@Body() dto: CreateCorrectiveActionDto) {
-    return this.service.create(dto);
+  create(@Headers('authorization') authorization: string, @Body() dto: CreateCorrectiveActionDto) {
+    return this.service.create(authorization, dto);
+  }
+
+  @Patch(':id/status')
+  updateStatus(
+    @Headers('authorization') authorization: string,
+    @Param('id') id: string,
+    @Body() body: { statusCode: 'open' | 'in_progress' | 'closed' | 'cancelled'; closureNotes?: string },
+  ) {
+    return this.service.updateStatus(authorization, id, body);
   }
 
   @Get('export')

@@ -4,7 +4,7 @@ import { tokens } from './tokens';
 
 export type ThemeMode = 'light' | 'dark';
 
-const STORAGE_KEY = 'safescope_theme_mode';
+const STORAGE_KEY = 'sentinel_safety_theme_mode';
 
 const palette = {
   light: {

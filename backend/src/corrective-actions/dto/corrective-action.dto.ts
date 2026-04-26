@@ -21,6 +21,14 @@ export class CreateCorrectiveActionDto {
   @IsNotEmpty()
   priorityCode: 'low' | 'medium' | 'high' | 'urgent';
 
+  @IsString()
+  @IsOptional()
+  assignedToUserId: string;
+
+  @IsString()
+  @IsOptional()
+  assignedToName: string;
+
   @IsDateString()
   @IsOptional()
   dueDate: string;

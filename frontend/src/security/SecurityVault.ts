@@ -1,14 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'crypto-js';
 
-const CONFIG_KEY = 'safescope_security_config_v1';
+const CONFIG_KEY = 'sentinel_safety_security_config_v1';
 
 let sessionKey: string | null = null;
 
 const randomSalt = () => `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
 const hashPin = (pin: string, salt: string) =>
-  CryptoJS.SHA256(`${salt}:${pin}:safescope`).toString();
+  CryptoJS.SHA256(`${salt}:${pin}:sentinel_safety`).toString();
 
 const deriveKey = (pin: string, salt: string) =>
   CryptoJS.SHA256(`${pin}:${salt}:local_vault_key`).toString();

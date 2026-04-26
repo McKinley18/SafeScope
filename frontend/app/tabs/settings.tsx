@@ -10,8 +10,8 @@ import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import { LocalVault } from '../../src/storage/LocalVault';
 import { SecurityVault } from '../../src/security/SecurityVault';
 
-const AUTH_TOKEN_KEY = 'safescope_auth_token_v1';
-const AUTH_USER_KEY = 'safescope_auth_user_v1';
+const AUTH_TOKEN_KEY = 'sentinel_safety_auth_token_v1';
+const AUTH_USER_KEY = 'sentinel_safety_auth_user_v1';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -132,6 +132,17 @@ export default function SettingsScreen() {
             <Text style={[styles.rowSub, { color: colors.sub }]}>{user?.role || 'owner'}</Text>
           </View>
         </View>
+        {user?.workspaceType === 'company' && ['owner', 'admin'].includes(user?.role || 'owner') && (
+          <TouchableOpacity style={[styles.row, { borderBottomColor: colors.border }]} onPress={() => router.push('/tabs/team' as any)}>
+            <Ionicons name="people-outline" size={22} color={colors.accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: colors.text }]}>Manage Team</Text>
+              <Text style={[styles.rowSub, { color: colors.sub }]}>Invite users, assign roles, and manage workspace access.</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={18} color={colors.muted} />
+          </TouchableOpacity>
+        )}
+
 
         <TouchableOpacity style={[styles.row, { borderBottomColor: colors.border }]} onPress={logout}>
           <Ionicons name="log-out-outline" size={22} color="#ef4444" />

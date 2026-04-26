@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SecurityVault } from '../security/SecurityVault';
 
 const VAULT_VERSION = 'v1';
-const VAULT_PREFIX = `safescope_local_vault_${VAULT_VERSION}`;
+const VAULT_PREFIX = `sentinel_safety_local_vault_${VAULT_VERSION}`;
 
 export type LocalVaultReportStatus =
   | 'draft'

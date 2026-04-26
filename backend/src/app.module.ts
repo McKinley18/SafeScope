@@ -13,6 +13,7 @@ import { CorrectiveActionsModule } from './corrective-actions/corrective-actions
 import { AuditSessionModule } from './audit-session/audit-session.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
+import { WorkspaceInvite } from './auth/entities/workspace-invite.entity';
 
 import { Report } from './reports/entities/report.entity';
 import { ReportAttachment } from './reports/entities/attachment.entity';
@@ -57,6 +58,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
           AuditEntryAttachment,
           AuditEntryFinding,
           User,
+          WorkspaceInvite,
         ],
         synchronize: true,
         ssl:

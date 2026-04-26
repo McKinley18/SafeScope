@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const AUTH_TOKEN_KEY = 'safescope_auth_token_v1';
+const AUTH_TOKEN_KEY = 'sentinel_safety_auth_token_v1';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safescope-backend.onrender.com';
 
@@ -26,8 +26,44 @@ export const apiClient = {
     return res.json();
   },
 
-  register: async (data: { email: string; password: string; tenantId?: string }) => {
+  register: async (data: { email: string; password: string; tenantId?: string; workspaceType?: 'individual' | 'company'; companyName?: string; firstName?: string; lastName?: string }) => {
     const res = await fetch(`${BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  requestPasswordReset: async (data: { email: string }) => {
+    const res = await fetch(`${BASE_URL}/auth/password-reset/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  confirmPasswordReset: async (data: { email: string; token: string; newPassword: string }) => {
+    const res = await fetch(`${BASE_URL}/auth/password-reset/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  createInvite: async (data: { email: string; role?: 'admin' | 'manager' | 'inspector' | 'viewer' }) => {
+    const res = await fetch(`${BASE_URL}/auth/invite`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  acceptInvite: async (data: { inviteToken: string; firstName: string; lastName: string; password: string }) => {
+    const res = await fetch(`${BASE_URL}/auth/invite/accept`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
