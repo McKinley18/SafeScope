@@ -12,7 +12,9 @@ import { RiskModule } from './risk/risk.module';
 import { CorrectiveActionsModule } from './corrective-actions/corrective-actions.module';
 import { AuditSessionModule } from './audit-session/audit-session.module';
 import { AuthModule } from './auth/auth.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { User } from './users/entities/user.entity';
+import { Notification } from './notifications/notification.entity';
 import { WorkspaceInvite } from './auth/entities/workspace-invite.entity';
 
 import { Report } from './reports/entities/report.entity';
@@ -58,6 +60,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
           AuditEntryAttachment,
           AuditEntryFinding,
           User,
+          Notification,
           WorkspaceInvite,
         ],
         synchronize: true,
@@ -78,6 +81,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     CorrectiveActionsModule,
     AuditSessionModule,
     AuthModule,
+    NotificationsModule,
   ],
 })
 export class AppModule implements NestModule {

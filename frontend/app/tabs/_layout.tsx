@@ -134,6 +134,14 @@ function TabsNavigator() {
         }}
       />
 
+    
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
+        }}
+      />
+
     </Tabs>
   );
 }

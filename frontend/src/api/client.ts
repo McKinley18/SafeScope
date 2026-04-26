@@ -90,6 +90,21 @@ export const apiClient = {
     return res.json();
   },
 
+  getNotifications: async () => {
+    const res = await fetch(`${BASE_URL}/notifications`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  markNotificationRead: async (id: string) => {
+    const res = await fetch(`${BASE_URL}/notifications/${id}/read`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
   getDashboard: async () => {
     const res = await fetch(`${BASE_URL}/dashboard/overview`, { headers: getHeaders() });
     return res.json();

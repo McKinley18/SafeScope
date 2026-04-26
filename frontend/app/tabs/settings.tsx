@@ -70,6 +70,18 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      <TouchableOpacity
+        style={[styles.profileBand, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+        onPress={() => router.push('/tabs/notifications' as any)}
+      >
+        <Ionicons name="notifications-outline" size={22} color={colors.accent} />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.rowTitle, { color: colors.text }]}>Notifications</Text>
+          <Text style={[styles.rowSub, { color: colors.sub }]}>View assignments, reminders, and alerts.</Text>
+        </View>
+        <Ionicons name="chevron-forward-outline" size={18} color={colors.muted} />
+      </TouchableOpacity>
+
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Security</Text>
 
       <View style={styles.list}>
