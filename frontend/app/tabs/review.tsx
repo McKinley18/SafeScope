@@ -156,7 +156,7 @@ export default function ReviewScreen() {
         </View>
       ) : (
         <>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Priority Reviews</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Priority Reviews Queue</Text>
 
           {topQueue.length === 0 ? (
             <AppCard>
@@ -193,7 +193,7 @@ export default function ReviewScreen() {
             ))
           )}
 
-          <Text style={[styles.sectionTitle, styles.sectionGap, { color: colors.text }]}>Open Corrective Actions</Text>
+          <Text style={[styles.sectionTitle, styles.sectionGap, { color: colors.text }]}>Corrective Actions Tracker</Text>
 
           {topActions.length === 0 ? (
             <AppCard>
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   kpiCard: {
     width: '48%',
     alignItems: 'center',
-    paddingVertical: 18,
+    paddingVertical: 22,
   },
 
   kpiValue: {
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '900',
     marginBottom: 5,
   },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   quickLink: {
     flex: 1,
     borderRadius: 16,
-    paddingVertical: 18,
+    paddingVertical: 22,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',

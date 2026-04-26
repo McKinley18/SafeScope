@@ -135,7 +135,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             <Image source={logoHeader} style={styles.authBrandLogo} resizeMode="contain" />
           </View>
 
-          {mode === 'login' ? 'Welcome back' : 'Create your Sentinel Safety workspace'}
+          {mode === 'login' ? 'Welcome to SafeScope' : 'Create your SafeScope workspace'}
         </Text>
 
         <Text style={[styles.subtitle, { color: colors.sub }]}>
@@ -227,15 +227,15 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   authBrandBanner: {
     backgroundColor: '#081827',
-    borderRadius: 24,
-    paddingVertical: 18,
+    borderRadius: 28,
+    paddingVertical: 26,
     paddingHorizontal: 14,
     alignItems: 'center',
-    marginBottom: 22,
+    marginBottom: 30,
   },
   authBrandLogo: {
     width: '100%',
-    height: 120,
+    height: 140,
     maxWidth: 420,
   },
   center: {

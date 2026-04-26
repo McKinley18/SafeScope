@@ -31,7 +31,7 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Today</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Command Center</Text>
 
       <View style={styles.metrics}>
         {metrics.map(([label, value, icon]) => (
@@ -60,7 +60,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Needs Attention</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Priority Items</Text>
 
       <View style={styles.feed}>
         {[
@@ -75,7 +75,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Live Activity</Text>
 
       <View style={[styles.emptyPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[styles.emptyTitle, { color: colors.text }]}>No activity yet</Text>
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   metric: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 24,
     paddingVertical: 14,
     paddingHorizontal: 8,
     alignItems: 'center',
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   feedText: {
     flex: 1,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   emptyPanel: {
     borderWidth: 1,
     borderRadius: 20,
-    padding: 16,
+    padding: 20,
     marginBottom: 20,
   },
   emptyTitle: {
