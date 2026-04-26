@@ -20,6 +20,11 @@ export class AuthController {
     return this.authService.getWorkspaceUsers(authorization);
   }
 
+  @Get('workspace/summary')
+  getWorkspaceSummary(@Headers('authorization') authorization: string) {
+    return this.authService.getWorkspaceSummary(authorization);
+  }
+
   @Post('invite')
   createInvite(@Headers('authorization') authorization: string, @Body() body: { email: string; role?: 'admin' | 'manager' | 'inspector' | 'viewer' }) {
     return this.authService.createInvite(authorization, body);

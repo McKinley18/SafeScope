@@ -119,6 +119,35 @@ export class AuthService {
     }
   }
 
+  async getWorkspaceSummary(authHeader: string) {
+    const auth = this.getAuthContext(authHeader);
+
+    const currentUsers = await this.userRepo.count({
+      where: { tenantId: auth.tenantId },
+    });
+
+    const pendingInvites = await this.inviteRepo.count({
+      where: { tenantId: auth.tenantId, status: 'pending' as any },
+    });
+
+    const owner = await this.userRepo.findOne({
+      where: { tenantId: auth.tenantId, role: 'owner' as any },
+    });
+
+    const seatLimit = owner?.workspaceSeatLimit || 1;
+
+    return {
+      tenantId: auth.tenantId,
+      workspaceType: owner?.workspaceType || 'individual',
+      companyName: owner?.companyName || auth.tenantId,
+      seatLimit,
+      usedSeats: currentUsers,
+      pendingInvites,
+      availableSeats: Math.max(seatLimit - currentUsers - pendingInvites, 0),
+      nextSeatPackSize: 10,
+    };
+  }
+
   async getWorkspaceUsers(authHeader: string) {
     const auth = this.getAuthContext(authHeader);
 

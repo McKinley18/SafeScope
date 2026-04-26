@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
@@ -11,16 +11,6 @@ export default function TeamScreen() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'admin' | 'manager' | 'inspector' | 'viewer'>('inspector');
   const [inviteToken, setInviteToken] = useState('');
-  const [summary, setSummary] = useState<any>(null);
-
-  const loadSummary = async () => {
-    const result = await apiClient.getWorkspaceSummary();
-    setSummary(result);
-  };
-
-  useEffect(() => {
-    loadSummary();
-  }, []);
 
   const sendInvite = async () => {
     if (!email.trim()) {
@@ -36,7 +26,6 @@ export default function TeamScreen() {
     }
 
     setInviteToken(result.inviteToken || '');
-    await loadSummary();
     Alert.alert('Invite created', 'Copy the invite code and send it to the team member.');
   };
 
@@ -48,18 +37,6 @@ export default function TeamScreen() {
       />
 
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.title, { color: colors.text }]}>Workspace Seats</Text>
-        <Text style={[styles.helper, { color: colors.sub }]}>
-          {summary
-            ? `${summary.usedSeats} active user(s), ${summary.pendingInvites} pending invite(s), ${summary.availableSeats} available seat(s) out of ${summary.seatLimit}.`
-            : 'Loading workspace seat usage...'}
-        </Text>
-
-        <TouchableOpacity style={styles.seatButton}>
-          <Ionicons name="add-circle-outline" size={18} color="#F97316" />
-          <Text style={styles.seatButtonText}>Add 10 More Seats Soon</Text>
-        </TouchableOpacity>
-
         <Text style={[styles.title, { color: colors.text }]}>Invite Team Member</Text>
         <Text style={[styles.helper, { color: colors.sub }]}>
           Company workspaces start with 10 seats. Additional seats can be added later in blocks of 10.
@@ -182,22 +159,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 15,
-    fontWeight: '900',
-  },
-  seatButton: {
-    minHeight: 46,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F97316',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 22,
-  },
-  seatButtonText: {
-    color: '#F97316',
-    fontSize: 14,
     fontWeight: '900',
   },
   inviteBox: {
