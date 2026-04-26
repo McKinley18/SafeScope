@@ -6,6 +6,7 @@ import * as jwt from 'jsonwebtoken';
 import * as crypto from 'crypto';
 import { User } from '../users/entities/user.entity';
 import { WorkspaceInvite } from './entities/workspace-invite.entity';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     private userRepo: Repository<User>,
     @InjectRepository(WorkspaceInvite)
     private inviteRepo: Repository<WorkspaceInvite>,
+    private emailService: EmailService,
   ) {}
 
   private sign(user: User) {
@@ -179,10 +181,20 @@ export class AuthService {
       }),
     );
 
+    const appUrl = process.env.FRONTEND_URL || 'http://localhost:8081';
+    const inviteLink = `${appUrl}/tabs/register?invite=${inviteToken}`;
+
+    await this.emailService.sendWorkspaceInvite({
+      to: email,
+      companyName: invite.companyName,
+      inviteLink,
+      role: invite.role,
+    });
+
     return {
       ok: true,
-      message: 'Invite created.',
-      inviteToken,
+      message: 'Invite created and email queued.',
+      inviteToken: process.env.NODE_ENV === 'production' ? undefined : inviteToken,
       invite,
     };
   }
