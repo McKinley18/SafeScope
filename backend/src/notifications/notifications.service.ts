@@ -15,10 +15,16 @@ export class NotificationsService {
     const token = authHeader?.replace('Bearer ', '');
     if (!token) throw new UnauthorizedException('Missing authorization token');
 
-    const secret = process.env.JWT_SECRET || 'safescope_dev_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedException('JWT secret is not configured.');
+    }
+
+    const signingSecret = secret || 'local_dev_secret_only';
 
     try {
-      return jwt.verify(token, secret) as {
+      return jwt.verify(token, signingSecret) as {
         sub: string;
         tenantId: string;
         role: string;

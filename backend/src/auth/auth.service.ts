@@ -19,7 +19,13 @@ export class AuthService {
   ) {}
 
   private sign(user: User) {
-    const secret = process.env.JWT_SECRET || 'safescope_dev_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedException('JWT secret is not configured.');
+    }
+
+    const signingSecret = secret || 'local_dev_secret_only';
 
     return jwt.sign(
       {
@@ -32,7 +38,7 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
       },
-      secret,
+      signingSecret,
       { expiresIn: '7d' },
     );
   }
@@ -105,10 +111,16 @@ export class AuthService {
     const token = authHeader?.replace('Bearer ', '');
     if (!token) throw new UnauthorizedException('Missing authorization token');
 
-    const secret = process.env.JWT_SECRET || 'safescope_dev_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedException('JWT secret is not configured.');
+    }
+
+    const signingSecret = secret || 'local_dev_secret_only';
 
     try {
-      return jwt.verify(token, secret) as {
+      return jwt.verify(token, signingSecret) as {
         sub: string;
         email: string;
         tenantId: string;
