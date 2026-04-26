@@ -8,6 +8,9 @@ export class AuditLog {
   @Column({ nullable: true })
   actorUserId: string;
 
+  @Column({ default: 'default' })
+  tenantId: string;
+
   @Column()
   entityType: string;
 

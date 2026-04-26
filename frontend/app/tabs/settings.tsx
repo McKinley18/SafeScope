@@ -132,6 +132,18 @@ export default function SettingsScreen() {
             <Text style={[styles.rowSub, { color: colors.sub }]}>{user?.role || 'owner'}</Text>
           </View>
         </View>
+
+        <TouchableOpacity
+          style={[styles.row, { borderBottomColor: colors.border }]}
+          onPress={() => router.push('/tabs/audit' as any)}
+        >
+          <Ionicons name="receipt-outline" size={22} color={colors.accent} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowTitle, { color: colors.text }]}>Audit Logs</Text>
+            <Text style={[styles.rowSub, { color: colors.sub }]}>Review workspace activity and admin actions.</Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={18} color={colors.muted} />
+        </TouchableOpacity>
         {user?.workspaceType === 'company' && ['owner', 'admin'].includes(user?.role || 'owner') && (
           <TouchableOpacity style={[styles.row, { borderBottomColor: colors.border }]} onPress={() => router.push('/tabs/team' as any)}>
             <Ionicons name="people-outline" size={22} color={colors.accent} />

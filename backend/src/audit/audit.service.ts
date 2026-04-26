@@ -20,4 +20,12 @@ export class AuditService {
       order: { createdAt: 'DESC' },
     });
   }
+
+  async getAuditByTenant(tenantId: string) {
+    return this.auditRepository.find({
+      where: { tenantId },
+      order: { createdAt: 'DESC' },
+      take: 100,
+    });
+  }
 }

@@ -71,6 +71,13 @@ export const apiClient = {
     return res.json();
   },
 
+  getAuditLogs: async () => {
+    const res = await fetch(`${BASE_URL}/audit`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
   getCurrentUser: async () => {
     const res = await fetch(`${BASE_URL}/auth/me`, { headers: getHeaders() });
     return res.json();

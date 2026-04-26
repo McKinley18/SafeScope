@@ -126,6 +126,14 @@ function TabsNavigator() {
           href: null,
         }}
       />
+    
+      <Tabs.Screen
+        name="audit"
+        options={{
+          href: null,
+        }}
+      />
+
     </Tabs>
   );
 }
