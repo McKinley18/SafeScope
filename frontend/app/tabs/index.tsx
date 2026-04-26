@@ -1,19 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
+import { apiClient } from '../../src/api/client';
 
 export default function HomeScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const [hiddenPriority, setHiddenPriority] = useState<string[]>([]);
+  const [dashboard, setDashboard] = useState<any>({});
+
+  useEffect(() => {
+    apiClient.getDashboard().then(setDashboard).catch(() => setDashboard({}));
+  }, []);
 
   const metrics = [
-    ['Open Actions', '2', 'construct-outline'],
-    ['Overdue Actions', '0', 'alert-circle-outline'],
-    ['Pending Reviews', '0', 'shield-checkmark-outline'],
+    ['Open Actions', String(dashboard.openActions ?? 0), 'construct-outline'],
+    ['Overdue Actions', String(dashboard.overdueActions ?? 0), 'alert-circle-outline'],
+    ['Pending Reviews', String(dashboard.reviewQueueCount ?? 0), 'shield-checkmark-outline'],
   ];
 
   const quickActions = [
@@ -62,16 +68,16 @@ export default function HomeScreen() {
 
       <View style={[styles.snapshot, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.snapshotRow}>
-          <Text style={[styles.snapshotLabel, { color: colors.sub }]}>Critical hazards</Text>
-          <Text style={[styles.snapshotValue, { color: colors.text }]}>0</Text>
+          <Text style={[styles.snapshotLabel, { color: colors.sub }]}>Urgent actions</Text>
+          <Text style={[styles.snapshotValue, { color: colors.text }]}>{dashboard.urgentActions ?? 0}</Text>
         </View>
         <View style={styles.snapshotRow}>
-          <Text style={[styles.snapshotLabel, { color: colors.sub }]}>Due today</Text>
-          <Text style={[styles.snapshotValue, { color: colors.text }]}>0</Text>
+          <Text style={[styles.snapshotLabel, { color: colors.sub }]}>Overdue</Text>
+          <Text style={[styles.snapshotValue, { color: colors.text }]}>{dashboard.overdueActions ?? 0}</Text>
         </View>
         <View style={styles.snapshotRow}>
-          <Text style={[styles.snapshotLabel, { color: colors.sub }]}>Unverified reports</Text>
-          <Text style={[styles.snapshotValue, { color: colors.text }]}>0</Text>
+          <Text style={[styles.snapshotLabel, { color: colors.sub }]}>Pending reviews</Text>
+          <Text style={[styles.snapshotValue, { color: colors.text }]}>{dashboard.reviewQueueCount ?? 0}</Text>
         </View>
       </View>
 

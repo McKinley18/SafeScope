@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
+import * as jwt from 'jsonwebtoken';
 import { Report } from '../reports/entities/report.entity';
 import { Classification } from '../classifications/entities/classification.entity';
 import { Review } from '../reviews/entities/review.entity';
@@ -15,13 +16,79 @@ export class DashboardService {
     @InjectRepository(CorrectiveAction) private actionRepo: Repository<CorrectiveAction>,
   ) {}
 
-  async getOverview() {
+  private getAuthContext(authHeader?: string) {
+    const token = authHeader?.replace('Bearer ', '');
+    if (!token) throw new UnauthorizedException('Missing authorization token');
+
+    const secret = process.env.JWT_SECRET || 'safescope_dev_secret_change_me';
+
+    try {
+      return jwt.verify(token, secret) as {
+        sub: string;
+        email: string;
+        tenantId: string;
+        role: string;
+      };
+    } catch {
+      throw new UnauthorizedException('Invalid authorization token');
+    }
+  }
+
+  async getOverview(authHeader: string) {
+    const auth = this.getAuthContext(authHeader);
+    const now = new Date();
+
+    const [
+      totalReports,
+      reviewQueueCount,
+      openActions,
+      overdueActions,
+      completedActions,
+      urgentActions,
+    ] = await Promise.all([
+      this.reportRepo.count({ where: { tenantId: auth.tenantId } as any }),
+      this.reportRepo.count({ where: { tenantId: auth.tenantId, reportStatus: 'submitted' } as any }),
+      this.actionRepo.count({ where: { tenantId: auth.tenantId, statusCode: Not('closed') } }),
+      this.actionRepo
+        .createQueryBuilder('action')
+        .where('action.tenantId = :tenantId', { tenantId: auth.tenantId })
+        .andWhere('action.statusCode NOT IN (:...closed)', { closed: ['closed', 'cancelled'] })
+        .andWhere('action.dueDate IS NOT NULL')
+        .andWhere('action.dueDate < :now', { now })
+        .getCount(),
+      this.actionRepo.count({ where: { tenantId: auth.tenantId, statusCode: 'closed' } }),
+      this.actionRepo.count({ where: { tenantId: auth.tenantId, priorityCode: 'urgent', statusCode: Not('closed') } }),
+    ]);
+
+    const actionsByPriority = await this.actionRepo
+      .createQueryBuilder('action')
+      .select('action.priorityCode', 'priority')
+      .addSelect('COUNT(*)', 'count')
+      .where('action.tenantId = :tenantId', { tenantId: auth.tenantId })
+      .groupBy('action.priorityCode')
+      .getRawMany();
+
+    const actionsByStatus = await this.actionRepo
+      .createQueryBuilder('action')
+      .select('action.statusCode', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .where('action.tenantId = :tenantId', { tenantId: auth.tenantId })
+      .groupBy('action.statusCode')
+      .getRawMany();
+
     return {
-      totalReports: 0,
-      openReports: 0,
-      reviewQueueCount: 0,
-      overdueActionsCount: 0,
-      analytics: {},
+      totalReports,
+      reviewQueueCount,
+      openActions,
+      overdueActions,
+      completedActions,
+      urgentActions,
+      completionRate:
+        openActions + completedActions > 0
+          ? Math.round((completedActions / (openActions + completedActions)) * 100)
+          : 0,
+      actionsByPriority,
+      actionsByStatus,
       timestamp: new Date().toISOString(),
     };
   }
