@@ -76,9 +76,37 @@ export class DashboardService {
       .groupBy('action.statusCode')
       .getRawMany();
 
+    const actionAging = await this.actionRepo
+      .createQueryBuilder('action')
+      .select(`
+        CASE
+          WHEN action."dueDate" IS NULL THEN 'No Due Date'
+          WHEN action."dueDate" < NOW() THEN 'Overdue'
+          WHEN action."dueDate" <= NOW() + INTERVAL '3 days' THEN 'Due Soon'
+          ELSE 'Future'
+        END
+      `, 'bucket')
+      .addSelect('COUNT(*)', 'count')
+      .where('action.tenantId = :tenantId', { tenantId: auth.tenantId })
+      .andWhere('action.statusCode NOT IN (:...closed)', { closed: ['closed', 'cancelled'] })
+      .groupBy('bucket')
+      .getRawMany();
+
+    const hazardRecurrence = await this.reportRepo
+      .createQueryBuilder('report')
+      .select('COALESCE(report."eventTypeCode", \'Uncategorized\')', 'hazard')
+      .addSelect('COUNT(*)', 'count')
+      .where('report.tenantId = :tenantId', { tenantId: auth.tenantId })
+      .groupBy('report."eventTypeCode"')
+      .orderBy('count', 'DESC')
+      .limit(5)
+      .getRawMany();
+
     return {
       totalReports,
+      openReports: reviewQueueCount,
       reviewQueueCount,
+      overdueActionsCount: overdueActions,
       openActions,
       overdueActions,
       completedActions,
@@ -87,8 +115,17 @@ export class DashboardService {
         openActions + completedActions > 0
           ? Math.round((completedActions / (openActions + completedActions)) * 100)
           : 0,
-      actionsByPriority,
-      actionsByStatus,
+      analytics: {
+        actionsByPriority,
+        actionsByStatus,
+        hazardRecurrence,
+        aging: {
+          actionAging,
+          reviewAging: [
+            { bucket: 'Pending Review', count: reviewQueueCount },
+          ],
+        },
+      },
       timestamp: new Date().toISOString(),
     };
   }
