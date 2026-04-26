@@ -38,6 +38,17 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const invite = params.get('invite');
+
+      if (invite) {
+        setInviteToken(invite);
+        setWorkspaceType('invite');
+        setMode('register');
+      }
+    }
+
     AsyncStorage.getItem(AUTH_TOKEN_KEY).then((token) => {
       setAuthenticated(!!token);
       setReady(true);
