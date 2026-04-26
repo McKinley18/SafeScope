@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 import { CorrectiveAction } from './entities/corrective-action.entity';
 import { CreateCorrectiveActionDto, CloseCorrectiveActionDto } from './dto/corrective-action.dto';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CorrectiveActionsService {
@@ -12,6 +13,7 @@ export class CorrectiveActionsService {
     @InjectRepository(CorrectiveAction)
     private actionRepo: Repository<CorrectiveAction>,
     private auditService: AuditService,
+    private notificationsService: NotificationsService,
   ) {}
 
   private getAuthContext(authHeader?: string) {
@@ -80,11 +82,26 @@ export class CorrectiveActionsService {
     });
     const saved = await this.actionRepo.save(action);
     await this.auditService.log({
+      tenantId: auth.tenantId,
+      actorUserId: auth.sub,
       entityType: 'CORRECTIVE_ACTION',
       entityId: saved.id,
       actionCode: 'ACTION_CREATED',
       afterJson: saved,
     });
+
+    if (saved.assignedToUserId) {
+      await this.notificationsService.create({
+        tenantId: auth.tenantId,
+        userId: saved.assignedToUserId,
+        type: 'assigned_action',
+        title: 'New corrective action assigned',
+        message: saved.title || 'A corrective action has been assigned to you.',
+        entityType: 'CORRECTIVE_ACTION',
+        entityId: saved.id,
+      });
+    }
+
     return saved;
   }
 
@@ -110,12 +127,26 @@ export class CorrectiveActionsService {
     const updated = await this.actionRepo.save(action);
 
     await this.auditService.log({
+      tenantId: auth.tenantId,
+      actorUserId: auth.sub,
       entityType: 'CORRECTIVE_ACTION',
       entityId: updated.id,
       actionCode: 'ACTION_STATUS_UPDATED',
       beforeJson: before,
       afterJson: updated,
     });
+
+    if (updated.assignedToUserId && before.statusCode !== updated.statusCode) {
+      await this.notificationsService.create({
+        tenantId: auth.tenantId,
+        userId: updated.assignedToUserId,
+        type: 'system',
+        title: 'Corrective action status updated',
+        message: `${updated.title || 'Corrective action'} is now ${updated.statusCode}.`,
+        entityType: 'CORRECTIVE_ACTION',
+        entityId: updated.id,
+      });
+    }
 
     return updated;
   }
