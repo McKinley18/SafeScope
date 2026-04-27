@@ -10,7 +10,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Moving machine parts',
     standardText: 'Guards shall be provided and maintained to protect persons from moving machine parts.',
     summaryPlainLanguage: 'Moving machine parts must be guarded where contact could injure a person.',
-    keywords: ['guard', 'gard', 'guarding', 'unguarded', 'guarded', 'protection', 'moving parts', 'machine', 'belt', 'drive', 'roller', 'pinch point', 'pulley', 'head pulley', 'tail pulley', 'conveyor', 'conveyer', 'rotating', 'shaft', 'coupling'],
+    keywords: ['guard', 'gard', 'guarded', 'protection', 'moving parts', 'belt', 'roller', 'pinch point', 'pulley', 'conveyor', 'rotating', 'crusher', 'shaft', 'coupling', 'head pulley', 'tail pulley', 'gearbox', 'rotating shaft'],
   },
   {
     source: 'MSHA',
@@ -21,7 +21,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Safe access',
     standardText: 'Safe means of access shall be provided and maintained to all working places.',
     summaryPlainLanguage: 'Workers must have safe access to working areas.',
-    keywords: ['access', 'safe access', 'ingress', 'egress', 'climb', 'walkway', 'travelway', 'ladder', 'latter', 'platform', 'stair', 'stairs', 'steps', 'handrail', 'grating', 'working place', 'work area'],
+    keywords: ['access', 'safe access', 'ingress', 'egress', 'climb', 'walkway', 'travelway', 'ladder', 'latter', 'platform', 'deck', 'catwalk', 'stair', 'stairs', 'steps', 'step', 'handrail', 'rail', 'grating', 'working place', 'screen tower', 'crusher deck', 'work area'],
   },
   {
     source: 'MSHA',
@@ -43,7 +43,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Electrical conductors',
     standardText: 'Electrical conductors exposed to mechanical damage shall be protected.',
     summaryPlainLanguage: 'Electrical wires and conductors must be protected from damage.',
-    keywords: ['electrical', 'electric', 'power', 'energized', 'wire', 'wiring', 'conductor', 'cord', 'cable', 'extension cord', 'insulation', 'damage', 'damaged', 'exposed', 'panel', 'junction box', 'breaker'],
+    keywords: ['electrical', 'electric', 'power', 'energized', 'live', 'voltage', 'wire', 'wiring', 'conductor', 'cord', 'cable', 'extension cord', 'insulation', 'short', 'damage', 'damaged', 'exposed', 'panel', 'junction box', 'disconnect', 'breaker'],
   },
   {
     source: 'OSHA',
@@ -77,7 +77,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Seat belts',
     standardText: 'Seat belts shall be provided and worn in haulage trucks and other mobile equipment where there is a danger of overturning.',
     summaryPlainLanguage: 'Seat belts must be provided and used where mobile equipment rollover or overturn hazards exist.',
-    keywords: ['seat belt', 'seatbelt', 'seat belts', 'no seatbelt', 'loader', 'haul truck', 'dump truck', 'mobile equipment', 'operator restraint', 'not wearing seat belt'],
+    keywords: ['seat belt', 'seatbelt', 'seat belts', 'no seatbelt', 'loader', 'front end loader', 'haul truck', 'dump truck', 'dozer', 'excavator', 'skid steer', 'forklift', 'mobile equipment', 'operator restraint', 'not wearing seat belt'],
   },
   {
     source: 'MSHA',
@@ -88,7 +88,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Horns and backup alarms',
     standardText: 'Manually operated horns or other audible warning devices shall be provided on self-propelled mobile equipment.',
     summaryPlainLanguage: 'Mobile equipment must have effective audible warning devices such as horns or backup alarms.',
-    keywords: ['backup alarm', 'back up alarm', 'back-up alarm', 'backup beeper', 'horn', 'warning device', 'audible alarm', 'haul truck alarm', 'loader alarm', 'mobile equipment alarm'],
+    keywords: ['backup alarm', 'back up alarm', 'back-up alarm', 'backup beeper', 'beeper', 'horn', 'warning device', 'audible alarm', 'reverse alarm', 'haul truck alarm', 'loader alarm', 'mobile equipment alarm'],
   },
   {
     source: 'MSHA',
@@ -99,7 +99,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Eye protection',
     standardText: 'All persons shall wear safety glasses, goggles, or face shields or other suitable protective devices when in or around an area of a mine or plant where a hazard exists which could cause injury to unprotected eyes.',
     summaryPlainLanguage: 'Eye and face protection must be used where eye injury hazards exist.',
-    keywords: ['eye protection', 'safety glasses', 'goggles', 'face shield', 'faceshield', 'grinding', 'cutting', 'flying particles', 'metal chips', 'no glasses', 'no face shield'],
+    keywords: ['eye protection', 'ppe', 'hard hat', 'helmet', 'safety glasses', 'glasses', 'goggles', 'face shield', 'faceshield', 'visor', 'grinding', 'cutting', 'flying particles', 'metal chips', 'no glasses', 'no face shield'],
   },
   {
     source: 'MSHA',
@@ -154,7 +154,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Extinguishing equipment',
     standardText: 'Firefighting equipment shall be provided, maintained, and readily accessible.',
     summaryPlainLanguage: 'Fire extinguishers and firefighting equipment must be maintained and accessible.',
-    keywords: ['fire extinguisher', 'extinguisher', 'fire ext', 'blocked extinguisher', 'fire protection', 'fire equipment', 'fire suppression', 'hot work', 'welding', 'flammable', 'blocked access'],
+    keywords: ['fire extinguisher', 'extinguisher', 'fire ext', 'extingusher', 'blocked extinguisher', 'fire protection', 'fire equipment', 'fire suppression', 'suppression system', 'hot work', 'welding', 'torch', 'spark', 'flammable', 'fuel', 'combustible', 'blocked access'],
   },
   {
     source: 'MSHA',
@@ -166,5 +166,38 @@ export const standardSeeds: Array<Partial<Standard>> = [
     standardText: 'Persons shall not work on or from a piece of mobile equipment in a raised position until it has been securely blocked in position.',
     summaryPlainLanguage: 'Raised equipment must be securely blocked before work is performed.',
     keywords: ['blocked equipment', 'raised equipment', 'maintenance', 'repair', 'blocking', 'jack', 'lifted equipment', 'unsupported equipment'],
-  }
+  },
+  {
+    source: 'MSHA',
+    titleNumber: '30',
+    part: '56',
+    section: '56.14132',
+    citation: '30 CFR 56.14132',
+    heading: 'Horns and backup alarms',
+    standardText: 'Mobile equipment shall be equipped with an audible warning device.',
+    summaryPlainLanguage: 'Mobile equipment must have working backup alarms and horns.',
+    keywords: ['alarm', 'horn', 'backup', 'back-up', 'mobile equipment', 'loader', 'truck', 'haul truck', 'beeper', 'warning'],
+  },
+  {
+    source: 'MSHA',
+    titleNumber: '30',
+    part: '56',
+    section: '56.15006',
+    citation: '30 CFR 56.15006',
+    heading: 'Protective equipment',
+    standardText: 'Protective equipment and clothing shall be worn as necessary.',
+    summaryPlainLanguage: 'Personal Protective Equipment (PPE) is required when exposed to hazards.',
+    keywords: ['ppe', 'glove', 'gloves', 'eye protection', 'glasses', 'face shield', 'faceshield', 'hard hat', 'boots', 'safety boots', 'foot protection', 'safety gear'],
+  },
+  {
+    source: 'MSHA',
+    titleNumber: '30',
+    part: '56',
+    section: '56.9300',
+    citation: '30 CFR 56.9300',
+    heading: 'Berms and guardrails',
+    standardText: 'Berms or guardrails shall be provided and maintained on the banks of roadways where a drop-off exists.',
+    summaryPlainLanguage: 'Elevated roadways and travel areas must have berms or guardrails.',
+    keywords: ['berm', 'berms', 'haul road', 'roadway', 'drop-off', 'drop off', 'road edge', 'traffic control', 'haulage road'],
+  },
 ];
