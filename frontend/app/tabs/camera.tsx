@@ -249,6 +249,25 @@ export default function InspectScreen() {
     Alert.alert('Ready for review', `Report package contains ${saved.length} completed hazard(s).`);
   };
 
+  const copyReportPackage = async () => {
+    const reportText = hazards
+      .map((hazard, index) => `HAZARD ${index + 1}\n\n${hazard.generatedReport || hazard.hazardDescription}`)
+      .join('\n\n---\n\n');
+
+    if (!reportText.trim()) {
+      Alert.alert('No completed hazards', 'Save at least one completed hazard before copying the report package.');
+      return;
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(reportText);
+      Alert.alert('Report copied', 'The professional report package was copied to your clipboard.');
+      return;
+    }
+
+    Alert.alert('Copy unavailable', 'Clipboard copy is not available on this device.');
+  };
+
   const saveAndQuit = async () => {
     if (isHazardComplete()) {
       await saveCurrentHazard();
@@ -467,6 +486,10 @@ export default function InspectScreen() {
 
           {hazards.length > 0 && (
             <View style={styles.completedCard}>
+              <TouchableOpacity style={styles.exportButton} onPress={copyReportPackage}>
+                <Text style={styles.exportButtonText}>Copy Report Package</Text>
+              </TouchableOpacity>
+
               <Text style={[styles.completedTitle, { color: '#000000' }]}>Completed Hazards</Text>
               {hazards.map((hazard, index) => (
                 <View key={hazard.id} style={[styles.completedItem, { borderBottomColor: colors.border }]}>
@@ -746,6 +769,21 @@ const styles = StyleSheet.create({
   completedCard: {
     borderTopWidth: 1,
     paddingTop: 18,
+  },
+  exportButton: {
+    width: '62%',
+    alignSelf: 'center',
+    minHeight: 46,
+    borderRadius: 16,
+    backgroundColor: '#F97316',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  exportButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
   },
   completedTitle: {
     fontSize: 18,
