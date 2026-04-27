@@ -33,7 +33,7 @@ async function seed() {
     const standardRepo = ds.getRepository(Standard);
     const templateRepo = ds.getRepository(CorrectiveActionTemplate);
 
-    for (const item of standardSeeds) {
+    for (const item of standardSeeds.filter(Boolean)) {
       const existingStandard = await standardRepo.findOne({
         where: { citation: item.citation },
       });
@@ -70,7 +70,7 @@ async function seed() {
       }
     }
 
-    console.log(`Seeded/updated standards: ${standardSeeds.length}`);
+    console.log(`Seeded/updated standards: ${standardSeeds.filter(Boolean).length}`);
     console.log('Seed completed successfully.');
   } catch (error) {
     console.error('Seed failed:', error);

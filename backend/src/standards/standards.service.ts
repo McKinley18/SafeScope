@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { ILike, Repository, Raw } from 'typeorm';
 import { Standard } from './entities/standard.entity';
 import { CorrectiveActionTemplate } from './entities/corrective-action-template.entity';
 
@@ -40,11 +40,33 @@ export class StandardsService {
 
     const safeSource = source === 'MSHA' || source === 'OSHA' ? source : undefined;
 
-    const words = description
+    const synonymMap: Record<string, string[]> = {
+      conveyer: ['conveyor'],
+      gard: ['guard', 'guarding'],
+      latter: ['ladder'],
+      ext: ['extinguisher'],
+      extingusher: ['extinguisher'],
+      seatbelt: ['seat belt'],
+      backalarm: ['backup alarm'],
+      beeper: ['backup alarm'],
+      wireing: ['wiring', 'wire'],
+      eletrical: ['electrical'],
+      ppe: ['gloves', 'hard hat', 'eye protection', 'face shield'],
+      bermm: ['berm'],
+      triping: ['trip'],
+      slipping: ['slip'],
+    };
+
+    const rawWords = description
       .toLowerCase()
       .split(/[^a-z0-9]+/)
-      .filter(Boolean)
-      .slice(0, 8);
+      .filter(Boolean);
+
+    const words = Array.from(
+      new Set(
+        rawWords.flatMap((word) => [word, ...(synonymMap[word] || [])])
+      )
+    ).slice(0, 25);
 
     const results = [];
 
@@ -53,8 +75,15 @@ export class StandardsService {
         where: [
           { heading: ILike(`%${word}%`), ...(safeSource ? { source: safeSource } : {}) },
           { standardText: ILike(`%${word}%`), ...(safeSource ? { source: safeSource } : {}) },
+          { summaryPlainLanguage: ILike(`%${word}%`), ...(safeSource ? { source: safeSource } : {}) },
+          {
+            keywords: Raw((alias) => `LOWER(${alias}) LIKE :keyword`, {
+              keyword: `%${word}%`,
+            }),
+            ...(safeSource ? { source: safeSource } : {}),
+          },
         ],
-        take: 5,
+        take: 8,
       });
 
       results.push(...matches);
