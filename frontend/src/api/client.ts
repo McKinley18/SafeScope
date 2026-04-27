@@ -218,6 +218,24 @@ export const apiClient = {
     return res.json();
   },
 
+  suggestStandards: async (data: { description: string; source?: 'MSHA' | 'OSHA' }) => {
+    const res = await fetch(`${BASE_URL}/standards/suggest`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  suggestReportStandards: async (reportId: string, data?: { source?: 'MSHA' | 'OSHA' }) => {
+    const res = await fetch(`${BASE_URL}/reports/${reportId}/standards/suggest`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data || {}),
+    });
+    return res.json();
+  },
+
   classifyReport: async (reportId: string) => {
     const res = await fetch(`${BASE_URL}/reports/${reportId}/classify`, {
       method: 'POST',

@@ -158,30 +158,33 @@ export default function InspectScreen() {
     }
   };
 
-  const runStandardMatch = () => {
+  const runStandardMatch = async () => {
     if (!checks.description) {
       Alert.alert('Description needed', 'Describe the hazard before checking possible standards.');
       return;
     }
 
-    const text = currentHazard.hazardDescription.toLowerCase();
+    try {
+      const results = await apiClient.suggestStandards({
+        description: currentHazard.hazardDescription,
+        source: 'MSHA',
+      });
 
-    const matches = [
-      text.includes('ladder') ? 'Ladders / Safe Access Review' : '',
-      text.includes('guard') || text.includes('unguarded') ? 'Machine Guarding Review' : '',
-      text.includes('fire') || text.includes('extinguisher') ? 'Fire Protection Review' : '',
-      text.includes('electrical') || text.includes('wire') ? 'Electrical Safety Review' : '',
-      text.includes('ppe') || text.includes('helmet') || text.includes('glove') ? 'PPE Review' : '',
-      text.includes('fall') ? 'Fall Protection Review' : '',
-      text.includes('slip') || text.includes('trip') ? 'Walking / Working Surface Review' : '',
-    ].filter(Boolean);
+      const standards = Array.isArray(results)
+        ? results.map((item: any) =>
+            `${item.citation} — ${item.heading}${item.summaryPlainLanguage ? `: ${item.summaryPlainLanguage}` : ''}`
+          )
+        : [];
 
-    const finalMatches = matches.length ? matches : ['General Workplace Hazard Review'];
+      const finalMatches = standards.length ? standards : ['General Workplace Hazard Review'];
 
-    updateHazard({
-      possibleStandards: finalMatches,
-      selectedStandard: finalMatches[0],
-    });
+      updateHazard({
+        possibleStandards: finalMatches,
+        selectedStandard: finalMatches[0],
+      });
+    } catch {
+      Alert.alert('Standards unavailable', 'Unable to check possible standards right now.');
+    }
   };
 
   const saveCurrentHazard = async () => {
