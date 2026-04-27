@@ -7,8 +7,10 @@ export class StandardsController {
   constructor(private readonly standardsService: StandardsService, private readonly seedService: StandardsSeedService) {}
 
   @Post('seed-defaults')
-  async seedDefaults() {
-    if (process.env.NODE_ENV === 'production') {
+  async seedDefaults(@Query('key') key?: string) {
+    const syncKey = process.env.STANDARDS_SYNC_KEY;
+
+    if (process.env.NODE_ENV === 'production' && (!syncKey || key !== syncKey)) {
       throw new UnauthorizedException('Seed endpoint is disabled in production.');
     }
 
