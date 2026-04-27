@@ -19,7 +19,7 @@ type HazardDraft = {
   id: string;
   photos: string[];
   hazardDescription: string;
-  possibleStandards: string[];
+  possibleStandards: any[];
   selectedStandard: string;
   location: string;
   equipment: string;
@@ -171,16 +171,26 @@ export default function InspectScreen() {
       });
 
       const standards = Array.isArray(results)
-        ? results.map((item: any) =>
-            `${item.citation} — ${item.heading}${item.summaryPlainLanguage ? `: ${item.summaryPlainLanguage}` : ''}`
-          )
+        ? results.map((item: any) => ({
+            id: item.id || item.citation,
+            citation: item.citation,
+            heading: item.heading,
+            summary: item.summaryPlainLanguage,
+            text: item.standardText,
+            correctiveAction:
+              item.correctiveActionTemplates?.[0]?.recommendedAction ||
+              item.correctiveActionTemplates?.[0]?.lowCostOption ||
+              '',
+          }))
         : [];
 
-      const finalMatches = standards.length ? standards : ['General Workplace Hazard Review'];
+      const finalMatches = standards.length
+        ? standards
+        : [{ id: 'general', citation: 'General Review', heading: 'General Workplace Hazard Review' }];
 
       updateHazard({
         possibleStandards: finalMatches,
-        selectedStandard: finalMatches[0],
+        selectedStandard: finalMatches[0].citation || finalMatches[0].heading,
       });
     } catch {
       Alert.alert('Standards unavailable', 'Unable to check possible standards right now.');
@@ -323,21 +333,42 @@ export default function InspectScreen() {
               <Text style={styles.primaryButtonText}>Check Possible Standards</Text>
             </TouchableOpacity>
 
-            {currentHazard.possibleStandards.map((standard) => (
-              <TouchableOpacity
-                key={standard}
-                style={[
-                  styles.standardCard,
-                  {
-                    backgroundColor: '#FFFFFF',
-                    borderColor: currentHazard.selectedStandard === standard ? colors.accent : colors.border,
-                  },
-                ]}
-                onPress={() => updateHazard({ selectedStandard: standard })}
-              >
-                <Text style={[styles.standardText, { color: '#000000' }]}>{standard}</Text>
-              </TouchableOpacity>
-            ))}
+            {currentHazard.possibleStandards.map((standard) => {
+              const selectedValue = standard.citation || standard.heading || String(standard);
+              const isSelected = currentHazard.selectedStandard === selectedValue;
+
+              return (
+                <TouchableOpacity
+                  key={standard.id || selectedValue}
+                  style={[
+                    styles.standardCard,
+                    {
+                      backgroundColor: '#FFFFFF',
+                      borderColor: isSelected ? colors.accent : colors.border,
+                    },
+                  ]}
+                  onPress={() =>
+                    updateHazard({
+                      selectedStandard: selectedValue,
+                      correctiveAction: standard.correctiveAction || currentHazard.correctiveAction,
+                    })
+                  }
+                >
+                  <Text style={[styles.standardCitation, { color: colors.accent }]}>
+                    {standard.citation || 'Possible Standard'}
+                  </Text>
+                  <Text style={[styles.standardText, { color: '#000000' }]}>
+                    {standard.heading || String(standard)}
+                  </Text>
+                  {standard.summary ? (
+                    <Text style={styles.standardSummary}>{standard.summary}</Text>
+                  ) : null}
+                  {standard.correctiveAction ? (
+                    <Text style={styles.standardAction}>Suggested action: {standard.correctiveAction}</Text>
+                  ) : null}
+                </TouchableOpacity>
+              );
+            })}
 
             <Text style={[styles.disclaimer, { color: '#111111' }]}>
               Suggested matches guide review only. Final compliance responsibility remains with the qualified user.
@@ -651,9 +682,28 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
   },
+  standardCitation: {
+    fontSize: 12,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
   standardText: {
     fontSize: 14,
     fontWeight: '900',
+    marginBottom: 6,
+  },
+  standardSummary: {
+    color: '#344054',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  standardAction: {
+    color: '#101828',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '800',
   },
   disclaimer: {
     fontSize: 12,
