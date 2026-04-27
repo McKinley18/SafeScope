@@ -19,6 +19,7 @@ import { apiClient } from '../../src/api/client';
 type HazardDraft = {
   id: string;
   photos: string[];
+  hazardCategory: string;
   hazardDescription: string;
   possibleStandards: any[];
   selectedStandard: string;
@@ -34,9 +35,25 @@ type HazardDraft = {
 
 const DRAFT_KEY = 'sentinel_safety_single_page_inspection_draft_v1';
 
+const hazardCategories = [
+  'Access / Ladders / Platforms',
+  'Guarding / Moving Parts',
+  'Electrical',
+  'Housekeeping / Slips / Trips',
+  'Mobile Equipment / Traffic',
+  'Fire / Hot Work / Fuel',
+  'PPE',
+  'Dust / Respiratory / Noise',
+  'Fall Protection',
+  'Lockout / Energy Isolation',
+  'Emergency / First Aid',
+  'Other / Unknown',
+];
+
 const emptyHazard = (): HazardDraft => ({
   id: `HZ-${Date.now()}`,
   photos: [],
+  hazardCategory: '',
   hazardDescription: '',
   possibleStandards: [],
   selectedStandard: '',
@@ -181,6 +198,7 @@ export default function InspectScreen() {
     try {
       const results = await apiClient.suggestStandards({
         description: currentHazard.hazardDescription,
+        hazardCategory: currentHazard.hazardCategory,
         source: 'MSHA',
       });
 
@@ -369,7 +387,31 @@ export default function InspectScreen() {
             </ScrollView>
           </Section>
 
-          <Section id="description" sectionOffsets={sectionOffsets} title="2. Hazard Description" helper="Describe what is unsafe, who is exposed, and what could happen.">
+          <Section id="description" sectionOffsets={sectionOffsets} title="2. Hazard Description" helper="Select the closest hazard category, then describe what is unsafe, who is exposed, and what could happen.">
+            <Text style={[styles.fieldLabel, { color: '#000000' }]}>Hazard Category</Text>
+            <View style={styles.categoryGrid}>
+              {hazardCategories.map((category) => {
+                const selected = currentHazard.hazardCategory === category;
+
+                return (
+                  <TouchableOpacity
+                    key={category}
+                    style={[
+                      styles.categoryChip,
+                      {
+                        backgroundColor: selected ? '#F97316' : '#FFFFFF',
+                        borderColor: selected ? '#F97316' : '#D7DEE8',
+                      },
+                    ]}
+                    onPress={() => updateHazard({ hazardCategory: category })}
+                  >
+                    <Text style={[styles.categoryChipText, { color: selected ? '#FFFFFF' : '#101828' }]}>
+                      {category}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
             <TextInput
               style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8', color: '#101828' }]}
               placeholder="Example: Damaged ladder with bent side rail being used near the maintenance area."
