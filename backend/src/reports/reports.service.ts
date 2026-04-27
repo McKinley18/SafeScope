@@ -12,6 +12,7 @@ import { AuditService } from '../audit/audit.service';
 import { ClassificationsService } from '../classifications/classifications.service';
 import { Review } from '../reviews/entities/review.entity';
 import { CorrectiveAction } from '../corrective-actions/entities/corrective-action.entity';
+import { StandardsService } from '../standards/standards.service';
 
 @Injectable()
 export class ReportsService {
@@ -26,6 +27,7 @@ export class ReportsService {
     private actionRepo: Repository<CorrectiveAction>,
     private auditService: AuditService,
     private classificationsService: ClassificationsService,
+    private standardsService: StandardsService,
   ) {}
 
   async getAudit(reportId: string) {
@@ -230,6 +232,31 @@ export class ReportsService {
     return {
       reportId,
       attachments: savedAttachments,
+    };
+  }
+
+  async suggestStandards(reportId: string, source?: string) {
+    const report = await this.reportsRepository.findOne({ where: { id: reportId } });
+    if (!report) throw new NotFoundException('Report not found');
+
+    const description = [
+      report.hazardDescription,
+      report.narrative,
+      report.equipment,
+      report.area,
+      report.notes,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    const standards = await this.standardsService.suggest(description, source);
+
+    return {
+      reportId,
+      description,
+      standards,
+      disclaimer:
+        'Possible standard matches are generated from keyword matching and must be verified by a qualified user.',
     };
   }
 

@@ -110,6 +110,14 @@ export class ReportsController {
     return this.reportsService.addEvidence(reportId, addReportEvidenceDto);
   }
 
+  @Post(':reportId/standards/suggest')
+  suggestStandards(
+    @Param('reportId') reportId: string,
+    @Body() body: { source?: string },
+  ) {
+    return this.reportsService.suggestStandards(reportId, body?.source);
+  }
+
   @Post(':reportId/detect-hazard')
   detectHazard(@Param('reportId') reportId: string) {
     return this.reportsService.detectHazard(reportId);
