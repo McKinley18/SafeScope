@@ -27,6 +27,7 @@ type HazardDraft = {
   assignedTo: string;
   dueDate: string;
   notes: string;
+  generatedReport?: string;
   completed: boolean;
 };
 
@@ -197,6 +198,19 @@ export default function InspectScreen() {
     }
   };
 
+  const buildProfessionalReportLanguage = () => {
+    return [
+      `Observation: ${currentHazard.hazardDescription}`,
+      `Risk: Personnel may be exposed to an unsafe condition at ${currentHazard.location || 'the identified location'} involving ${currentHazard.equipment || 'the listed equipment/area'}.`,
+      `Possible Standard / Review Area: ${currentHazard.selectedStandard || 'Qualified review required'}.`,
+      `Recommended Corrective Action: ${currentHazard.correctiveAction}`,
+      `Assigned To: ${currentHazard.assignedTo}`,
+      `Due Date: ${currentHazard.dueDate || 'Not specified'}`,
+      `Verification: Confirm the corrective action is complete, document the corrected condition, and retain evidence with the report.`,
+      `Professional Note: Suggested standards and corrective actions are provided to support review. Final compliance determination remains with the qualified user.`,
+    ].join('\n\n');
+  };
+
   const saveCurrentHazard = async () => {
     if (!isHazardComplete()) {
       Alert.alert(
@@ -208,6 +222,7 @@ export default function InspectScreen() {
 
     const completedHazard = {
       ...currentHazard,
+      generatedReport: buildProfessionalReportLanguage(),
       completed: true,
     };
 
@@ -461,6 +476,12 @@ export default function InspectScreen() {
                   <Text style={[styles.completedText, { color: '#111111' }]}>
                     {hazard.hazardDescription}
                   </Text>
+
+                  {hazard.generatedReport ? (
+                    <Text style={[styles.generatedReportText, { color: '#344054' }]}>
+                      {hazard.generatedReport}
+                    </Text>
+                  ) : null}
                 </View>
               ))}
             </View>
