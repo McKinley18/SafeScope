@@ -4,6 +4,7 @@ import { ILike, Repository, Raw } from 'typeorm';
 import { Standard } from './entities/standard.entity';
 import { CorrectiveActionTemplate } from './entities/corrective-action-template.entity';
 import { standardSeeds } from './seeds/standards.seed';
+import { hazardScenarioSeeds } from './seeds/hazard-scenarios.seed';
 
 @Injectable()
 export class StandardsService {
@@ -94,6 +95,33 @@ export class StandardsService {
     const selectedCategory = (hazardCategory || '').toLowerCase();
     const selectedCategoryTerms = categoryTerms[selectedCategory] || [];
 
+    const normalizedDescription = description.toLowerCase();
+
+    const scenarioCitationBoosts = new Map<string, number>();
+
+    for (const scenario of hazardScenarioSeeds) {
+      const scenarioCategory = scenario.category.toLowerCase();
+      const categoryMatches =
+        !selectedCategory ||
+        selectedCategory === 'other / unknown' ||
+        selectedCategory === scenarioCategory;
+
+      if (!categoryMatches) continue;
+
+      const phraseMatches = scenario.phrases.filter((phrase) =>
+        normalizedDescription.includes(phrase.toLowerCase()),
+      );
+
+      if (phraseMatches.length === 0) continue;
+
+      for (const citation of scenario.citations) {
+        scenarioCitationBoosts.set(
+          citation,
+          (scenarioCitationBoosts.get(citation) || 0) + 120 + phraseMatches.length * 25,
+        );
+      }
+    }
+
     const scoreMap = new Map<string, { item: Standard; score: number }>();
 
     const broadWords = [
@@ -164,6 +192,10 @@ export class StandardsService {
 
         if (categoryMatch) score += 60;
         if (selectedCategoryTerms.length > 0 && !categoryMatch) score -= 45;
+
+        const scenarioBoost = scenarioCitationBoosts.get(match.citation) || 0;
+        if (scenarioBoost > 0) score += scenarioBoost;
+
         if (excludedByCategory) score -= 100;
 
         if (isBroad) score -= 35;
@@ -175,6 +207,21 @@ export class StandardsService {
         } else if (score > 0) {
           scoreMap.set(match.id, { item: match, score });
         }
+      }
+    }
+
+    for (const [citation, boost] of scenarioCitationBoosts.entries()) {
+      const standard = await this.standardRepo.findOne({
+        where: { citation, ...(safeSource ? { source: safeSource } : {}) },
+      });
+
+      if (!standard) continue;
+
+      const existing = scoreMap.get(standard.id);
+      if (existing) {
+        existing.score += boost;
+      } else {
+        scoreMap.set(standard.id, { item: standard, score: boost });
       }
     }
 
