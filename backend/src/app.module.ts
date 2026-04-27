@@ -15,15 +15,12 @@ import { AuditSessionModule } from './audit-session/audit-session.module';
 import { AuthModule } from './auth/auth.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { StandardsModule } from './standards/standards.module';
+import { RegulatoryModule } from './regulatory/regulatory.module';
+import { ApplicableStandardsModule } from './applicable-standards/applicable-standards.module';
 import { User } from './users/entities/user.entity';
 import { Notification } from './notifications/notification.entity';
 import { WorkspaceInvite } from './auth/entities/workspace-invite.entity';
-import { RegulatoryAgency } from './regulatory/entities/regulatory-agency.entity';
-import { RegulatoryPart } from './regulatory/entities/regulatory-part.entity';
-import { RegulatorySubpart } from './regulatory/entities/regulatory-subpart.entity';
-import { RegulatorySection } from './regulatory/entities/regulatory-section.entity';
-import { RegulatoryParagraph } from './regulatory/entities/regulatory-paragraph.entity';
-
 import { Report } from './reports/entities/report.entity';
 import { ReportAttachment } from './reports/entities/attachment.entity';
 import { Classification } from './classifications/entities/classification.entity';
@@ -37,14 +34,17 @@ import { AuditSession } from './audit-session/audit-session.entity';
 import { AuditEntry } from './audit-session/audit-entry.entity';
 import { AuditEntryAttachment } from './audit-session/entities/audit-entry-attachment.entity';
 import { AuditEntryFinding } from './audit-session/entities/audit-entry-finding.entity';
-import { StandardsModule } from './standards/standards.module';
-import { RegulatoryModule } from './regulatory/regulatory.module';
 import { Standard } from './standards/entities/standard.entity';
 import { HazardCategoryEntity } from './standards/entities/hazard-category.entity';
 import { HazardStandardMapping } from './standards/entities/hazard-standard-mapping.entity';
 import { CorrectiveActionTemplate } from './standards/entities/corrective-action-template.entity';
 import { ReportLanguageTemplate } from './standards/entities/report-language-template.entity';
 import { ClassificationFeedback } from './standards/entities/classification-feedback.entity';
+import { RegulatoryAgency } from './regulatory/entities/regulatory-agency.entity';
+import { RegulatoryPart } from './regulatory/entities/regulatory-part.entity';
+import { RegulatorySubpart } from './regulatory/entities/regulatory-subpart.entity';
+import { RegulatorySection } from './regulatory/entities/regulatory-section.entity';
+import { RegulatoryParagraph } from './regulatory/entities/regulatory-paragraph.entity';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 
 @Module({
@@ -62,56 +62,18 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         entities: [
-          Report,
-          ReportAttachment,
-          Classification,
-          AuditLog,
-          Review,
-          RiskScore,
-          CorrectiveAction,
-          ClassificationRule,
-          ClassificationRuleVersion,
-          AuditSession,
-          AuditEntry,
-          AuditEntryAttachment,
-          AuditEntryFinding,
-          User,
-          Notification,
-          Standard,
-          HazardCategoryEntity,
-          HazardStandardMapping,
-          CorrectiveActionTemplate,
-          ReportLanguageTemplate,
-          ClassificationFeedback,
-          WorkspaceInvite,
-          RegulatoryAgency,
-          RegulatoryPart,
-          RegulatorySubpart,
-          RegulatorySection,
+          Report, ReportAttachment, Classification, AuditLog, Review, RiskScore, CorrectiveAction, ClassificationRule,
+          ClassificationRuleVersion, AuditSession, AuditEntry, AuditEntryAttachment, AuditEntryFinding, User, Notification,
+          Standard, HazardCategoryEntity, HazardStandardMapping, CorrectiveActionTemplate, ReportLanguageTemplate,
+          ClassificationFeedback, WorkspaceInvite, RegulatoryAgency, RegulatoryPart, RegulatorySubpart, RegulatorySection,
           RegulatoryParagraph,
         ],
         synchronize: true,
-        ssl:
-          configService.get<string>('NODE_ENV') === 'production'
-            ? { rejectUnauthorized: false }
-            : false,
       }),
     }),
-    HealthModule,
-    ReportsModule,
-    TaxonomyModule,
-    DashboardsModule,
-    ClassificationsModule,
-    AuditModule,
-    ReviewsModule,
-    RiskModule,
-    CorrectiveActionsModule,
-    AuditSessionModule,
-    AuthModule,
-    AlertsModule,
-    StandardsModule,
-    RegulatoryModule,
-    NotificationsModule,
+    HealthModule, ReportsModule, TaxonomyModule, DashboardsModule, ClassificationsModule, AuditModule,
+    ReviewsModule, RiskModule, CorrectiveActionsModule, AuditSessionModule, AuthModule, AlertsModule,
+    StandardsModule, RegulatoryModule, ApplicableStandardsModule, NotificationsModule,
   ],
 })
 export class AppModule implements NestModule {
