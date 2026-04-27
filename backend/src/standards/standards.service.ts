@@ -65,6 +65,7 @@ export class StandardsService {
       bermm: ['berm'],
       triping: ['trip'],
       slipping: ['slip'],
+      busted: ['broken', 'damaged'],
     };
 
     const rawWords = description

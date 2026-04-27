@@ -8,7 +8,7 @@ export type HazardScenarioSeed = {
 export const hazardScenarioSeeds: HazardScenarioSeed[] = [
   {
     category: 'Access / Ladders / Platforms',
-    phrases: ['damaged ladder', 'bent ladder side rail', 'broken ladder rung', 'loose ladder', 'unsafe ladder access'],
+    phrases: ['damaged ladder', 'busted ladder', 'busted ladder rung', 'bent ladder side rail', 'broken ladder rung', 'loose ladder', 'unsafe ladder access', 'ladder rung', 'ladder side rail'],
     citations: ['30 CFR 56.11001'],
     recommendedAction: 'Remove the ladder from service and repair or replace it before use.',
   },
