@@ -125,6 +125,7 @@ export class StandardsService {
     }
 
     const top = Array.from(scoreMap.values())
+      .filter((x) => x.score >= 25)
       .sort((a, b) => b.score - a.score)
       .slice(0, 5)
       .map((x) => x.item);
