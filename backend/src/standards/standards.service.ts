@@ -149,8 +149,13 @@ export class StandardsService {
           heading.includes(term) || keywords.includes(term) || summary.includes(term),
         );
 
+        const excludedByCategory =
+          selectedCategory === 'access / ladders / platforms' &&
+          (heading.includes('housekeeping') || keywords.includes('spill') || keywords.includes('oil') || keywords.includes('debris'));
+
         if (categoryMatch) score += 60;
         if (selectedCategoryTerms.length > 0 && !categoryMatch) score -= 45;
+        if (excludedByCategory) score -= 100;
 
         if (isBroad) score -= 35;
 
