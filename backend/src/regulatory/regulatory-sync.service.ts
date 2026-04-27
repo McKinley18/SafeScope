@@ -42,6 +42,19 @@ export class RegulatorySyncService {
     await this.agencyRepo.upsert({ code: 'MSHA', name: 'Mine Safety and Health Administration', titleNumber: '30' }, ['code']);
     await this.partRepo.upsert({ agencyCode: 'MSHA', titleNumber: '30', part: '56', heading: part56.HEAD }, ['agencyCode', 'titleNumber', 'part']);
 
+    // Cleanup malformed citations from earlier parser version, e.g. "30 CFR 56.56.14109".
+    await this.paragraphRepo
+      .createQueryBuilder()
+      .delete()
+      .where('sectionCitation LIKE :badCitation', { badCitation: '30 CFR 56.56.%' })
+      .execute();
+
+    await this.sectionRepo
+      .createQueryBuilder()
+      .delete()
+      .where('citation LIKE :badCitation', { badCitation: '30 CFR 56.56.%' })
+      .execute();
+
     let sectionsUpserted = 0;
     let paragraphsUpserted = 0;
     let subpartsUpserted = 0;
