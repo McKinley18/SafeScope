@@ -10,7 +10,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Moving machine parts',
     standardText: 'Guards shall be provided and maintained to protect persons from moving machine parts.',
     summaryPlainLanguage: 'Moving machine parts must be guarded where contact could injure a person.',
-    keywords: ['guard', 'guarding', 'moving parts', 'machine', 'belt', 'pulley', 'conveyor', 'rotating'],
+    keywords: ['guard', 'gard', 'guarding', 'unguarded', 'guarded', 'protection', 'moving parts', 'machine', 'belt', 'drive', 'roller', 'pinch point', 'pulley', 'head pulley', 'tail pulley', 'conveyor', 'conveyer', 'rotating', 'shaft', 'coupling'],
   },
   {
     source: 'MSHA',
@@ -21,7 +21,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Safe access',
     standardText: 'Safe means of access shall be provided and maintained to all working places.',
     summaryPlainLanguage: 'Workers must have safe access to working areas.',
-    keywords: ['access', 'walkway', 'ladder', 'platform', 'stairs', 'travelway', 'working place'],
+    keywords: ['access', 'safe access', 'ingress', 'egress', 'climb', 'walkway', 'travelway', 'ladder', 'latter', 'platform', 'stair', 'stairs', 'steps', 'handrail', 'grating', 'working place', 'work area'],
   },
   {
     source: 'MSHA',
@@ -32,7 +32,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Housekeeping',
     standardText: 'Workplaces, passageways, storerooms, and service rooms shall be kept clean and orderly.',
     summaryPlainLanguage: 'Work areas and travelways must be kept clean and orderly.',
-    keywords: ['housekeeping', 'trash', 'debris', 'slip', 'trip', 'walkway', 'material'],
+    keywords: ['housekeeping', 'cleanup', 'clean', 'orderly', 'trash', 'debris', 'scrap', 'clutter', 'spill', 'oil', 'mud', 'slip', 'trip', 'walkway', 'passageway', 'material', 'stored material', 'loose aggregate'],
   },
   {
     source: 'MSHA',
@@ -43,7 +43,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Electrical conductors',
     standardText: 'Electrical conductors exposed to mechanical damage shall be protected.',
     summaryPlainLanguage: 'Electrical wires and conductors must be protected from damage.',
-    keywords: ['electrical', 'wire', 'conductor', 'cord', 'damage', 'exposed', 'panel'],
+    keywords: ['electrical', 'electric', 'power', 'energized', 'wire', 'wiring', 'conductor', 'cord', 'cable', 'extension cord', 'insulation', 'damage', 'damaged', 'exposed', 'panel', 'junction box', 'breaker'],
   },
   {
     source: 'OSHA',
@@ -54,6 +54,6 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Walking-working surfaces',
     standardText: 'Walking-working surfaces shall be inspected, regularly and as necessary, and maintained in a safe condition.',
     summaryPlainLanguage: 'Walking and working surfaces must be kept safe and maintained.',
-    keywords: ['walking surface', 'working surface', 'slip', 'trip', 'fall', 'floor', 'walkway'],
+    keywords: ['walking surface', 'working surface', 'slip', 'trip', 'fall', 'floor', 'walkway', 'platform', 'edge', 'elevated', 'guardrail', 'open edge'],
   },
 ];
