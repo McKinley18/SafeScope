@@ -107,12 +107,14 @@ export class StandardsService {
         const text = (match.standardText || '').toLowerCase();
         const keywords = JSON.stringify(match.keywords || []).toLowerCase();
 
-        if (heading.includes(word)) score += 50;
-        if (keywords.includes(word)) score += 35;
-        if (summary.includes(word)) score += 20;
-        if (text.includes(word)) score += 10;
+        const isBroad = broadWords.includes(word);
 
-        if (broadWords.includes(word)) score -= 25;
+        if (heading.includes(word)) score += isBroad ? 5 : 50;
+        if (keywords.includes(word)) score += isBroad ? 5 : 35;
+        if (!isBroad && summary.includes(word)) score += 20;
+        if (!isBroad && text.includes(word)) score += 10;
+
+        if (isBroad) score -= 35;
 
         const existing = scoreMap.get(match.id);
 
