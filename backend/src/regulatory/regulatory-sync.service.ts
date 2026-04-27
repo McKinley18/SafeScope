@@ -56,8 +56,8 @@ export class RegulatorySyncService {
         // Sections are inside nested DIVs
         const traverseSections = async (node: any) => {
             if (node.TYPE === 'SECTION') {
-                const sectionNo = node.N.replace('§ ', '');
-                const citation = `30 CFR 56.${sectionNo}`;
+                const sectionNo = node.N.replace('§ ', '').trim();
+                const citation = `30 CFR ${sectionNo}`;
                 await this.sectionRepo.upsert({
                     agencyCode: 'MSHA', titleNumber: '30', part: '56', subpart: subpartTitle, 
                     section: sectionNo, citation, heading: node.HEAD, textPlain: Array.isArray(node.P) ? node.P.join(' ') : node.P
