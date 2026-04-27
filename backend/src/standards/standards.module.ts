@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StandardsController } from './standards.controller';
 import { StandardsService } from './standards.service';
+import { StandardsSeedService } from './standards-seed.service';
 import { Standard } from './entities/standard.entity';
 import { HazardCategoryEntity } from './entities/hazard-category.entity';
 import { HazardStandardMapping } from './entities/hazard-standard-mapping.entity';
@@ -21,7 +22,7 @@ import { ClassificationFeedback } from './entities/classification-feedback.entit
     ]),
   ],
   controllers: [StandardsController],
-  providers: [StandardsService],
+  providers: [StandardsService, StandardsSeedService],
   exports: [StandardsService],
 })
 export class StandardsModule {}

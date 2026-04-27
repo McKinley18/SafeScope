@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { StandardsService } from './standards.service';
+import { StandardsSeedService } from './standards-seed.service';
 
 @Controller('standards')
 export class StandardsController {
-  constructor(private readonly standardsService: StandardsService) {}
+  constructor(private readonly standardsService: StandardsService, private readonly seedService: StandardsSeedService) {}
+
+  @Post('seed-defaults')
+  async seedDefaults() {
+    if (process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedException('Seed endpoint is disabled in production.');
+    }
+
+    return this.seedService.seedDefaults();
+  }
 
   @Get()
   async search(
