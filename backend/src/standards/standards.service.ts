@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository, Raw } from 'typeorm';
 import { Standard } from './entities/standard.entity';
 import { CorrectiveActionTemplate } from './entities/corrective-action-template.entity';
+import { standardSeeds } from './seeds/standards.seed';
 
 @Injectable()
 export class StandardsService {
@@ -13,7 +14,48 @@ export class StandardsService {
     private correctiveTemplateRepo: Repository<CorrectiveActionTemplate>,
   ) {}
 
+  private async ensureStandardsLibraryCurrent() {
+    const existing = await this.standardRepo.count();
+
+    if (existing >= standardSeeds.length) return;
+
+    for (const item of standardSeeds) {
+      const current = await this.standardRepo.findOne({
+        where: { citation: item.citation },
+      });
+
+      const saved = await this.standardRepo.save(
+        this.standardRepo.create({
+          ...(current || {}),
+          ...item,
+          lastSyncedAt: new Date(),
+        } as any),
+      );
+
+      const templateExists = await this.correctiveTemplateRepo.findOne({
+        where: { standardId: saved.id },
+      });
+
+      if (!templateExists) {
+        await this.correctiveTemplateRepo.save(
+          this.correctiveTemplateRepo.create({
+            hazardCategoryCode: saved.keywords?.[0] || 'general',
+            standardId: saved.id,
+            title: `Corrective action for ${saved.citation}`,
+            recommendedAction: `Correct the condition related to ${saved.heading} and document verification.`,
+            lowCostOption: 'Remove exposure, barricade the area if needed, and complete a documented field correction.',
+            bestPracticeOption: 'Create a permanent engineered or administrative control, assign ownership, and verify completion.',
+            verificationSteps: 'Verify the hazard was corrected, photograph the corrected condition, and document the responsible person/date.',
+            estimatedRiskReduction: 70,
+          }),
+        );
+      }
+    }
+  }
+
   async search(query?: string, source?: string) {
+    await this.ensureStandardsLibraryCurrent();
+
     const safeSource = source === 'MSHA' || source === 'OSHA' ? source : undefined;
     const where: any = {};
 
@@ -31,6 +73,8 @@ export class StandardsService {
   }
 
   async suggest(description: string, source?: string, hazardCategory?: string) {
+    await this.ensureStandardsLibraryCurrent();
+
     const standardsCount = await this.standardRepo.count();
 
     if (standardsCount === 0) {
