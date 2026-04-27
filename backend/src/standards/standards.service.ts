@@ -81,6 +81,20 @@ export class StandardsService {
       'equipment',
       'unsafe',
       'broken',
+      'crusher',
+      'screen',
+      'screens',
+      'feed',
+      'feeder',
+      'near',
+      'side',
+      'rail',
+      'work',
+      'working',
+      'place',
+      'shop',
+      'station',
+      'maintenance',
     ];
 
     for (const word of words) {
