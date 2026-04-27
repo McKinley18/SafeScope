@@ -19,6 +19,11 @@ export class StandardsSeedService {
     let updated = 0;
 
     for (const item of standardSeeds) {
+      if (!item || !item.citation) {
+        console.warn('Skipping invalid standard seed row:', item);
+        continue;
+      }
+
       try {
         const existing = await this.standardRepo.findOne({
           where: { citation: item.citation },
