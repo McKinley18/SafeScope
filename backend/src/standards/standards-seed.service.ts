@@ -3,12 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Standard } from './entities/standard.entity';
 import { standardSeeds } from './seeds/standards.seed';
+import { CorrectiveActionTemplate } from './entities/corrective-action-template.entity';
 
 @Injectable()
 export class StandardsSeedService {
   constructor(
     @InjectRepository(Standard)
     private standardRepo: Repository<Standard>,
+    @InjectRepository(CorrectiveActionTemplate)
+    private correctiveTemplateRepo: Repository<CorrectiveActionTemplate>,
   ) {}
 
   async seedDefaults() {
@@ -38,6 +41,29 @@ export class StandardsSeedService {
         );
         created += 1;
       }
+    }
+
+    const standards = await this.standardRepo.find();
+
+    for (const standard of standards) {
+      const exists = await this.correctiveTemplateRepo.findOne({
+        where: { standardId: standard.id },
+      });
+
+      if (exists) continue;
+
+      await this.correctiveTemplateRepo.save(
+        this.correctiveTemplateRepo.create({
+          hazardCategoryCode: standard.keywords?.[0] || 'general',
+          standardId: standard.id,
+          title: `Corrective action for ${standard.citation}`,
+          recommendedAction: `Correct the condition related to ${standard.heading} and document verification.`,
+          lowCostOption: 'Remove exposure, barricade the area if needed, and complete a documented field correction.',
+          bestPracticeOption: 'Create a permanent engineered or administrative control, assign ownership, and verify completion.',
+          verificationSteps: 'Verify the hazard was corrected, photograph the corrected condition, and document the responsible person/date.',
+          estimatedRiskReduction: 70,
+        }),
+      );
     }
 
     return { ok: true, created, updated, total: standardSeeds.length };

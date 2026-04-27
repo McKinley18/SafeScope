@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { Standard } from './entities/standard.entity';
+import { CorrectiveActionTemplate } from './entities/corrective-action-template.entity';
 
 @Injectable()
 export class StandardsService {
   constructor(
     @InjectRepository(Standard)
     private standardRepo: Repository<Standard>,
+    @InjectRepository(CorrectiveActionTemplate)
+    private correctiveTemplateRepo: Repository<CorrectiveActionTemplate>,
   ) {}
 
   async search(query?: string, source?: string) {
@@ -52,6 +55,22 @@ export class StandardsService {
 
     const unique = Array.from(new Map(results.map((r) => [r.id, r])).values());
 
-    return unique.slice(0, 10);
+    const top = unique.slice(0, 10);
+
+    const enriched = await Promise.all(
+      top.map(async (standard) => {
+        const templates = await this.correctiveTemplateRepo.find({
+          where: { standardId: standard.id },
+          take: 3,
+        });
+
+        return {
+          ...standard,
+          correctiveActionTemplates: templates,
+        };
+      }),
+    );
+
+    return enriched;
   }
 }
