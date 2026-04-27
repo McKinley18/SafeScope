@@ -14,7 +14,15 @@ export class StandardsController {
       throw new UnauthorizedException('Seed endpoint is disabled in production.');
     }
 
-    return this.seedService.seedDefaults();
+    try {
+      return await this.seedService.seedDefaults();
+    } catch (error: any) {
+      return {
+        ok: false,
+        message: error?.message || 'Unknown standards seed error',
+        stack: error?.stack,
+      };
+    }
   }
 
   @Get()
