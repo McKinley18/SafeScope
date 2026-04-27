@@ -9,7 +9,8 @@ import { apiClient } from '../../src/api/client';
 export default function HomeScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
-  const [hiddenPriority, setHiddenPriority] = useState<string[]>([]);
+  const [acknowledgedPriority, setAcknowledgedPriority] = useState<string[]>([]);
+  const [dismissedPriority, setDismissedPriority] = useState<string[]>([]);
   const [dashboard, setDashboard] = useState<any>({});
 
   useEffect(() => {
@@ -30,9 +31,27 @@ export default function HomeScreen() {
   ];
 
   const priorityItems = [
-    ['Repair damaged ladder', 'High priority • Due Apr 28', 'warning-outline'],
-    ['Replace missing fire extinguisher', 'Critical • In progress', 'flame-outline'],
-    ['No reports waiting longer than 24 hours', 'Review queue clear', 'checkmark-circle-outline'],
+    {
+      title: 'Repair damaged ladder',
+      detail: 'High priority • Due Apr 28 • Awaiting owner acceptance',
+      icon: 'warning-outline',
+      severity: 'High',
+      owner: 'Unassigned',
+    },
+    {
+      title: 'Replace missing fire extinguisher',
+      detail: 'Critical • In progress • Verification required',
+      icon: 'flame-outline',
+      severity: 'Critical',
+      owner: 'Maintenance',
+    },
+    {
+      title: 'No reports waiting longer than 24 hours',
+      detail: 'Review queue clear • Monitor only',
+      icon: 'checkmark-circle-outline',
+      severity: 'Clear',
+      owner: 'System',
+    },
   ];
 
 
@@ -99,31 +118,63 @@ export default function HomeScreen() {
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Priority Work Queue</Text>
 
       <View style={[styles.feed, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        {priorityItems.filter(([title]) => !hiddenPriority.includes(title)).map(([title, detail, icon]) => (
-          <View key={title} style={[styles.feedRow, { borderBottomColor: colors.border }]}>
-            <Ionicons name={icon as any} size={20} color={colors.accent} />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.feedText, { color: colors.text }]}>{title}</Text>
-              <Text style={[styles.feedDetail, { color: colors.sub }]}>{detail}</Text>
+        {priorityItems
+          .filter((item) => !dismissedPriority.includes(item.title))
+          .map((item) => {
+            const acknowledged = acknowledgedPriority.includes(item.title);
 
-              <View style={styles.rowActions}>
-                <TouchableOpacity
-                  style={[styles.smallBtn, { borderColor: colors.border }]}
-                  onPress={() => setHiddenPriority([...hiddenPriority, title])}
-                >
-                  <Text style={[styles.smallBtnText, { color: colors.text }]}>Acknowledge</Text>
-                </TouchableOpacity>
+            return (
+              <View key={item.title} style={[styles.feedRow, { borderBottomColor: colors.border }]}>
+                <Ionicons name={item.icon as any} size={20} color={colors.accent} />
+                <View style={{ flex: 1 }}>
+                  <View style={styles.feedHeaderRow}>
+                    <Text style={[styles.feedText, { color: colors.text }]}>{item.title}</Text>
+                    <Text style={[styles.statusPill, { color: acknowledged ? '#166534' : '#92400E' }]}>
+                      {acknowledged ? 'Accepted' : 'Needs Review'}
+                    </Text>
+                  </View>
 
-                <TouchableOpacity
-                  style={[styles.smallBtn, { borderColor: colors.border }]}
-                  onPress={() => setHiddenPriority([...hiddenPriority, title])}
-                >
-                  <Text style={[styles.smallBtnText, { color: colors.sub }]}>Dismiss</Text>
-                </TouchableOpacity>
+                  <Text style={[styles.feedDetail, { color: colors.sub }]}>{item.detail}</Text>
+                  <Text style={[styles.feedDetail, { color: colors.sub }]}>
+                    Severity: {item.severity} • Owner: {acknowledged ? 'You' : item.owner}
+                  </Text>
+
+                  <View style={styles.rowActions}>
+                    <TouchableOpacity
+                      style={[styles.smallBtnPrimary, { borderColor: colors.accent }]}
+                      onPress={() =>
+                        setAcknowledgedPriority(Array.from(new Set([...acknowledgedPriority, item.title])))
+                      }
+                    >
+                      <Text style={styles.smallBtnPrimaryText}>
+                        {acknowledged ? 'Accepted' : 'Accept / Start Review'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.smallBtn, { borderColor: colors.border }]}
+                      onPress={() =>
+                        Alert.alert(
+                          'Close as not actionable?',
+                          'Use this only for duplicate, invalid, already corrected, or non-applicable items. This action should be audit logged in production.',
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                              text: 'Close',
+                              style: 'destructive',
+                              onPress: () => setDismissedPriority([...dismissedPriority, item.title]),
+                            },
+                          ],
+                        )
+                      }
+                    >
+                      <Text style={[styles.smallBtnText, { color: colors.sub }]}>Close as Not Actionable</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-            </View>
-          </View>
-        ))}
+            );
+          })}
       </View>
 
     </ScrollView>
@@ -280,18 +331,47 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '700',
   },
+  feedHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusPill: {
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
   rowActions: {
     flexDirection: 'row',
     gap: 8,
     marginTop: 10,
+    flexWrap: 'wrap',
   },
   smallBtn: {
     borderWidth: 1,
     borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  smallBtnPrimary: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 40,
+    backgroundColor: '#F97316',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   smallBtnText: {
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  smallBtnPrimaryText: {
+    color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '900',
   },

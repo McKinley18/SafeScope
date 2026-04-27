@@ -1,6 +1,8 @@
 import { DataSource } from 'typeorm';
 import { Report } from '../reports/entities/report.entity';
+import { ReportAttachment } from '../reports/entities/attachment.entity';
 import { Classification } from '../classifications/entities/classification.entity';
+import { ClassificationRule } from '../taxonomy/entities/rule.entity'; '../classifications/entities/classification.entity';
 import { AuditLog } from '../audit/entities/audit-log.entity';
 import { Review } from '../reviews/entities/review.entity';
 import { RiskScore } from '../risk/entities/risk-score.entity';
@@ -23,7 +25,9 @@ export const dataSource = new DataSource({
   database: 'safescope',
   entities: [
     Report,
+    ReportAttachment,
     Classification,
+    ClassificationRule,
     AuditLog,
     Review,
     RiskScore,

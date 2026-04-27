@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
+import { apiClient } from '../../src/api/client';
 
 type HazardDraft = {
   id: string;
@@ -87,7 +88,7 @@ export default function InspectScreen() {
     { id: 'standards', label: 'Possible Standards', done: checks.standards },
     { id: 'location', label: 'Location / Equipment', done: checks.location },
     { id: 'action', label: 'Corrective Action', done: checks.action },
-    { id: 'save', label: 'Save Options', done: checks.save },
+    { id: 'save', label: '6. Save Options', done: checks.save },
   ];
 
   const jumpToSection = (id: string) => {
@@ -136,6 +137,12 @@ export default function InspectScreen() {
     if (!result.canceled && result.assets?.[0]?.uri) {
       updateHazard({ photos: [...currentHazard.photos, result.assets[0].uri] });
     }
+  };
+
+  const removePhoto = (uriToRemove: string) => {
+    updateHazard({
+      photos: currentHazard.photos.filter((uri) => uri !== uriToRemove),
+    });
   };
 
   const uploadPhoto = async () => {
@@ -193,8 +200,8 @@ export default function InspectScreen() {
         possibleStandards: finalMatches,
         selectedStandard: finalMatches[0].citation || finalMatches[0].heading,
       });
-    } catch {
-      Alert.alert('Standards unavailable', 'Unable to check possible standards right now.');
+    } catch (error: any) {
+      Alert.alert('Standards unavailable', error?.message || 'Unable to check possible standards right now.');
     }
   };
 
@@ -346,7 +353,12 @@ export default function InspectScreen() {
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoRow}>
               {currentHazard.photos.map((uri) => (
-                <Image key={uri} source={{ uri }} style={styles.photo} />
+                <View key={uri} style={styles.photoWrap}>
+                  <Image source={{ uri }} style={styles.photo} />
+                  <TouchableOpacity style={styles.photoDelete} onPress={() => removePhoto(uri)}>
+                    <Text style={styles.photoDeleteText}>×</Text>
+                  </TouchableOpacity>
+                </View>
               ))}
             </ScrollView>
           </Section>
@@ -469,7 +481,7 @@ export default function InspectScreen() {
             }}
             style={styles.saveCard}
           >
-            <Text style={[styles.saveTitle, { color: '#000000' }]}>Save Options</Text>
+            <Text style={[styles.saveTitle, { color: '#000000' }]}>6. Save Options</Text>
 
             <TouchableOpacity style={styles.primaryButton} onPress={saveAndAddNew}>
               <Text style={styles.primaryButtonText}>Save & Add New Hazard</Text>
@@ -562,30 +574,30 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   sidebarBubble: {
-    width: 26,
-    height: 30,
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
+    width: 34,
+    height: 40,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
     borderWidth: 1,
     borderLeftWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   sidebarBubbleText: {
     color: '#000000',
-    fontSize: 18,
-    lineHeight: 20,
+    fontSize: 22,
+    lineHeight: 24,
     fontWeight: '900',
   },
   sidebarPanel: {
-    width: 190,
+    width: 220,
     borderWidth: 1,
     borderRadius: 18,
     paddingTop: 12,
-    paddingHorizontal: 7,
+    paddingHorizontal: 10,
     paddingBottom: 10,
     backgroundColor: '#FFFFFF',
   },
@@ -595,23 +607,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   guideNavItem: {
-    minHeight: 34,
+    minHeight: 40,
     borderLeftWidth: 4,
-    paddingHorizontal: 7,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     marginBottom: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   guideCheck: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '900',
-    width: 20,
+    width: 24,
   },
   guideLabel: {
     color: '#CBD5E1',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
   },
   formColumn: {
