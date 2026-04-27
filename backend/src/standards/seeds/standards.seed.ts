@@ -43,7 +43,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Electrical conductors',
     standardText: 'Electrical conductors exposed to mechanical damage shall be protected.',
     summaryPlainLanguage: 'Electrical wires and conductors must be protected from damage.',
-    keywords: ['electrical', 'electric', 'power', 'energized', 'live', 'voltage', 'wire', 'wiring', 'conductor', 'cord', 'cable', 'extension cord', 'insulation', 'short', 'damage', 'damaged', 'exposed', 'panel', 'junction box', 'disconnect', 'breaker'],
+    keywords: ['electrical', 'electric', 'power', 'energized', 'live', 'voltage', 'wire', 'wiring', 'conductor', 'cord', 'cable', 'extension cord', 'insulation', 'short', 'damaged wire', 'damaged cord', 'exposed wire', 'exposed conductor', 'electrical panel', 'junction box', 'disconnect', 'breaker'],
   },
   {
     source: 'OSHA',

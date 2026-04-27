@@ -68,7 +68,20 @@ export class StandardsService {
       )
     ).slice(0, 25);
 
-    const results = [];
+    const scoreMap = new Map<string, { item: Standard; score: number }>();
+
+    const broadWords = [
+      'area',
+      'damage',
+      'damaged',
+      'platform',
+      'walkway',
+      'plant',
+      'section',
+      'equipment',
+      'unsafe',
+      'broken',
+    ];
 
     for (const word of words) {
       const matches = await this.standardRepo.find({
@@ -83,15 +96,38 @@ export class StandardsService {
             ...(safeSource ? { source: safeSource } : {}),
           },
         ],
-        take: 8,
+        take: 20,
       });
 
-      results.push(...matches);
+      for (const match of matches) {
+        let score = 0;
+
+        const heading = (match.heading || '').toLowerCase();
+        const summary = (match.summaryPlainLanguage || '').toLowerCase();
+        const text = (match.standardText || '').toLowerCase();
+        const keywords = JSON.stringify(match.keywords || []).toLowerCase();
+
+        if (heading.includes(word)) score += 50;
+        if (keywords.includes(word)) score += 35;
+        if (summary.includes(word)) score += 20;
+        if (text.includes(word)) score += 10;
+
+        if (broadWords.includes(word)) score -= 25;
+
+        const existing = scoreMap.get(match.id);
+
+        if (existing) {
+          existing.score += score;
+        } else if (score > 0) {
+          scoreMap.set(match.id, { item: match, score });
+        }
+      }
     }
 
-    const unique = Array.from(new Map(results.map((r) => [r.id, r])).values());
-
-    const top = unique.slice(0, 10);
+    const top = Array.from(scoreMap.values())
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map((x) => x.item);
 
     const enriched = await Promise.all(
       top.map(async (standard) => {
