@@ -25,8 +25,8 @@ export class StandardsController {
 
   @Post('suggest')
   async suggest(
-    @Body() body: { description: string; source?: string },
+    @Body() body: { description: string; source?: string; hazardCategory?: string },
   ) {
-    return this.standardsService.suggest(body.description, body.source);
+    return this.standardsService.suggest(body.description, body.source, body.hazardCategory);
   }
 }
