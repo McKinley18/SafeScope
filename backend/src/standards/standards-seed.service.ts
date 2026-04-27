@@ -19,9 +19,10 @@ export class StandardsSeedService {
     let updated = 0;
 
     for (const item of standardSeeds) {
-      const existing = await this.standardRepo.findOne({
-        where: { citation: item.citation },
-      });
+      try {
+        const existing = await this.standardRepo.findOne({
+          where: { citation: item.citation },
+        });
 
       if (existing) {
         await this.standardRepo.save(
@@ -40,6 +41,10 @@ export class StandardsSeedService {
           } as any),
         );
         created += 1;
+        }
+      } catch (error: any) {
+        console.error('Standards seed failed for citation:', item.citation, error?.message || error);
+        throw new Error(`Standards seed failed for ${item.citation}: ${error?.message || 'unknown error'}`);
       }
     }
 
