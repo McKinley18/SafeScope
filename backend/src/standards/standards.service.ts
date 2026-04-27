@@ -24,13 +24,13 @@ export class StandardsService {
         where: { citation: item.citation },
       });
 
-      const saved = await this.standardRepo.save(
+      const saved = (await this.standardRepo.save(
         this.standardRepo.create({
           ...(current || {}),
           ...item,
           lastSyncedAt: new Date(),
         } as any),
-      );
+      )) as unknown as Standard;
 
       const templateExists = await this.correctiveTemplateRepo.findOne({
         where: { standardId: saved.id },
