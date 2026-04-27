@@ -76,6 +76,7 @@ export default function InspectScreen() {
   const [activeSection, setActiveSection] = useState('photos');
   const [scrollY, setScrollY] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
   const updateHazard = (patch: Partial<HazardDraft>) => {
     setCurrentHazard((prev) => ({ ...prev, ...patch }));
@@ -389,29 +390,39 @@ export default function InspectScreen() {
 
           <Section id="description" sectionOffsets={sectionOffsets} title="2. Hazard Description" helper="Select the closest hazard category, then describe what is unsafe, who is exposed, and what could happen.">
             <Text style={[styles.fieldLabel, { color: '#000000' }]}>Hazard Category</Text>
-            <View style={styles.categoryGrid}>
-              {hazardCategories.map((category) => {
-                const selected = currentHazard.hazardCategory === category;
 
-                return (
+            <TouchableOpacity
+              style={[styles.dropdownButton, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8' }]}
+              onPress={() => setCategoryOpen((open) => !open)}
+            >
+              <Text style={[styles.dropdownText, { color: currentHazard.hazardCategory ? '#101828' : colors.muted }]}>
+                {currentHazard.hazardCategory || 'Select hazard category'}
+              </Text>
+              <Text style={styles.dropdownChevron}>{categoryOpen ? '⌃' : '⌄'}</Text>
+            </TouchableOpacity>
+
+            {categoryOpen ? (
+              <View style={[styles.dropdownMenu, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8' }]}>
+                {hazardCategories.map((category) => (
                   <TouchableOpacity
                     key={category}
                     style={[
-                      styles.categoryChip,
+                      styles.dropdownOption,
                       {
-                        backgroundColor: selected ? '#F97316' : '#FFFFFF',
-                        borderColor: selected ? '#F97316' : '#D7DEE8',
+                        backgroundColor:
+                          currentHazard.hazardCategory === category ? 'rgba(249,115,22,0.12)' : '#FFFFFF',
                       },
                     ]}
-                    onPress={() => updateHazard({ hazardCategory: category })}
+                    onPress={() => {
+                      updateHazard({ hazardCategory: category });
+                      setCategoryOpen(false);
+                    }}
                   >
-                    <Text style={[styles.categoryChipText, { color: selected ? '#FFFFFF' : '#101828' }]}>
-                      {category}
-                    </Text>
+                    <Text style={[styles.dropdownOptionText, { color: '#101828' }]}>{category}</Text>
                   </TouchableOpacity>
-                );
-              })}
-            </View>
+                ))}
+              </View>
+            ) : null}
             <TextInput
               style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8', color: '#101828' }]}
               placeholder="Example: Damaged ladder with bent side rail being used near the maintenance area."
