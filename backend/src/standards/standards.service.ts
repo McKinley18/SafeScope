@@ -31,6 +31,13 @@ export class StandardsService {
   }
 
   async suggest(description: string, source?: string) {
+    const standardsCount = await this.standardRepo.count();
+
+    if (standardsCount === 0) {
+      console.error('CRITICAL: Standards database is empty. Run npm run seed.');
+      return [];
+    }
+
     const safeSource = source === 'MSHA' || source === 'OSHA' ? source : undefined;
 
     const words = description
