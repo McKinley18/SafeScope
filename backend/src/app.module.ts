@@ -32,6 +32,13 @@ import { AuditSession } from './audit-session/audit-session.entity';
 import { AuditEntry } from './audit-session/audit-entry.entity';
 import { AuditEntryAttachment } from './audit-session/entities/audit-entry-attachment.entity';
 import { AuditEntryFinding } from './audit-session/entities/audit-entry-finding.entity';
+import { StandardsModule } from './standards/standards.module';
+import { Standard } from './standards/entities/standard.entity';
+import { HazardCategoryEntity } from './standards/entities/hazard-category.entity';
+import { HazardStandardMapping } from './standards/entities/hazard-standard-mapping.entity';
+import { CorrectiveActionTemplate } from './standards/entities/corrective-action-template.entity';
+import { ReportLanguageTemplate } from './standards/entities/report-language-template.entity';
+import { ClassificationFeedback } from './standards/entities/classification-feedback.entity';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 
 @Module({
@@ -64,6 +71,12 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
           AuditEntryFinding,
           User,
           Notification,
+          Standard,
+          HazardCategoryEntity,
+          HazardStandardMapping,
+          CorrectiveActionTemplate,
+          ReportLanguageTemplate,
+          ClassificationFeedback,
           WorkspaceInvite,
         ],
         synchronize: true,
@@ -85,6 +98,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     AuditSessionModule,
     AuthModule,
     AlertsModule,
+    StandardsModule,
     NotificationsModule,
   ],
 })
