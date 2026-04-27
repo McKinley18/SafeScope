@@ -229,7 +229,7 @@ export class StandardsService {
     const top = Array.from(scoreMap.values())
       .filter((x) => x.score >= (selectedCategoryTerms.length > 0 ? 70 : 40))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 5)
+      .slice(0, selectedCategoryTerms.length > 0 ? 3 : 5)
       .map((x) => x.item);
 
     const enriched = await Promise.all(
