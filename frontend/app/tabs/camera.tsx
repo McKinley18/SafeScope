@@ -72,6 +72,12 @@ export default function InspectScreen() {
     action:
       currentHazard.correctiveAction.trim().length >= 8 &&
       currentHazard.assignedTo.trim().length > 0,
+    save:
+      currentHazard.hazardDescription.trim().length >= 8 &&
+      currentHazard.possibleStandards.length > 0 &&
+      currentHazard.location.trim().length > 0 &&
+      currentHazard.correctiveAction.trim().length >= 8 &&
+      currentHazard.assignedTo.trim().length > 0,
   };
 
   const completedCount = Object.values(checks).filter(Boolean).length;
@@ -113,7 +119,7 @@ export default function InspectScreen() {
 
   const missingItems = () => {
     const missing = [];
-    if (!checks.photos) missing.push('photo evidence');
+    // Photo evidence is strongly recommended but not required to save a professional text report.
     if (!checks.description) missing.push('hazard description');
     if (!checks.standards) missing.push('possible standards review');
     if (!checks.location) missing.push('location');
