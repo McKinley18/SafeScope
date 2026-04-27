@@ -38,20 +38,17 @@ async function seed() {
         where: { citation: item.citation },
       });
 
-      const savedStandard = existingStandard
-        ? await standardRepo.save(
-            standardRepo.create({
-              ...existingStandard,
-              ...item,
-              lastSyncedAt: new Date(),
-            }),
-          )
-        : await standardRepo.save(
-            standardRepo.create({
-              ...item,
-              lastSyncedAt: new Date(),
-            } as any),
-          );
+      let savedStandard: Standard;
+
+      if (existingStandard) {
+        Object.assign(existingStandard, item, { lastSyncedAt: new Date() });
+        savedStandard = await standardRepo.save(existingStandard);
+      } else {
+        savedStandard = await standardRepo.save({
+          ...item,
+          lastSyncedAt: new Date(),
+        } as Standard);
+      }
 
       const existingTemplate = await templateRepo.findOne({
         where: { standardId: savedStandard.id },
