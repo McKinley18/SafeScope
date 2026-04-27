@@ -8,12 +8,14 @@ import { Review } from '../reviews/entities/review.entity';
 import { CorrectiveAction } from '../corrective-actions/entities/corrective-action.entity';
 import { AuditModule } from '../audit/audit.module';
 import { ClassificationsModule } from '../classifications/classifications.module';
+import { StandardsModule } from '../standards/standards.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Report, ReportAttachment, Review, CorrectiveAction]),
     AuditModule,
     ClassificationsModule,
+    StandardsModule,
   ],
   controllers: [ReportsController],
   providers: [ReportsService],
