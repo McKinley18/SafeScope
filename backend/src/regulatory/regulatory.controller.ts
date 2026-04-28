@@ -1,10 +1,27 @@
-import { Controller, Post, Query, Headers, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Query, Headers, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { RegulatorySyncService } from './regulatory-sync.service';
+import { RegulatoryService } from './regulatory.service';
 import { ConfigService } from '@nestjs/config';
 
 @Controller('regulatory')
 export class RegulatoryController {
-  constructor(private syncService: RegulatorySyncService, private config: ConfigService) {}
+  constructor(private syncService: RegulatorySyncService, private regulatoryService: RegulatoryService, private config: ConfigService) {}
+
+
+  @Get('parts')
+  async parts(@Query('agency') agency = 'MSHA') {
+    return this.regulatoryService.getParts(agency);
+  }
+
+  @Get('sections')
+  async sections(@Query('agency') agency = 'MSHA', @Query('part') part = '56', @Query('q') q?: string) {
+    return this.regulatoryService.searchSections(agency, part, q);
+  }
+
+  @Get('section')
+  async section(@Query('citation') citation: string) {
+    return this.regulatoryService.getSection(citation);
+  }
 
   @Post('sync')
   async sync(@Query('key') key: string, @Query('part') part: string, @Headers('x-sync-key') headerKey: string) {
