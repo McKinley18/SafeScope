@@ -7,7 +7,8 @@ test('copy report package button appears after saving hazard', async ({ page, co
 
   await page.goto(`${APP_URL}/tabs/camera`);
 
-  await page.getByText('Access / Ladders / Platforms').first().click();
+  await page.getByTestId('hazard-category-dropdown').click();
+  await page.getByTestId('hazard-category-option-Access / Ladders / Platforms').click();
   await page.getByPlaceholder(/Example:/i).fill('Damaged ladder with bent side rail at crusher platform.');
 
   const responsePromise = page.waitForResponse(

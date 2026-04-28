@@ -36,18 +36,25 @@ type HazardDraft = {
 const DRAFT_KEY = 'sentinel_safety_single_page_inspection_draft_v1';
 
 const hazardCategories = [
-  'Access / Ladders / Platforms',
-  'Guarding / Moving Parts',
-  'Electrical',
-  'Housekeeping / Slips / Trips',
-  'Mobile Equipment / Traffic',
-  'Fire / Hot Work / Fuel',
-  'PPE',
-  'Dust / Respiratory / Noise',
-  'Fall Protection',
-  'Lockout / Energy Isolation',
-  'Emergency / First Aid',
-  'Other / Unknown',
+  "Access / Ladders / Platforms",
+  "Guarding / Conveyors / Moving Parts",
+  "Electrical / Power / Cords",
+  "Lockout / Energy Isolation",
+  "Mobile Equipment / Traffic",
+  "Berms / Roads / Dump Points",
+  "Fire / Hot Work / Fuel",
+  "Housekeeping / Slips / Trips",
+  "Fall Protection / Elevated Work",
+  "PPE / Eye / Face / Foot / Hand",
+  "Dust / Respiratory / Silica",
+  "Noise / Hearing Conservation",
+  "Compressed Gas / Cylinders",
+  "Material Handling / Storage",
+  "Confined Space / Ventilation",
+  "Emergency / First Aid / Exits",
+  "Training / Workplace Exams",
+  "Recordkeeping / Reporting",
+  "Other / Not Sure"
 ];
 
 const emptyHazard = (): HazardDraft => ({
@@ -392,6 +399,7 @@ export default function InspectScreen() {
             <Text style={[styles.fieldLabel, { color: '#000000' }]}>Hazard Category</Text>
 
             <TouchableOpacity
+              testID="hazard-category-dropdown"
               style={[styles.dropdownButton, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8' }]}
               onPress={() => setCategoryOpen((open) => !open)}
             >
@@ -406,6 +414,7 @@ export default function InspectScreen() {
                 {hazardCategories.map((category) => (
                   <TouchableOpacity
                     key={category}
+                    testID={`hazard-category-option-${category}`}
                     style={[
                       styles.dropdownOption,
                       {
@@ -796,6 +805,39 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
+  },
+  dropdownButton: {
+    minHeight: 56,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  dropdownText: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  dropdownChevron: {
+    fontSize: 14,
+    color: "#64748B",
+  },
+  dropdownMenu: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 4,
+    marginBottom: 12,
+    maxHeight: 250,
+  },
+  dropdownOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  dropdownOptionText: {
+    fontSize: 15,
+    fontWeight: "600",
   },
   standardCitation: {
     fontSize: 12,
