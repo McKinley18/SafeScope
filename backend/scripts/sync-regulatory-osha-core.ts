@@ -7,16 +7,21 @@ import { RegulatorySubpart } from '../src/regulatory/entities/regulatory-subpart
 import { RegulatorySection } from '../src/regulatory/entities/regulatory-section.entity';
 import { RegulatoryParagraph } from '../src/regulatory/entities/regulatory-paragraph.entity';
 
-async function sync() {
+async function syncAll() {
   const ds = await dataSource.initialize();
   const service = new RegulatorySyncService(
-      ds.getRepository(RegulatorySection),
-      ds.getRepository(RegulatoryPart),
-      ds.getRepository(RegulatoryAgency),
-      ds.getRepository(RegulatorySubpart),
-      ds.getRepository(RegulatoryParagraph)
+      ds.getRepository(RegulatorySection), ds.getRepository(RegulatoryPart),
+      ds.getRepository(RegulatoryAgency), ds.getRepository(RegulatorySubpart), ds.getRepository(RegulatoryParagraph)
   );
-  console.log(await service.syncPart56());
+  
+  const mapping = { '1904': 'syncOsha1904', '1910': 'syncOsha1910', '1926': 'syncOsha1926' };
+  for (const [part, method] of Object.entries(mapping)) {
+      console.log(`Syncing OSHA Part ${part}...`);
+      try {
+          const res = await (service as any)[method]();
+          console.log(res);
+      } catch (e) { console.error(`Part ${part} sync failed`, e); }
+  }
   await ds.destroy();
 }
-sync();
+syncAll();

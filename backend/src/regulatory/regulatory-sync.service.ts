@@ -25,7 +25,7 @@ export class RegulatorySyncService {
     const result = await parser.parseStringPromise(response.data);
     
     const findPart = (node: any): any => {
-      if (node.TYPE === 'PART' && node.HEAD?.includes(`PART ${opts.part}`)) return node;
+      if (node.TYPE === 'PART' && node.N === opts.part) return node;
       for (const key in node) {
         if (typeof node[key] === 'object') {
           const found = findPart(node[key]);
@@ -36,11 +36,14 @@ export class RegulatorySyncService {
     };
 
     const partNode = findPart(result);
-    if (!partNode) throw new Error(`Part ${opts.part} not found`);
+    if (!partNode) return { sectionsUpserted: 0, paragraphsUpserted: 0 };
 
+    const pack = opts.agencyCode === 'OSHA' ? (opts.part === '1904' ? 'OSHA Recordkeeping' : opts.part === '1910' ? 'OSHA General Industry' : 'OSHA Construction') : 'MSHA Mining';
+    
     await this.agencyRepo.upsert({ code: opts.agencyCode, name: opts.agencyName, titleNumber: opts.titleNumber }, ['code']);
-    await this.partRepo.upsert({ agencyCode: opts.agencyCode, titleNumber: opts.titleNumber, part: opts.part, heading: partNode.HEAD }, ['agencyCode', 'titleNumber', 'part']);
+    await this.partRepo.upsert({ agencyCode: opts.agencyCode, titleNumber: opts.titleNumber, part: opts.part, heading: partNode.HEAD || 'Part ' + opts.part, customerPack: pack }, ['agencyCode', 'titleNumber', 'part']);
 
+    let sectionsUpserted = 0, paragraphsUpserted = 0;
     const traverse = async (node: any) => {
         if (node.TYPE === 'SECTION') {
             const sectionNo = node.N?.replace('§ ', '') || '0';
@@ -49,23 +52,24 @@ export class RegulatorySyncService {
                 agencyCode: opts.agencyCode, titleNumber: opts.titleNumber, part: opts.part, 
                 section: sectionNo, citation, heading: node.HEAD, textPlain: Array.isArray(node.P) ? node.P.join(' ') : (node.P || '')
             }, ['citation']);
+            sectionsUpserted++;
         } else if (typeof node === 'object') {
             for (const key in node) await traverse(node[key]);
         }
     };
     await traverse(partNode);
-    return { ok: true };
+    return { sectionsUpserted, paragraphsUpserted };
   }
 
-  async syncPart46() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '46', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncPart47() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '47', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncPart48() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '48', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncPart50() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '50', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncPart56() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '56', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncPart57() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '57', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncPart62() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '62', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncPart77() { return await this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '77', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
-  async syncOsha1904() { return await this.syncRegulatoryPart({ agencyCode: 'OSHA', agencyName: 'OSHA', titleNumber: '29', part: '1904', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-29/ECFR-title29.xml' }); }
-  async syncOsha1910() { return await this.syncRegulatoryPart({ agencyCode: 'OSHA', agencyName: 'OSHA', titleNumber: '29', part: '1910', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-29/ECFR-title29.xml' }); }
-  async syncOsha1926() { return await this.syncRegulatoryPart({ agencyCode: 'OSHA', agencyName: 'OSHA', titleNumber: '29', part: '1926', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-29/ECFR-title29.xml' }); }
+  async syncPart46() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '46', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncPart47() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '47', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncPart48() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '48', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncPart50() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '50', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncPart56() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '56', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncPart57() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '57', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncPart62() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '62', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncPart77() { return this.syncRegulatoryPart({ agencyCode: 'MSHA', agencyName: 'MSHA', titleNumber: '30', part: '77', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-30/ECFR-title30.xml' }); }
+  async syncOsha1904() { return this.syncRegulatoryPart({ agencyCode: 'OSHA', agencyName: 'OSHA', titleNumber: '29', part: '1904', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-29/ECFR-title29.xml' }); }
+  async syncOsha1910() { return this.syncRegulatoryPart({ agencyCode: 'OSHA', agencyName: 'OSHA', titleNumber: '29', part: '1910', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-29/ECFR-title29.xml' }); }
+  async syncOsha1926() { return this.syncRegulatoryPart({ agencyCode: 'OSHA', agencyName: 'OSHA', titleNumber: '29', part: '1926', bulkXmlUrl: 'https://www.govinfo.gov/bulkdata/ECFR/title-29/ECFR-title29.xml' }); }
 }

@@ -12,12 +12,6 @@ export class RegulatoryPart {
   @Column()
   titleNumber: string;
 
-  @Column({ nullable: true })
-  chapter: string;
-
-  @Column({ nullable: true })
-  subchapter: string;
-
   @Column()
   part: string;
 
@@ -25,14 +19,10 @@ export class RegulatoryPart {
   heading: string;
 
   @Column({ nullable: true })
-  sourceUrl: string;
-
-  @Column({ type: 'timestamp', nullable: true })
-  lastSyncedAt: Date;
+  customerPack: string;
 
   @CreateDateColumn()
   createdAt: Date;
-
   @UpdateDateColumn()
   updatedAt: Date;
 }
