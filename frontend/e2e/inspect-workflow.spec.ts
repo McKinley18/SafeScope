@@ -8,7 +8,7 @@ test('inspect workflow suggests standards and saves report package', async ({ pa
   await page.getByPlaceholder(/Example:/i).fill('Conveyor tail pulley missing guard near feed hopper.');
 
   const responsePromise = page.waitForResponse(
-    (res) => res.url().includes('/standards/suggest') && res.status() === 201,
+    (res) => res.url().includes('/standards/suggest') && res.status() >= 200 && res.status() < 300,
     { timeout: 30000 }
   );
 

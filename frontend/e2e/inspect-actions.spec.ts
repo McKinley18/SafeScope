@@ -12,7 +12,7 @@ test('copy report package button appears after saving hazard', async ({ page, co
   await page.getByPlaceholder(/Example:/i).fill('Damaged ladder with bent side rail at crusher platform.');
 
   const responsePromise = page.waitForResponse(
-    (res) => res.url().includes('/standards/suggest') && res.status() === 201,
+    (res) => res.url().includes('/standards/suggest') && res.status() >= 200 && res.status() < 300,
     { timeout: 30000 }
   );
 

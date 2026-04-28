@@ -2,7 +2,6 @@ import { HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
 import React, { useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Modal,
   Image,
   ScrollView,
   StyleSheet,
@@ -326,49 +325,8 @@ export default function InspectScreen() {
     >
       <BrandedHeader title="Inspect" subtitle="Document one hazard at a time. Complete the blanks, save it, then add the next hazard." />
 
+
       <View style={styles.layout}>
-        <View pointerEvents="box-none" style={[styles.sidebarLayer, { transform: [{ translateY: scrollY }] }]}>
-          <TouchableOpacity
-            style={[
-              styles.sidebarBubble,
-              {
-                backgroundColor: sidebarOpen ? 'rgba(249,115,22,0.82)' : 'rgba(8,24,39,0.52)',
-                borderColor: sidebarOpen ? colors.accent : 'rgba(255,255,255,0.28)',
-              },
-            ]}
-            onPress={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <Text style={styles.sidebarBubbleText}>{sidebarOpen ? '−' : '+'}</Text>
-          </TouchableOpacity>
-
-          {sidebarOpen && (
-            <View style={[styles.sidebarPanel, { borderColor: 'rgba(255,255,255,0.18)' }]}>
-              <Text style={[styles.guideTitle, { color: '#000000' }]}>Report Steps</Text>
-
-              {processSteps.map((step, index) => (
-                <TouchableOpacity
-                  key={step.id}
-                  style={[
-                    styles.guideNavItem,
-                    {
-                      borderLeftColor: activeSection === step.id ? colors.accent : 'rgba(255,255,255,0.18)',
-                      backgroundColor: activeSection === step.id ? 'rgba(249,115,22,0.16)' : 'transparent',
-                    },
-                  ]}
-                  onPress={() => jumpToSection(step.id)}
-                >
-                  <Text style={[styles.guideCheck, { color: step.done ? '#22C55E' : colors.muted }]}>
-                    {step.done ? '✓' : index + 1}
-                  </Text>
-                  <Text style={[styles.guideLabel, { color: activeSection === step.id ? colors.text : colors.sub }]}>
-                    {step.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
         <View style={styles.formColumn}>
           <Section id="photos" sectionOffsets={sectionOffsets} title="1. Photo Evidence" helper="Take or upload one or more photos. They will appear here for the user to verify before saving.">
             <View style={styles.photoButtonRow}>
@@ -396,62 +354,49 @@ export default function InspectScreen() {
           <Section id="description" sectionOffsets={sectionOffsets} title="2. Hazard Description" helper="Select the closest hazard category, then describe what is unsafe, who is exposed, and what could happen.">
             <Text style={[styles.fieldLabel, { color: '#101828', fontWeight: 'bold', fontSize: 16, marginBottom: 8 }]}>Hazard Category</Text>
 
-            <TouchableOpacity
-              testID="hazard-category-dropdown"
-              style={[styles.dropdownButton, { backgroundColor: "#FFFFFF", borderColor: "#D7DEE8", shadowColor: "#000", shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }]}
-              onPress={() => setCategoryOpen((open) => !open)}
+            <View style={styles.categoryPickerWrap}>
+              <TouchableOpacity
+                testID="hazard-category-dropdown"
+                style={[styles.dropdownButton, { backgroundColor: "#FFFFFF", borderColor: "#D7DEE8", shadowColor: "#000", shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }]}
+                onPress={() => setCategoryOpen((open) => !open)}
             >
-              <Text style={[styles.dropdownText, { color: currentHazard.hazardCategory ? "#101828" : colors.muted }]}>
+                <Text style={[styles.dropdownText, { color: currentHazard.hazardCategory ? "#101828" : colors.muted }]}>
                 {currentHazard.hazardCategory || "Select hazard category"}
               </Text>
-              <Text style={styles.dropdownChevron}>{categoryOpen ? "⌃" : "⌄"}</Text>
+                <Text style={styles.dropdownChevron}>{categoryOpen ? "⌃" : "⌄"}</Text>
             </TouchableOpacity>
 
-            <Modal
-              visible={categoryOpen}
-              transparent
-              animationType="fade"
-              onRequestClose={() => setCategoryOpen(false)}
-            >
-              <View style={styles.categoryModalBackdrop}>
-                <TouchableOpacity style={styles.categoryModalDismiss} onPress={() => setCategoryOpen(false)} />
-                <View style={styles.categoryModalSheet}>
-                  <View style={styles.categoryModalHeader}>
-                    <Text style={styles.categoryModalTitle}>Choose Hazard Category</Text>
-                    <TouchableOpacity onPress={() => setCategoryOpen(false)}>
-                      <Text style={styles.categoryModalClose}>Close</Text>
-                    </TouchableOpacity>
-                  </View>
+            {categoryOpen ? (
+              <View style={styles.dropdownMenu}>
+                <ScrollView
+                  style={styles.dropdownScroll}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator
+                >
+                  {hazardCategories.map((category) => {
+                    const selected = currentHazard.hazardCategory === category;
 
-                  <ScrollView
-                    style={styles.categoryModalList}
-                    nestedScrollEnabled
-                    showsVerticalScrollIndicator
-                  >
-                    {hazardCategories.map((category) => {
-                      const selected = currentHazard.hazardCategory === category;
-
-                      return (
-                        <TouchableOpacity
-                          key={category}
-                          testID={`hazard-category-option-${category}`}
-                          style={[
-                            styles.dropdownOption,
-                            selected ? styles.dropdownOptionSelected : null,
-                          ]}
-                          onPress={() => {
-                            updateHazard({ hazardCategory: category });
-                            setCategoryOpen(false);
-                          }}
-                        >
-                          <Text style={styles.dropdownOptionText}>{category}</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
+                    return (
+                      <TouchableOpacity
+                        key={category}
+                        testID={`hazard-category-option-${category}`}
+                        style={[
+                          styles.dropdownOption,
+                          selected ? styles.dropdownOptionSelected : null,
+                        ]}
+                        onPress={() => {
+                          updateHazard({ hazardCategory: category });
+                          setCategoryOpen(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownOptionText}>{category}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
               </View>
-            </Modal>
+            ) : null}
+            </View>
             <TextInput
               style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8', color: '#101828' }]}
               placeholder="Example: Damaged ladder with bent side rail being used near the maintenance area."
@@ -496,9 +441,6 @@ export default function InspectScreen() {
                   </Text>
                   {standard.summary ? (
                     <Text style={styles.standardSummary}>{standard.summary}</Text>
-                  ) : null}
-                  {standard.correctiveAction ? (
-                    <Text style={styles.standardAction}>Suggested action: {standard.correctiveAction}</Text>
                   ) : null}
                 </TouchableOpacity>
               );
@@ -716,7 +658,47 @@ const styles = StyleSheet.create({
   },
   formColumn: {
     gap: 22,
-    marginLeft: 16,
+  },
+  progressHeader: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#D7DEE8',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    marginTop: 12,
+    marginBottom: 14,
+  },
+  progressRail: {
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 2,
+    marginBottom: 10,
+  },
+  progressPill: {
+    minHeight: 38,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#D7DEE8',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressPillActive: {
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
+  },
+  progressPillDone: {
+    borderColor: '#10B981',
+  },
+  progressPillText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#475467',
+  },
+  progressPillTextActive: {
+    color: '#1D4ED8',
   },
   sectionCard: {
     backgroundColor: "#FFFFFF",
@@ -818,7 +800,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   textArea: {
-    minHeight: 116,
+    minHeight: 174,
     borderWidth: 1,
     borderRadius: 18,
     padding: 14,
@@ -833,6 +815,11 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
   },
+  categoryPickerWrap: {
+    position: 'relative',
+    zIndex: 50,
+    marginBottom: 12,
+  },
   dropdownButton: {
     minHeight: 56,
     borderRadius: 16,
@@ -841,7 +828,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 0,
   },
   dropdownText: {
     fontSize: 14,
@@ -852,15 +839,25 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   dropdownMenu: {
-    maxHeight: 220,
-    paddingVertical: 2,
+    position: 'absolute',
+    top: 62,
+    left: 0,
+    right: 0,
+    height: 174,
     borderRadius: 14,
-    marginBottom: 10,
-    zIndex: 1000,
-    elevation: 5,
     backgroundColor: "#FFFFFF",
     borderColor: "#D7DEE8",
     borderWidth: 1,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 12,
+    zIndex: 100,
+  },
+  dropdownScroll: {
+    height: 174,
   },
   dropdownOption: {
     paddingVertical: 10,

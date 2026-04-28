@@ -1,6 +1,36 @@
 import { Standard } from '../entities/standard.entity';
 
 export const standardSeeds: Array<Partial<Standard>> = [
+  { 
+        source: 'OSHA', 
+        titleNumber: '29', 
+        part: '1910', 
+        section: '212', 
+        citation: '29 CFR 1910.212', 
+        heading: 'General requirements for all machines', 
+        standardText: 'Standard text.', 
+        keywords: ["guard", "machine", "saw", "blade"] 
+    },
+  { 
+        source: 'OSHA', 
+        titleNumber: '29', 
+        part: '1910', 
+        section: '303', 
+        citation: '29 CFR 1910.303', 
+        heading: 'Electrical wiring', 
+        standardText: 'Standard text.', 
+        keywords: ["electrical", "wire", "conductor"] 
+    },
+  { 
+        source: 'OSHA', 
+        titleNumber: '29', 
+        part: '1910', 
+        section: '23', 
+        citation: '29 CFR 1910.23', 
+        heading: 'Walking-working surfaces', 
+        standardText: 'Standard text.', 
+        keywords: ["platform", "guardrail", "fall"] 
+    },
   {
     source: 'MSHA',
     titleNumber: '30',
@@ -55,7 +85,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     standardText: 'Walking-working surfaces shall be inspected, regularly and as necessary, and maintained in a safe condition.',
     summaryPlainLanguage: 'Walking and working surfaces must be kept safe and maintained.',
     keywords: ['walking surface', 'working surface', 'slip', 'trip', 'fall', 'floor', 'walkway', 'platform', 'edge', 'elevated', 'guardrail', 'open edge'],
-  },,
+  },
 
   {
     source: 'MSHA',

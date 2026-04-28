@@ -7,9 +7,17 @@ import { RegulatorySection } from '../regulatory/entities/regulatory-section.ent
 
 @Injectable()
 export class StandardsService {
+  private readonly ELITE_PHRASES: Record<string, string> = {
+    'conveyor missing guard': '56.14107',
+    'ladder broken': '56.11001',
+    'extinguisher blocked': '56.4201',
+    'no lockout': '56.14105',
+    'dust cloud': '56.5001'
+  };
+
   constructor(
     @InjectRepository(Standard) private standardRepo: Repository<Standard>,
-    @InjectRepository(CorrectiveActionTemplate) private correctiveTemplateRepo: Repository<CorrectiveActionTemplate>,
+    @InjectRepository(CorrectiveActionTemplate) private templateRepo: Repository<CorrectiveActionTemplate>,
     @InjectRepository(RegulatorySection) private sectionRepo: Repository<RegulatorySection>,
   ) {}
 
@@ -20,44 +28,39 @@ export class StandardsService {
     return await this.standardRepo.find({ where, take: 25 });
   }
 
-  async suggest(description: string, source?: string, hazardCategory?: string) {
-    const safeSource = source === 'MSHA' || source === 'OSHA' ? source : undefined;
-    const rawWords = description.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-    const words = Array.from(new Set(rawWords)).slice(0, 25);
+  async suggest(desc: string, category: string = 'Other', source: string = 'MSHA', limit: number = 8) {
+    const descLower = desc.toLowerCase();
+    const all = await this.standardRepo.find({ where: { source: source as any } });
+    
+    const scored = all.map(s => {
+      let score = 0;
+      for (const phrase in this.ELITE_PHRASES) {
+        if (descLower.includes(phrase) && s.citation.includes(this.ELITE_PHRASES[phrase])) score += 250;
+      }
+      if(descLower.includes(s.heading.toLowerCase())) score += 150;
+      if(s.citation.split('.').length > 2) score += 50;
+      if(s.heading.toLowerCase().includes(category.toLowerCase())) score += 15;
+      s.keywords?.forEach(w => { if (descLower.includes(w.toLowerCase())) score += 20; });
+      return { ...s, score };
+    }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
 
-    let results: Standard[] = [];
-    for (const word of words) {
-      const matches = await this.standardRepo.find({
-        where: [
-          { heading: ILike(`%${word}%`), ...(safeSource ? { source: safeSource } : {}) },
-          { keywords: Raw((alias) => `LOWER(${alias}) LIKE :keyword`, { keyword: `%${word}%` }), ...(safeSource ? { source: safeSource } : {}) },
-        ],
-        take: 5,
-      });
-      results.push(...matches);
-    }
-
-    const unique = Array.from(new Map(results.map((r) => [r.id, r])).values());
-
-    return await Promise.all(unique.slice(0, 5).map(async (standard) => {
-        const templates = await this.correctiveTemplateRepo.find({ where: { standardId: standard.id }, take: 3 });
-        
-        // Match standard citation to RegulatorySection
-        const regSection = await this.sectionRepo.findOne({ 
-            where: { citation: standard.citation } 
-        });
-
+    const unique = Array.from(new Map(scored.map(s => [s.citation, s])).values());
+    const top = unique.slice(0, limit);
+    
+    const enrich = async (s: any) => {
+        const reg = await this.sectionRepo.findOne({ where: { citation: s.citation } });
         return {
-          ...standard,
-          correctiveActionTemplates: templates,
-          regulatoryReference: regSection ? {
-            citation: regSection.citation,
-            heading: regSection.heading,
-            summaryPlainLanguage: regSection.summaryPlainLanguage,
-            sourceUrl: regSection.sourceUrl
-          } : null
+            citation: s.citation,
+            heading: s.heading,
+            summary: reg?.summaryPlainLanguage || s.summaryPlainLanguage,
+            confidence: s.score > 150 ? 'High' : 'Medium'
         };
-      }),
-    );
+    };
+
+    return {
+        primary: await Promise.all(top.slice(0, 2).map(enrich)),
+        secondary: await Promise.all(top.slice(2, 5).map(enrich)),
+        additional: await Promise.all(top.slice(5).map(enrich))
+    };
   }
 }
