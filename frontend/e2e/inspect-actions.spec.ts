@@ -16,7 +16,7 @@ test('copy report package button appears after saving hazard', async ({ page, co
     { timeout: 30000 }
   );
 
-  await page.getByText('Check Possible Standards').first().click();
+  await page.getByText(/Check Possible Standards|Check Standards & Risk/i).first().click();
   await responsePromise;
 
   await expect(page.getByText(/30 CFR 56.11003|Construction and maintenance of ladders/i).first()).toBeVisible({ timeout: 10000 });

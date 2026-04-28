@@ -12,7 +12,7 @@ test('inspect workflow suggests standards and saves report package', async ({ pa
     { timeout: 30000 }
   );
 
-  await page.getByText('Check Possible Standards').first().click();
+  await page.getByText(/Check Possible Standards|Check Standards & Risk/i).first().click();
   await responsePromise;
 
   await expect(page.getByText('30 CFR 56.14107').first()).toBeVisible({ timeout: 10000 });

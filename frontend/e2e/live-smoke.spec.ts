@@ -15,7 +15,7 @@ test('inspect page buttons are visible', async ({ page }) => {
   await page.goto(`${APP_URL}/tabs/camera`);
 
   await expect(page.getByText('Inspect').first()).toBeVisible({ timeout: 20000 });
-  await expect(page.getByText('Check Possible Standards').first()).toBeVisible();
+  await expect(page.getByText(/Check Possible Standards|Check Standards & Risk/i).first()).toBeVisible();
   await expect(page.getByText('Save & Add New Hazard').first()).toBeVisible();
   await expect(page.getByText('Save & Review Report').first()).toBeVisible();
   await expect(page.getByText('Save & Quit').first()).toBeVisible();
