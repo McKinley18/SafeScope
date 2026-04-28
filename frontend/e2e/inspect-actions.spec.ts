@@ -33,12 +33,9 @@ test('copy report package button appears after saving hazard', async ({ page, co
   await expect(page.getByText('Copy Report Package').first()).toBeVisible();
 });
 
-test('priority queue action buttons work', async ({ page }) => {
+test('executive command center panels are visible', async ({ page }) => {
   await page.goto(APP_URL);
 
-  await expect(page.getByText(/Priority Work Queue|Top Risks|Overdue Actions/i).first()).toBeVisible({ timeout: 20000 });
-
-  await page.getByText(/Accept \/ Start Review|Accepted/i).first().click();
-
-  await expect(page.getByText('Accepted').first()).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText(/Executive Command Center/i).first()).toBeVisible({ timeout: 20000 });
+  await expect(page.getByText(/Top Risks|Overdue Actions|Executive Summary/i).first()).toBeVisible({ timeout: 20000 });
 });

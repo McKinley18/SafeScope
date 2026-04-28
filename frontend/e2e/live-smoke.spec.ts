@@ -8,7 +8,7 @@ test('live app loads command center', async ({ page }) => {
   await expect(page.getByText('Executive Command Center').first()).toBeVisible({
     timeout: 20000,
   });
-  await expect(page.getByText('See Risk. Prevent Harm.').first()).toBeVisible();
+  await expect(page.getByText(/Top Risks|Overdue Actions|Executive Summary/i).first()).toBeVisible();
 });
 
 test('inspect page buttons are visible', async ({ page }) => {
