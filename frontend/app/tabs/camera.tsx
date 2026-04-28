@@ -207,19 +207,28 @@ export default function InspectScreen() {
         source: 'MSHA',
       });
 
-      const standards = Array.isArray(results)
-        ? results.map((item: any) => ({
-            id: item.id || item.citation,
-            citation: item.citation,
-            heading: item.heading,
-            summary: item.summaryPlainLanguage,
-            text: item.standardText,
-            correctiveAction:
-              item.correctiveActionTemplates?.[0]?.recommendedAction ||
-              item.correctiveActionTemplates?.[0]?.lowCostOption ||
-              '',
-          }))
-        : [];
+      const rawStandards = Array.isArray(results)
+        ? results
+        : [
+            ...(results?.primary || []),
+            ...(results?.secondary || []),
+            ...(results?.additional || []),
+          ];
+
+      const standards = rawStandards.map((item: any) => ({
+        id: item.id || item.citation,
+        citation: item.citation,
+        heading: item.heading,
+        summary: item.summaryPlainLanguage || item.summary,
+        text: item.standardText,
+        confidenceBand: item.confidenceBand,
+        relevanceScore: item.relevanceScore,
+        reasonMatched: item.reasonMatched,
+        correctiveAction:
+          item.correctiveActionTemplates?.[0]?.recommendedAction ||
+          item.correctiveActionTemplates?.[0]?.lowCostOption ||
+          '',
+      }));
 
       const finalMatches = standards.length
         ? standards

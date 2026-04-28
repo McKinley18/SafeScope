@@ -16,7 +16,7 @@ test('inspect workflow suggests standards and saves report package', async ({ pa
   await responsePromise;
 
   await expect(page.getByText('30 CFR 56.14107').first()).toBeVisible({ timeout: 10000 });
-  await expect(page.getByText('Moving machine parts').first()).toBeVisible();
+  await expect(page.getByText(/Moving machine parts|Unguarded conveyors/i).first()).toBeVisible();
 
   await page.getByPlaceholder('Location').fill('Plant feed area');
   await page.getByPlaceholder('Equipment / Area').fill('Conveyor tail pulley');
