@@ -18,33 +18,6 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { StandardsModule } from './standards/standards.module';
 import { RegulatoryModule } from './regulatory/regulatory.module';
 import { ApplicableStandardsModule } from './applicable-standards/applicable-standards.module';
-import { User } from './users/entities/user.entity';
-import { Notification } from './notifications/notification.entity';
-import { WorkspaceInvite } from './auth/entities/workspace-invite.entity';
-import { Report } from './reports/entities/report.entity';
-import { ReportAttachment } from './reports/entities/attachment.entity';
-import { Classification } from './classifications/entities/classification.entity';
-import { AuditLog } from './audit/entities/audit-log.entity';
-import { Review } from './reviews/entities/review.entity';
-import { RiskScore } from './risk/entities/risk-score.entity';
-import { CorrectiveAction } from './corrective-actions/entities/corrective-action.entity';
-import { ClassificationRule } from './taxonomy/entities/rule.entity';
-import { ClassificationRuleVersion } from './taxonomy/entities/rule-version.entity';
-import { AuditSession } from './audit-session/audit-session.entity';
-import { AuditEntry } from './audit-session/audit-entry.entity';
-import { AuditEntryAttachment } from './audit-session/entities/audit-entry-attachment.entity';
-import { AuditEntryFinding } from './audit-session/entities/audit-entry-finding.entity';
-import { Standard } from './standards/entities/standard.entity';
-import { HazardCategoryEntity } from './standards/entities/hazard-category.entity';
-import { HazardStandardMapping } from './standards/entities/hazard-standard-mapping.entity';
-import { CorrectiveActionTemplate } from './standards/entities/corrective-action-template.entity';
-import { ReportLanguageTemplate } from './standards/entities/report-language-template.entity';
-import { ClassificationFeedback } from './standards/entities/classification-feedback.entity';
-import { RegulatoryAgency } from './regulatory/entities/regulatory-agency.entity';
-import { RegulatoryPart } from './regulatory/entities/regulatory-part.entity';
-import { RegulatorySubpart } from './regulatory/entities/regulatory-subpart.entity';
-import { RegulatorySection } from './regulatory/entities/regulatory-section.entity';
-import { RegulatoryParagraph } from './regulatory/entities/regulatory-paragraph.entity';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 
 @Module({
@@ -54,38 +27,16 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get<string>('DATABASE_URL');
-        const normalizedDatabaseUrl =
-          databaseUrl && !databaseUrl.includes('sslmode=')
-            ? `${databaseUrl}${databaseUrl.includes('?') ? '&' : '?'}sslmode=require`
-            : databaseUrl;
-
-        return {
-          type: 'postgres',
-          ...(normalizedDatabaseUrl
-            ? { url: normalizedDatabaseUrl, ssl: { rejectUnauthorized: false } }
-            : {
-                host: configService.get<string>('DATABASE_HOST'),
-                port: Number(configService.get<string>('DATABASE_PORT') || 5432),
-                username: configService.get<string>('DATABASE_USER'),
-                password: configService.get<string>('DATABASE_PASSWORD'),
-                database: configService.get<string>('DATABASE_NAME'),
-                ssl:
-                  configService.get<string>('NODE_ENV') === 'production'
-                    ? { rejectUnauthorized: false }
-                    : false,
-              }),
-        entities: [
-          Report, ReportAttachment, Classification, AuditLog, Review, RiskScore, CorrectiveAction, ClassificationRule,
-          ClassificationRuleVersion, AuditSession, AuditEntry, AuditEntryAttachment, AuditEntryFinding, User, Notification,
-          Standard, HazardCategoryEntity, HazardStandardMapping, CorrectiveActionTemplate, ReportLanguageTemplate,
-          ClassificationFeedback, WorkspaceInvite, RegulatoryAgency, RegulatoryPart, RegulatorySubpart, RegulatorySection,
-          RegulatoryParagraph,
-        ],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DATABASE_HOST'),
+        port: Number(configService.get<string>('DATABASE_PORT')),
+        username: configService.get<string>('DATABASE_USER'),
+        password: configService.get<string>('DATABASE_PASSWORD'),
+        database: configService.get<string>('DATABASE_NAME'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
-        };
-      },
+      }),
     }),
     HealthModule, ReportsModule, TaxonomyModule, DashboardsModule, ClassificationsModule, AuditModule,
     ReviewsModule, RiskModule, CorrectiveActionsModule, AuditSessionModule, AuthModule, AlertsModule,

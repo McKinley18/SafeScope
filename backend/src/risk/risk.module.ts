@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { RiskController } from './risk.controller';
 import { RiskService } from './risk.service';
-import { RiskScore } from './entities/risk-score.entity';
-import { Classification } from '../classifications/entities/classification.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RiskScore, Classification])],
+  controllers: [RiskController],
   providers: [RiskService],
   exports: [RiskService],
 })

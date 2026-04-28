@@ -227,6 +227,15 @@ export const apiClient = {
     return res.json();
   },
 
+  riskSuggest: async (data: any) => {
+    const res = await fetch(`${BASE_URL}/risk/suggest`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
   suggestReportStandards: async (reportId: string, data?: { source?: 'MSHA' | 'OSHA'; description?: string; hazardCategory?: string }) => {
     const res = await fetch(`${BASE_URL}/reports/${reportId}/standards/suggest`, {
       method: 'POST',

@@ -1,40 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { RiskScore } from './entities/risk-score.entity';
-import { Classification } from '../classifications/entities/classification.entity';
 
 @Injectable()
 export class RiskService {
-  constructor(
-    @InjectRepository(RiskScore) private riskRepo: Repository<RiskScore>,
-    @InjectRepository(Classification) private classificationRepo: Repository<Classification>,
-  ) {}
-
-  async calculateRisk(classificationId: string) {
-    const classification = await this.classificationRepo.findOne({ where: { id: classificationId } });
-    if (!classification) throw new Error('Classification not found');
-
-    const severity = classification.severityLevel || 1;
-    const compositeRiskScore = severity * (classification.confidenceScore * 10);
+  suggest(category: string, description: string) {
+    const descLower = description.toLowerCase();
     
-    let riskBand: 'low' | 'medium' | 'high' | 'critical' = 'low';
-    if (compositeRiskScore > 20) riskBand = 'critical';
-    else if (compositeRiskScore > 10) riskBand = 'high';
-    else if (compositeRiskScore > 5) riskBand = 'medium';
+    // Severity defaults
+    let severity = 2; // Moderate
+    if (['Machine Guarding', 'Lockout / Energy', 'Fall Protection', 'Mobile Equipment'].includes(category)) severity = 4;
+    else if (['Electrical', 'Berms / Roads / Dump Points', 'Fire / Hot Work'].includes(category)) severity = 3;
 
-    const riskScore = this.riskRepo.create({
-      classificationId,
-      reportId: classification.reportId,
-      severityScore: severity,
-      recurrenceScore: 1,
-      trendScore: 0,
-      controlFailureScore: 0,
-      confidenceModifier: classification.confidenceScore,
-      compositeRiskScore,
-      riskBand,
-    });
+    // Likelihood defaults
+    let likelihood = 3; // Possible
+    if (descLower.includes('missing') || descLower.includes('damaged')) likelihood = 4;
+    
+    // Escalation/De-escalation
+    const criticalKeywords = ['fatality', 'amputation', 'fall', 'energized', 'unguarded', 'fire', 'explosion', 'rollover'];
+    if (criticalKeywords.some(w => descLower.includes(w))) { severity = 5; likelihood = 4; }
+    
+    if (descLower.includes('minor') || descLower.includes('cosmetic')) { severity = 1; likelihood = 2; }
 
-    return this.riskRepo.save(riskScore);
+    const score = severity * likelihood;
+    const level = score >= 20 ? 'Critical' : score >= 15 ? 'High' : score >= 8 ? 'Moderate' : 'Low';
+    const priority = score >= 20 ? 'Immediate Action' : score >= 15 ? 'High Priority' : score >= 8 ? 'Correct Soon' : 'Monitor';
+
+    return {
+      severitySuggestion: ['Low', 'Moderate', 'Serious', 'High', 'Critical'][severity - 1],
+      likelihoodSuggestion: ['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain'][likelihood - 1],
+      riskScore: score,
+      riskLevel: level,
+      priorityLabel: priority,
+      riskReasoning: `Risk scored based on ${category} category and keywords.`
+    };
   }
 }
