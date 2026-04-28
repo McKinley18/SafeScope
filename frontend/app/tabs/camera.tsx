@@ -1,7 +1,8 @@
-import { Modal, HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
+import { HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
 import React, { useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Modal,
   Image,
   ScrollView,
   StyleSheet,
@@ -396,7 +397,6 @@ export default function InspectScreen() {
             <Text style={[styles.fieldLabel, { color: '#101828', fontWeight: 'bold', fontSize: 16, marginBottom: 8 }]}>Hazard Category</Text>
 
             <TouchableOpacity
-              testID="hazard-category-dropdown"
               testID="hazard-category-dropdown"
               style={[styles.dropdownButton, { backgroundColor: "#FFFFFF", borderColor: "#D7DEE8", shadowColor: "#000", shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }]}
               onPress={() => setCategoryOpen((open) => !open)}
