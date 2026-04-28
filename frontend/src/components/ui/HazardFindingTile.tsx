@@ -13,6 +13,7 @@ export const HazardFindingTile = ({ finding, onEdit, onDelete }) => (
     <View style={styles.content}>
       {finding.photos?.length > 0 && <Image source={{ uri: finding.photos[0] }} style={styles.thumb} />}
       <View style={styles.details}>
+        <Text style={styles.riskBadge}>Risk: {finding.riskAssessment?.riskLevel || 'N/A'} (Score: {finding.riskAssessment?.riskScore || '0'})</Text>
         <Text numberOfLines={1} style={styles.text}>Location: {finding.location || 'N/A'}</Text>
         <Text numberOfLines={2} style={styles.text}>{finding.hazardDescription}</Text>
       </View>
@@ -29,5 +30,6 @@ const styles = StyleSheet.create({
   content: { flexDirection: 'row', gap: 10 },
   thumb: { width: 60, height: 60, borderRadius: 8 },
   details: { flex: 1, justifyContent: 'center' },
-  text: { fontSize: 13, color: '#475467' }
+  text: { fontSize: 13, color: '#475467' },
+  riskBadge: { fontSize: 12, fontWeight: 'bold', color: '#D97706', marginBottom: 4 }
 });
