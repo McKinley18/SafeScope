@@ -36,24 +36,19 @@ type HazardDraft = {
 const DRAFT_KEY = 'sentinel_safety_single_page_inspection_draft_v1';
 
 const hazardCategories = [
-  "Access / Ladders / Platforms",
-  "Guarding / Conveyors / Moving Parts",
-  "Electrical / Power / Cords",
-  "Lockout / Energy Isolation",
+  "Access / Walking Surfaces",
+  "Machine Guarding",
+  "Electrical",
+  "Lockout / Energy",
   "Mobile Equipment / Traffic",
-  "Berms / Roads / Dump Points",
-  "Fire / Hot Work / Fuel",
-  "Housekeeping / Slips / Trips",
-  "Fall Protection / Elevated Work",
-  "PPE / Eye / Face / Foot / Hand",
-  "Dust / Respiratory / Silica",
-  "Noise / Hearing Conservation",
-  "Compressed Gas / Cylinders",
-  "Material Handling / Storage",
-  "Confined Space / Ventilation",
-  "Emergency / First Aid / Exits",
-  "Training / Workplace Exams",
-  "Recordkeeping / Reporting",
+  "Fire / Hot Work",
+  "Housekeeping",
+  "Fall Protection",
+  "PPE",
+  "Health: Dust / Noise / Respiratory",
+  "Materials / Storage / Cylinders",
+  "Emergency / First Aid",
+  "Training / Reporting",
   "Other / Not Sure"
 ];
 
@@ -400,13 +395,14 @@ export default function InspectScreen() {
 
             <TouchableOpacity
               testID="hazard-category-dropdown"
-              style={[styles.dropdownButton, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8' }]}
+              testID="hazard-category-dropdown"
+              style={[styles.dropdownButton, { backgroundColor: "#FFFFFF", borderColor: "#D7DEE8", shadowColor: "#000", shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }]}
               onPress={() => setCategoryOpen((open) => !open)}
             >
-              <Text style={[styles.dropdownText, { color: currentHazard.hazardCategory ? '#101828' : colors.muted }]}>
-                {currentHazard.hazardCategory || 'Select hazard category'}
+              <Text style={[styles.dropdownText, { color: currentHazard.hazardCategory ? "#101828" : colors.muted }]}>
+                {currentHazard.hazardCategory || "Select hazard category"}
               </Text>
-              <Text style={styles.dropdownChevron}>{categoryOpen ? '⌃' : '⌄'}</Text>
+              <Text style={styles.dropdownChevron}>{categoryOpen ? "⌃" : "⌄"}</Text>
             </TouchableOpacity>
 
             {categoryOpen ? (
@@ -817,7 +813,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   dropdownText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "700",
   },
   dropdownChevron: {
@@ -825,15 +821,20 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   dropdownMenu: {
-    borderRadius: 16,
+    maxHeight: 220,
+    paddingVertical: 2,
+    borderRadius: 14,
+    marginBottom: 10,
+    zIndex: 1000,
+    elevation: 5,
+    backgroundColor: "#FFFFFF",
+    borderColor: "#D7DEE8",
     borderWidth: 1,
-    paddingVertical: 4,
-    marginBottom: 12,
-    maxHeight: 250,
   },
   dropdownOption: {
+    paddingVertical: 10,
+    minHeight: 44,
     paddingHorizontal: 16,
-    paddingVertical: 12,
   },
   dropdownOptionText: {
     fontSize: 15,
