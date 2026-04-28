@@ -105,6 +105,13 @@ export const apiClient = {
     return res.json();
   },
 
+  getExecutiveSummary: async () => {
+    const res = await fetch(`${BASE_URL}/dashboard/executive-summary`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
   getDashboard: async () => {
     const res = await fetch(`${BASE_URL}/dashboard/overview`, { headers: getHeaders() });
     return res.json();

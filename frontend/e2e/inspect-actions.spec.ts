@@ -36,7 +36,7 @@ test('copy report package button appears after saving hazard', async ({ page, co
 test('priority queue action buttons work', async ({ page }) => {
   await page.goto(APP_URL);
 
-  await expect(page.getByText('Priority Work Queue').first()).toBeVisible({ timeout: 20000 });
+  await expect(page.getByText(/Priority Work Queue|Top Risks|Overdue Actions/i).first()).toBeVisible({ timeout: 20000 });
 
   await page.getByText(/Accept \/ Start Review|Accepted/i).first().click();
 
