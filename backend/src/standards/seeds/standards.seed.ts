@@ -43,7 +43,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Electrical conductors',
     standardText: 'Electrical conductors exposed to mechanical damage shall be protected.',
     summaryPlainLanguage: 'Electrical wires and conductors must be protected from damage.',
-    keywords: ['electrical', 'electric', 'power', 'energized', 'live', 'voltage', 'wire', 'wiring', 'conductor', 'cord', 'cable', 'extension cord', 'insulation', 'short', 'damaged wire', 'damaged cord', 'exposed wire', 'exposed conductor', 'electrical panel', 'junction box', 'disconnect', 'breaker'],
+    keywords: ['electrical', 'electric', 'power', 'frayed', 'frayed cord', 'insulation damage', 'damaged insulation', 'energized', 'live', 'voltage', 'wire', 'wiring', 'conductor', 'cord', 'cable', 'extension cord', 'insulation', 'short', 'damaged wire', 'damaged cord', 'exposed wire', 'exposed conductor', 'electrical panel', 'junction box', 'disconnect', 'breaker'],
   },
   {
     source: 'OSHA',
@@ -209,7 +209,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Inspection of firefighting equipment',
     standardText: 'Firefighting equipment shall be inspected regularly to determine that it is fully charged and operable.',
     summaryPlainLanguage: 'Fire extinguishers and firefighting equipment must be inspected and maintained so they are ready for use.',
-    keywords: ['fire extinguisher inspection', 'extinguisher tag', 'fire extinguisher tag', 'monthly inspection', 'charged extinguisher', 'operable extinguisher', 'fire equipment inspection'],
+    keywords: ['fire extinguisher inspection', 'extinguisher tag', 'fire ext', 'blocked extinguisher', 'obstructed extinguisher', 'extinguisher blocked', 'fire extinguisher tag', 'monthly inspection', 'charged extinguisher', 'operable extinguisher', 'fire equipment inspection'],
   },
   {
     source: 'MSHA',
@@ -308,7 +308,7 @@ export const standardSeeds: Array<Partial<Standard>> = [
     heading: 'Securing gas cylinders',
     standardText: 'Compressed and liquid gas cylinders shall be secured in a safe manner.',
     summaryPlainLanguage: 'Compressed gas cylinders must be secured to prevent tipping or damage.',
-    keywords: ['gas cylinder', 'compressed gas cylinder', 'oxygen bottle', 'acetylene bottle', 'unsecured cylinder', 'cylinder not secured', 'torch cylinder', 'bottle chain'],
+    keywords: ['gas cylinder', 'compressed gas cylinder', 'oxygen bottle', 'gas bottle', 'bottle loose', 'unsecured bottle', 'acetylene bottle', 'acetylene bottle', 'unsecured cylinder', 'cylinder not secured', 'torch cylinder', 'bottle chain'],
   },
   {
     source: 'MSHA',
