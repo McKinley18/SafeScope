@@ -1,3 +1,4 @@
+import { HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
 import React, { useMemo, useRef, useState } from 'react';
 import {
   Alert,
@@ -41,6 +42,7 @@ const hazardCategories = [
   "Electrical",
   "Lockout / Energy",
   "Mobile Equipment / Traffic",
+  "Berms / Roads / Dump Points",
   "Fire / Hot Work",
   "Housekeeping",
   "Fall Protection",
