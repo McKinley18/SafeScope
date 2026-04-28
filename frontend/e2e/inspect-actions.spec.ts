@@ -36,6 +36,6 @@ test('copy report package button appears after saving hazard', async ({ page, co
 test('executive command center panels are visible', async ({ page }) => {
   await page.goto(APP_URL);
 
-  await expect(page.getByText(/Executive Command Center/i).first()).toBeVisible({ timeout: 20000 });
-  await expect(page.getByText(/Corporate Rollup|Total Sites|All Sites|Site A/i).first()).toBeVisible({ timeout: 20000 });
+  await expect(page.getByText(/Safety Command Center|Executive Command Center/i).first()).toBeVisible({ timeout: 20000 });
+  await expect(page.getByText(/Immediate Attention Required|Overdue Actions|Critical Exposure|Completion Rate|Top Risks|Executive Summary/i).first()).toBeVisible({ timeout: 20000 });
 });
