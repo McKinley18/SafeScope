@@ -416,49 +416,36 @@ export default function InspectScreen() {
             />
           </Section>
 
-          <Section id="standards" sectionOffsets={sectionOffsets} title="3. Possible Standards" helper="The app checks keywords from the hazard description and suggests possible standard areas for qualified review.">
-            <TouchableOpacity style={styles.primaryButton} onPress={runStandardMatch}>
-              <Text style={styles.primaryButtonText}>Check Possible Standards</Text>
+          
+          <Section id="standards" sectionOffsets={sectionOffsets} title="3. Standards & Risk" helper="MSHA/OSHA standards and risk assessment.">
+            <TouchableOpacity style={styles.primaryButton} onPress={async () => {
+                await runStandardMatch();
+                const risk = await apiClient.riskSuggest({
+                    hazardCategory: currentHazard.hazardCategory,
+                    hazardDescription: currentHazard.hazardDescription,
+                    citation: currentHazard.selectedStandard
+                });
+                updateHazard({ riskAssessment: risk });
+            }}>
+              <Text style={styles.primaryButtonText}>Check Standards & Risk</Text>
             </TouchableOpacity>
 
-            {currentHazard.possibleStandards.map((standard) => {
-              const selectedValue = standard.citation || standard.heading || String(standard);
-              const isSelected = currentHazard.selectedStandard === selectedValue;
-
-              return (
-                <TouchableOpacity
-                  key={standard.id || selectedValue}
-                  style={[
-                    styles.standardCard,
-                    {
-                      backgroundColor: '#FFFFFF',
-                      borderColor: isSelected ? colors.accent : colors.border,
-                    },
-                  ]}
-                  onPress={() =>
-                    updateHazard({
-                      selectedStandard: selectedValue,
-                      correctiveAction: standard.correctiveAction || currentHazard.correctiveAction,
-                    })
-                  }
-                >
-                  <Text style={[styles.standardCitation, { color: colors.accent }]}>
-                    {standard.citation || 'Possible Standard'}
-                  </Text>
-                  <Text style={[styles.standardText, { color: '#000000' }]}>
-                    {standard.heading || String(standard)}
-                  </Text>
-                  {standard.summary ? (
-                    <Text style={styles.standardSummary}>{standard.summary}</Text>
-                  ) : null}
-                </TouchableOpacity>
-              );
-            })}
-
-            <Text style={[styles.disclaimer, { color: '#111111' }]}>
-              Suggested matches guide review only. Final compliance responsibility remains with the qualified user.
-            </Text>
+            {currentHazard.riskAssessment && (
+              <View style={[styles.standardCard, { borderColor: "#F97316", padding: 16 }]}>
+                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Risk Assessment: {currentHazard.riskAssessment.riskLevel}</Text>
+                <Text>Score: {currentHazard.riskAssessment.riskScore} | Priority: {currentHazard.riskAssessment.priorityLabel}</Text>
+                <Text style={{ fontSize: 12, marginTop: 8, color: '#475467' }}>{currentHazard.riskAssessment.riskReasoning}</Text>
+              </View>
+            )}
+            
+            {currentHazard.possibleStandards.map((standard) => (
+              <View key={standard.citation} style={styles.standardCard}>
+                 <Text style={styles.standardCitation}>{standard.citation}</Text>
+                 <Text style={styles.standardText}>{standard.heading}</Text>
+              </View>
+            ))}
           </Section>
+
 
           <Section id="location" sectionOffsets={sectionOffsets} title="4. Location / Equipment" helper="Identify exactly where the hazard exists and what equipment or area is involved.">
             <TextInput
