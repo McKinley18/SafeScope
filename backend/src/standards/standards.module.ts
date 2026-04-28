@@ -9,6 +9,7 @@ import { HazardStandardMapping } from './entities/hazard-standard-mapping.entity
 import { CorrectiveActionTemplate } from './entities/corrective-action-template.entity';
 import { ReportLanguageTemplate } from './entities/report-language-template.entity';
 import { ClassificationFeedback } from './entities/classification-feedback.entity';
+import { RegulatorySection } from '../regulatory/entities/regulatory-section.entity';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ClassificationFeedback } from './entities/classification-feedback.entit
       CorrectiveActionTemplate,
       ReportLanguageTemplate,
       ClassificationFeedback,
+      RegulatorySection,
     ]),
   ],
   controllers: [StandardsController],
