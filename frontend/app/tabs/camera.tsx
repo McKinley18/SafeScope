@@ -1,4 +1,4 @@
-import { HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
+import { Modal, HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
 import React, { useMemo, useRef, useState } from 'react';
 import {
   Alert,
@@ -407,29 +407,51 @@ export default function InspectScreen() {
               <Text style={styles.dropdownChevron}>{categoryOpen ? "⌃" : "⌄"}</Text>
             </TouchableOpacity>
 
-            {categoryOpen ? (
-              <View style={[styles.dropdownMenu, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8' }]}>
-                {hazardCategories.map((category) => (
-                  <TouchableOpacity
-                    key={category}
-                    testID={`hazard-category-option-${category}`}
-                    style={[
-                      styles.dropdownOption,
-                      {
-                        backgroundColor:
-                          currentHazard.hazardCategory === category ? 'rgba(249,115,22,0.12)' : '#FFFFFF',
-                      },
-                    ]}
-                    onPress={() => {
-                      updateHazard({ hazardCategory: category });
-                      setCategoryOpen(false);
-                    }}
+            <Modal
+              visible={categoryOpen}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setCategoryOpen(false)}
+            >
+              <View style={styles.categoryModalBackdrop}>
+                <TouchableOpacity style={styles.categoryModalDismiss} onPress={() => setCategoryOpen(false)} />
+                <View style={styles.categoryModalSheet}>
+                  <View style={styles.categoryModalHeader}>
+                    <Text style={styles.categoryModalTitle}>Choose Hazard Category</Text>
+                    <TouchableOpacity onPress={() => setCategoryOpen(false)}>
+                      <Text style={styles.categoryModalClose}>Close</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <ScrollView
+                    style={styles.categoryModalList}
+                    nestedScrollEnabled
+                    showsVerticalScrollIndicator
                   >
-                    <Text style={[styles.dropdownOptionText, { color: '#101828' }]}>{category}</Text>
-                  </TouchableOpacity>
-                ))}
+                    {hazardCategories.map((category) => {
+                      const selected = currentHazard.hazardCategory === category;
+
+                      return (
+                        <TouchableOpacity
+                          key={category}
+                          testID={`hazard-category-option-${category}`}
+                          style={[
+                            styles.dropdownOption,
+                            selected ? styles.dropdownOptionSelected : null,
+                          ]}
+                          onPress={() => {
+                            updateHazard({ hazardCategory: category });
+                            setCategoryOpen(false);
+                          }}
+                        >
+                          <Text style={styles.dropdownOptionText}>{category}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
               </View>
-            ) : null}
+            </Modal>
             <TextInput
               style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8', color: '#101828' }]}
               placeholder="Example: Damaged ladder with bent side rail being used near the maintenance area."
