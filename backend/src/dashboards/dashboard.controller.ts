@@ -1,12 +1,12 @@
-import { Controller, Get, Headers } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
 export class DashboardController {
-  constructor(private dashboardService: DashboardService) {}
+  constructor(private service: DashboardService) {}
 
-  @Get('overview')
-  async getOverview(@Headers('authorization') authorization: string) {
-    return await this.dashboardService.getOverview(authorization);
+  @Get('executive-summary')
+  async getSummary() {
+    return await this.service.getExecutiveSummary();
   }
 }
