@@ -27,16 +27,32 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DATABASE_HOST'),
-        port: Number(configService.get<string>('DATABASE_PORT')),
-        username: configService.get<string>('DATABASE_USER'),
-        password: configService.get<string>('DATABASE_PASSWORD'),
-        database: configService.get<string>('DATABASE_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const normalizedDatabaseUrl =
+          databaseUrl && !databaseUrl.includes('sslmode=')
+            ? `${databaseUrl}${databaseUrl.includes('?') ? '&' : '?'}sslmode=require`
+            : databaseUrl;
+
+        return {
+          type: 'postgres',
+          ...(normalizedDatabaseUrl
+            ? { url: normalizedDatabaseUrl, ssl: { rejectUnauthorized: false } }
+            : {
+                host: configService.get<string>('DATABASE_HOST'),
+                port: Number(configService.get<string>('DATABASE_PORT') || 5432),
+                username: configService.get<string>('DATABASE_USER'),
+                password: configService.get<string>('DATABASE_PASSWORD'),
+                database: configService.get<string>('DATABASE_NAME'),
+                ssl:
+                  configService.get<string>('NODE_ENV') === 'production'
+                    ? { rejectUnauthorized: false }
+                    : false,
+              }),
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: true,
+        };
+      },
     }),
     HealthModule, ReportsModule, TaxonomyModule, DashboardsModule, ClassificationsModule, AuditModule,
     ReviewsModule, RiskModule, CorrectiveActionsModule, AuditSessionModule, AuthModule, AlertsModule,
