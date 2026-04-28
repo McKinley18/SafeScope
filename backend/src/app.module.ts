@@ -18,7 +18,12 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { StandardsModule } from './standards/standards.module';
 import { RegulatoryModule } from './regulatory/regulatory.module';
 import { ApplicableStandardsModule } from './applicable-standards/applicable-standards.module';
+import { MatchEngineModule } from './match-engine/match-engine.module';
+import { IntelligenceLibraryModule } from './intelligence-framework/intelligence.module';
+import { HazardTaxonomy } from './intelligence-framework/entities/hazard-taxonomy.entity';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+
+// ... (other imports)
 
 @Module({
   imports: [
@@ -49,14 +54,14 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
                     ? { rejectUnauthorized: false }
                     : false,
               }),
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          entities: [__dirname + '/**/*.entity{.ts,.js}', HazardTaxonomy],
           synchronize: true,
         };
       },
     }),
     HealthModule, ReportsModule, TaxonomyModule, DashboardsModule, ClassificationsModule, AuditModule,
     ReviewsModule, RiskModule, CorrectiveActionsModule, AuditSessionModule, AuthModule, AlertsModule,
-    StandardsModule, RegulatoryModule, ApplicableStandardsModule, NotificationsModule,
+    StandardsModule, RegulatoryModule, ApplicableStandardsModule, MatchEngineModule, IntelligenceLibraryModule, NotificationsModule,
   ],
 })
 export class AppModule implements NestModule {

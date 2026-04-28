@@ -18,6 +18,7 @@ import { RegulatoryPart } from '../regulatory/entities/regulatory-part.entity';
 import { RegulatorySubpart } from '../regulatory/entities/regulatory-subpart.entity';
 import { RegulatorySection } from '../regulatory/entities/regulatory-section.entity';
 import { RegulatoryParagraph } from '../regulatory/entities/regulatory-paragraph.entity';
+import { HazardTaxonomy } from '../intelligence-framework/entities/hazard-taxonomy.entity';
 
 export const dataSource = new DataSource({
   type: 'postgres',
@@ -46,6 +47,7 @@ export const dataSource = new DataSource({
     RegulatorySubpart,
     RegulatorySection,
     RegulatoryParagraph,
+    HazardTaxonomy,
   ],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: true,
