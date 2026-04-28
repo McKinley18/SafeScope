@@ -393,7 +393,7 @@ export default function InspectScreen() {
           </Section>
 
           <Section id="description" sectionOffsets={sectionOffsets} title="2. Hazard Description" helper="Select the closest hazard category, then describe what is unsafe, who is exposed, and what could happen.">
-            <Text style={[styles.fieldLabel, { color: '#000000' }]}>Hazard Category</Text>
+            <Text style={[styles.fieldLabel, { color: '#101828', fontWeight: 'bold', fontSize: 16, marginBottom: 8 }]}>Hazard Category</Text>
 
             <TouchableOpacity
               testID="hazard-category-dropdown"
@@ -694,13 +694,20 @@ const styles = StyleSheet.create({
   },
   formColumn: {
     gap: 22,
-    marginLeft: 0,
+    marginLeft: 16,
   },
   sectionCard: {
-    backgroundColor: 'transparent',
-    borderBottomWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    paddingBottom: 22,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
   },
   sectionTitle: {
     fontSize: 18,
