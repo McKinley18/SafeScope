@@ -71,7 +71,10 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
                 username: configService.get<string>('DATABASE_USER'),
                 password: configService.get<string>('DATABASE_PASSWORD'),
                 database: configService.get<string>('DATABASE_NAME'),
-                ssl: false,
+                ssl:
+                  configService.get<string>('NODE_ENV') === 'production'
+                    ? { rejectUnauthorized: false }
+                    : false,
               }),
         entities: [
           Report, ReportAttachment, Classification, AuditLog, Review, RiskScore, CorrectiveAction, ClassificationRule,
