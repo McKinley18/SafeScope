@@ -3,12 +3,12 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class RiskService {
   suggest(category: string, description: string) {
-    const descLower = description.toLowerCase();
+    const descLower = (description || '').toLowerCase();
     
     // Severity defaults
     let severity = 2; // Moderate
-    if (['Machine Guarding', 'Lockout / Energy', 'Fall Protection', 'Mobile Equipment'].includes(category)) severity = 4;
-    else if (['Electrical', 'Berms / Roads / Dump Points', 'Fire / Hot Work'].includes(category)) severity = 3;
+    if (['Machine Guarding', 'Lockout / Energy', 'Fall Protection', 'Mobile Equipment'].includes(category || '')) severity = 4;
+    else if (['Electrical', 'Berms / Roads / Dump Points', 'Fire / Hot Work'].includes(category || '')) severity = 3;
 
     // Likelihood defaults
     let likelihood = 3; // Possible

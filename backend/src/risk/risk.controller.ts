@@ -7,6 +7,6 @@ export class RiskController {
 
   @Post('suggest')
   async suggest(@Body() body: any) {
-    return this.service.suggest(body.hazardCategory, body.hazardDescription);
+    return this.service.suggest(body.hazardCategory, body.hazardDescription || body.description || '');
   }
 }
