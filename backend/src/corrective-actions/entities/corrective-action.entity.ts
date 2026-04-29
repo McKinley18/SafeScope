@@ -55,4 +55,11 @@ export class CorrectiveAction {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // Now adding the new fields
+  @Column({ nullable: true })
+  organizationId: string;
+
+  @Column({ nullable: true })
+  siteId: string;
 }
