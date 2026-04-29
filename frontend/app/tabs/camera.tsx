@@ -419,12 +419,18 @@ export default function InspectScreen() {
           
           <Section id="standards" sectionOffsets={sectionOffsets} title="3. Standards & Risk" helper="MSHA/OSHA standards and risk assessment.">
             <TouchableOpacity style={styles.primaryButton} onPress={async () => {
+                const hazardCategory = currentHazard.hazardCategory || 'Machine Guarding';
+                const hazardDescription = currentHazard.hazardDescription || '';
+
                 await runStandardMatch();
+
                 const risk = await apiClient.riskSuggest({
-                    hazardCategory: currentHazard.hazardCategory,
-                    hazardDescription: currentHazard.hazardDescription,
+                    hazardCategory,
+                    description: hazardDescription,
+                    hazardDescription,
                     citation: currentHazard.selectedStandard
                 });
+
                 updateHazard({ riskAssessment: risk });
             }}>
               <Text style={styles.primaryButtonText}>Check Standards & Risk</Text>
