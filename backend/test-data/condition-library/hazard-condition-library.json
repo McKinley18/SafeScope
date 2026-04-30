@@ -1,7 +1,7 @@
 {
   "metadata": {
     "project": "Sentinel Safety",
-    "engine": "SafeScope",
+    "engine": "Sentinel Safety",
     "version": "0.1.0",
     "status": "expandable_full_database_seed",
     "purpose": "Condition-first regulatory hazard identification library before citation matching",

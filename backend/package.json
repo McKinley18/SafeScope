@@ -1,7 +1,7 @@
 {
-  "name": "safescope-backend",
+  "name": "sentinel-safety-backend",
   "version": "1.0.0",
-  "description": "SafeScope Production Backend",
+  "description": "Sentinel Safety Production Backend",
   "main": "dist/main.js",
   "scripts": {
     "dev": "nodemon src/main.ts",

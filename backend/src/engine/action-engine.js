@@ -48,7 +48,7 @@ function buildResponse(source, level) {
     suggestedExposure: source.suggestedExposure ?? 3,
     suggestedPriority: source.suggestedPriority ?? "medium",
     defaultDaysToComplete: source.defaultDaysToComplete ?? null,
-    prioritySource: `SafeScope ${level}-level mapping`,
+    prioritySource: `Sentinel Safety ${level}-level mapping`,
     requiresRiskAssessment: true,
     riskAssessment: emptyRisk()
   };
