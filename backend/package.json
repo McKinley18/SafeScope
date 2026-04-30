@@ -1,7 +1,7 @@
 {
-  "name": "safescope-backend",
+  "name": "sentinel-safety-backend",
   "version": "1.0.0",
-  "description": "SafeScope Production Backend",
+  "description": "Sentinel Safety Production Backend",
   "main": "dist/main.js",
   "scripts": {
     "dev": "nodemon src/main.ts",
@@ -10,7 +10,10 @@
     "migration:generate": "typeorm-ts-node-commonjs migration:generate src/database/migrations/InitialMigration -d src/database/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
-    "seed": "ts-node src/database/seed.ts"
+    "seed": "ts-node src/database/seed.ts",
+    "standards:seed": "ts-node src/standards/seed/run-standards-seed.ts",
+    "standards:test": "ts-node src/standards/tests/golden-standards-tests.ts",
+    "standards:gemini": "node scripts/run-gemini-standards-batch.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -23,6 +26,7 @@
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "dotenv": "^17.4.2",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.11.0",
     "reflect-metadata": "^0.1.13",
@@ -38,7 +42,7 @@
     "@types/node": "^20.3.1",
     "@types/xml2js": "^0.4.14",
     "nodemon": "^3.0.1",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.1.3"
   }
 }

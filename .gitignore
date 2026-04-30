@@ -10,3 +10,5 @@ coverage
 
 backend/node_modules
 .vercel
+backend/results/archive/
+verification/

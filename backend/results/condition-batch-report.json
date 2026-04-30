@@ -1,0 +1,212 @@
+[
+  {
+    "id": "FP-000001",
+    "observation": "Conveyor guard inspected and securely installed.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000002",
+    "observation": "Electrical panel closed with required clearance maintained.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 100,
+    "reviewRequired": false,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "global safe suppressor matched"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000003",
+    "observation": "Worker tied off correctly near roof edge.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000004",
+    "observation": "Forklift backup alarm tested and audible.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000005",
+    "observation": "Scaffold platform has complete guardrails and secured planks.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000006",
+    "observation": "Trench protective shield installed before entry.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 100,
+    "reviewRequired": false,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "global safe suppressor matched"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000007",
+    "observation": "Respirator cartridge selected correctly for vapor exposure.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000008",
+    "observation": "Fire extinguisher inspected, charged, and accessible.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000009",
+    "observation": "Exit route marked, illuminated, and unobstructed.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  },
+  {
+    "id": "FP-000010",
+    "observation": "Compressed gas cylinder secured upright with cap in place.",
+    "expectedScope": "no_match",
+    "expectedFamily": "other",
+    "expectedCitation": "NO_MATCH",
+    "actualConditionId": "NO_MATCH",
+    "actualCitation": "NO_MATCH",
+    "actualScope": "NO_MATCH",
+    "actualFamily": "other",
+    "actualConfidence": 0,
+    "reviewRequired": true,
+    "routeOk": true,
+    "familyOk": true,
+    "citationOk": true,
+    "pass": true,
+    "reasons": [
+      "no condition exceeded zero score"
+    ],
+    "secondaryMatches": []
+  }
+]
