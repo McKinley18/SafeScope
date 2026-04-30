@@ -1830,17 +1830,11 @@
       "family": "ppe",
       "equipmentTerms": [
         "PPE",
-        "gloves",
-        "face shield",
-        "safety glasses",
-        "protective equipment"
+        "personal protective equipment"
       ],
       "failureTerms": [
         "not worn",
-        "missing",
-        "damaged",
-        "not provided",
-        "wrong PPE"
+        "not used"
       ],
       "contextTerms": [
         "maintenance",
@@ -1855,7 +1849,8 @@
         "intact"
       ],
       "negativeSignals": [],
-      "confidenceFloor": 90
+      "confidenceFloor": 90,
+      "priority": 160
     },
     {
       "conditionId": "OSHA_GI_RECORDKEEPING_TRAINING_DEFICIENT",
@@ -2556,22 +2551,26 @@
       "citation": "56.14131(a)",
       "family": "mobile_equipment",
       "equipmentTerms": [
+        "seatbelt",
+        "seat belt",
+        "dozer",
         "haul truck",
         "loader",
-        "dozer",
         "mobile equipment"
       ],
       "failureTerms": [
         "seatbelt not worn",
         "no seatbelt",
-        "operator not buckled"
+        "operator not buckled",
+        "seat belt not worn"
       ],
       "safeSuppressors": [
         "seatbelt worn",
         "buckled"
       ],
       "negativeSignals": [],
-      "confidenceFloor": 90
+      "confidenceFloor": 90,
+      "priority": 180
     },
     {
       "conditionId": "V1_MSHA_BACKUP_ALARM_AUDIBILITY",
@@ -3931,6 +3930,275 @@
       ],
       "negativeSignals": [],
       "priority": 80,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "OSHA_GI_MACHINE_GUARD_MISSING",
+      "scope": "general_industry",
+      "agency": "OSHA",
+      "citation": "1910.212(a)(1)",
+      "family": "machine_guarding",
+      "equipmentTerms": [
+        "machine",
+        "guard"
+      ],
+      "failureTerms": [
+        "guard missing",
+        "missing guard"
+      ],
+      "safeSuppressors": [
+        "guard installed",
+        "guard inspected",
+        "securely installed"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "plant",
+        "plant area",
+        "warehouse",
+        "work area"
+      ],
+      "priority": 170,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "OSHA_CONSTRUCTION_MACHINE_GUARD_DEFECT",
+      "scope": "construction",
+      "agency": "OSHA",
+      "citation": "1926.20(b)(2)",
+      "family": "tools_equipment",
+      "equipmentTerms": [
+        "machine",
+        "guard",
+        "equipment"
+      ],
+      "failureTerms": [
+        "guard missing",
+        "missing guard",
+        "unguarded"
+      ],
+      "safeSuppressors": [
+        "guard installed",
+        "guard inspected",
+        "securely installed"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "jobsite",
+        "construction"
+      ],
+      "priority": 80,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "OSHA_GI_HARD_HAT_NOT_WORN",
+      "scope": "general_industry",
+      "agency": "OSHA",
+      "citation": "1910.135(a)",
+      "family": "ppe",
+      "equipmentTerms": [
+        "hard hat",
+        "head protection"
+      ],
+      "failureTerms": [
+        "not worn",
+        "no hard hat",
+        "without hard hat"
+      ],
+      "safeSuppressors": [
+        "hard hat worn",
+        "head protection worn"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "plant",
+        "plant area",
+        "warehouse",
+        "work area"
+      ],
+      "priority": 150,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "OSHA_GI_LOCKOUT_NOT_APPLIED",
+      "scope": "general_industry",
+      "agency": "OSHA",
+      "citation": "1910.147(c)(1)",
+      "family": "lockout_tagout",
+      "equipmentTerms": [
+        "equipment",
+        "machine",
+        "conveyor",
+        "maintenance",
+        "lockout"
+      ],
+      "failureTerms": [
+        "lockout not applied",
+        "no lockout",
+        "without lockout",
+        "not locked out"
+      ],
+      "safeSuppressors": [
+        "locked out",
+        "lockout applied",
+        "energy isolated"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "plant",
+        "plant area",
+        "maintenance",
+        "work area"
+      ],
+      "priority": 170,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "OSHA_CONSTRUCTION_LOCKOUT_NOT_APPLIED",
+      "scope": "construction",
+      "agency": "OSHA",
+      "citation": "1926.20(b)(2)",
+      "family": "tools_equipment",
+      "equipmentTerms": [
+        "equipment",
+        "machine",
+        "maintenance"
+      ],
+      "failureTerms": [
+        "lockout not applied",
+        "no lockout",
+        "without lockout",
+        "not locked out"
+      ],
+      "safeSuppressors": [
+        "locked out",
+        "lockout applied",
+        "energy isolated"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "jobsite",
+        "construction"
+      ],
+      "priority": 80,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "MSHA_LOCKOUT_NOT_APPLIED_MAINTENANCE",
+      "scope": "mining",
+      "agency": "MSHA",
+      "citation": "56.12016",
+      "family": "lockout_tagout",
+      "equipmentTerms": [
+        "conveyor",
+        "crusher"
+      ],
+      "failureTerms": [
+        "lockout not applied",
+        "no lockout",
+        "without lockout",
+        "not locked out"
+      ],
+      "safeSuppressors": [
+        "locked out",
+        "lockout applied",
+        "power disconnected",
+        "energy isolated"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "processing plant",
+        "crusher",
+        "mine",
+        "pit"
+      ],
+      "priority": 180,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "MSHA_MACHINE_GUARD_MISSING_CRUSHER",
+      "scope": "mining",
+      "agency": "MSHA",
+      "citation": "56.14107(a)",
+      "family": "machine_guarding",
+      "equipmentTerms": [
+        "crusher",
+        "conveyor"
+      ],
+      "failureTerms": [
+        "guard missing",
+        "missing guard",
+        "unguarded"
+      ],
+      "safeSuppressors": [
+        "guard installed",
+        "guard inspected",
+        "securely installed"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "crusher",
+        "processing plant",
+        "mine",
+        "pit"
+      ],
+      "priority": 60,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "OSHA_CONSTRUCTION_HARD_HAT_NOT_WORN",
+      "scope": "construction",
+      "agency": "OSHA",
+      "citation": "1926.100(a)",
+      "family": "ppe",
+      "equipmentTerms": [
+        "hard hat",
+        "head protection"
+      ],
+      "failureTerms": [
+        "not worn",
+        "no hard hat",
+        "without hard hat"
+      ],
+      "safeSuppressors": [
+        "hard hat worn",
+        "head protection worn"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "jobsite",
+        "construction"
+      ],
+      "priority": 70,
+      "confidenceFloor": 90
+    },
+    {
+      "conditionId": "MSHA_HARD_HAT_NOT_WORN_PIT",
+      "scope": "mining",
+      "agency": "MSHA",
+      "citation": "56.15002",
+      "family": "ppe",
+      "equipmentTerms": [
+        "hard hat",
+        "head protection"
+      ],
+      "failureTerms": [
+        "not worn",
+        "no hard hat",
+        "without hard hat"
+      ],
+      "safeSuppressors": [
+        "hard hat worn",
+        "head protection worn"
+      ],
+      "negativeSignals": [],
+      "contextTerms": [
+        "pit",
+        "mine",
+        "crusher",
+        "processing plant"
+      ],
+      "priority": 90,
       "confidenceFloor": 90
     }
   ]

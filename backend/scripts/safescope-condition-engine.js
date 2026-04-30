@@ -134,6 +134,26 @@ function scoreCondition(text, condition) {
   return { score, reason: reasons };
 }
 
+
+function detectScopeHint(text) {
+  const value = String(text || '').toLowerCase();
+
+  if (/\b(jobsite|construction site|masonry|sewer|concrete work|steel work|crane lift|elevated work)\b/.test(value)) {
+    return 'construction';
+  }
+
+  if (/\b(pit|crusher|crusher tower|processing plant|mine|haul road|plant area)\b/.test(value)) {
+    return 'mining';
+  }
+
+  if (/\b(warehouse|maintenance shop|maintenance room|compressor room|paint room|janitorial|work area|facility)\b/.test(value)) {
+    return 'general_industry';
+  }
+
+  // Plain "plant" is ambiguous: leave unresolved unless benchmark/customer context says otherwise.
+  return null;
+}
+
 function classifyObservation(observation, options = {}) {
   const text = norm(observation);
   const library = options.library || loadJson(LIBRARY_PATH);
@@ -153,7 +173,12 @@ function classifyObservation(observation, options = {}) {
     };
   }
 
-  const scored = library.conditions
+  const scopeHint = (options.context && options.context.industryScope) || detectScopeHint(observation);
+  const candidateConditions = scopeHint
+    ? library.conditions.filter((condition) => condition.scope === scopeHint)
+    : library.conditions;
+
+  const scored = candidateConditions
     .map(condition => {
       const result = scoreCondition(text, condition);
       return { condition, score: result.score, reasons: result.reason };

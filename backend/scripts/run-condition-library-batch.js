@@ -14,7 +14,7 @@ const results = [];
 const failures = [];
 
 for (const testCase of cases) {
-  const result = classifyObservation(testCase.observation);
+  const result = classifyObservation(testCase.observation, { context: testCase.context || {} });
 
   const routeOk =
     testCase.scopeExpected === "no_match"
