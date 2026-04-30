@@ -16,8 +16,8 @@ export class ConditionService {
     this.library = JSON.parse(fs.readFileSync(p, 'utf-8'));
   }
 
-  classify(observation: string) {
-    const classification = engine.classifyObservation(observation, {
+  classify(observation: string, context: any = {}) {
+    const classification = engine.classifyObservation(observation, { context,
       library: this.library,
     });
 

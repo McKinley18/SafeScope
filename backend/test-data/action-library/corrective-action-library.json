@@ -918,28 +918,30 @@
     "scope": "mining",
     "agency": "MSHA",
     "family": "tools_equipment",
-    "regulatoryIntent": "Correct the identified hazardous condition using the hierarchy of controls.",
+    "regulatoryIntent": "Ensure defective tools or equipment are corrected or removed from service before exposing miners to unsafe conditions.",
     "correctiveActions": [
-      "Control employee exposure.",
-      "Correct hazard.",
-      "Verify completion.",
-      "Document evidence."
+      "Remove defective tool or equipment from service.",
+      "Tag or segregate it to prevent use.",
+      "Repair or replace the defective item.",
+      "Verify safe condition before return to service."
     ],
     "verificationSteps": [
-      "Hazard controlled.",
-      "Correction completed.",
-      "Evidence attached."
+      "Defective item removed from use.",
+      "Repair or replacement completed.",
+      "Safe condition verified.",
+      "Corrective action documented."
     ],
     "rootCausePrompts": [
-      "Why did the condition exist?",
-      "What prevents recurrence?"
+      "Was the defect identified during workplace or pre-use inspection?",
+      "Why was the item still available for use?",
+      "Is preventive maintenance adequate?"
     ],
-    "suggestedSeverity": 3,
+    "suggestedSeverity": 4,
     "suggestedLikelihood": 3,
     "suggestedExposure": 3,
-    "suggestedPriority": "medium",
-    "defaultDaysToComplete": 3,
-    "actionSource": "fallback-template"
+    "suggestedPriority": "high",
+    "defaultDaysToComplete": 1,
+    "actionSource": "condition-override"
   },
   {
     "conditionId": "MSHA_PARKING_BRAKES_WHEEL_CHOCKS",
@@ -1948,28 +1950,30 @@
     "scope": "general_industry",
     "agency": "OSHA",
     "family": "tools_equipment",
-    "regulatoryIntent": "Correct the identified hazardous condition using the hierarchy of controls.",
+    "regulatoryIntent": "Prevent employees from operating unsafe machinery where defects can create machine guarding, struck-by, caught-in, or mechanical hazards.",
     "correctiveActions": [
-      "Control employee exposure.",
-      "Correct hazard.",
-      "Verify completion.",
-      "Document evidence."
+      "Stop operation of the defective machine.",
+      "Lock out, tag out, or otherwise prevent use until corrected.",
+      "Repair the defect and inspect associated guards or safety devices.",
+      "Verify safe operation before restart."
     ],
     "verificationSteps": [
-      "Hazard controlled.",
-      "Correction completed.",
-      "Evidence attached."
+      "Machine stopped and controlled.",
+      "Defect corrected.",
+      "Guards and safety devices verified.",
+      "Restart approval documented."
     ],
     "rootCausePrompts": [
-      "Why did the condition exist?",
-      "What prevents recurrence?"
+      "Why did operation continue with a known defect?",
+      "Was the defect reported through maintenance channels?",
+      "Are operators empowered to stop unsafe equipment?"
     ],
-    "suggestedSeverity": 3,
+    "suggestedSeverity": 5,
     "suggestedLikelihood": 3,
-    "suggestedExposure": 3,
-    "suggestedPriority": "medium",
-    "defaultDaysToComplete": 3,
-    "actionSource": "fallback-template"
+    "suggestedExposure": 4,
+    "suggestedPriority": "critical",
+    "defaultDaysToComplete": 0,
+    "actionSource": "condition-override"
   },
   {
     "conditionId": "OSHA_CONSTRUCTION_DEFECTIVE_EQUIPMENT_IN_USE",
@@ -1977,28 +1981,30 @@
     "scope": "construction",
     "agency": "OSHA",
     "family": "tools_equipment",
-    "regulatoryIntent": "Correct the identified hazardous condition using the hierarchy of controls.",
+    "regulatoryIntent": "Ensure unsafe tools, machinery, or equipment are not used until defects are corrected and safe operation is verified.",
     "correctiveActions": [
-      "Control employee exposure.",
-      "Correct hazard.",
-      "Verify completion.",
-      "Document evidence."
+      "Remove defective equipment from service immediately.",
+      "Tag or otherwise prevent use until correction is complete.",
+      "Repair or replace the defective equipment component.",
+      "Have a competent person or responsible supervisor verify safe condition before returning equipment to use."
     ],
     "verificationSteps": [
-      "Hazard controlled.",
-      "Correction completed.",
-      "Evidence attached."
+      "Equipment removed from active use.",
+      "Defect repaired or equipment replaced.",
+      "Responsible person verified safe condition.",
+      "Return-to-service documentation completed."
     ],
     "rootCausePrompts": [
-      "Why did the condition exist?",
-      "What prevents recurrence?"
+      "Why was defective equipment available for use?",
+      "Was the defect identified during inspection or pre-task review?",
+      "Is the inspection or removal-from-service process effective?"
     ],
-    "suggestedSeverity": 3,
+    "suggestedSeverity": 4,
     "suggestedLikelihood": 3,
     "suggestedExposure": 3,
-    "suggestedPriority": "medium",
-    "defaultDaysToComplete": 3,
-    "actionSource": "fallback-template"
+    "suggestedPriority": "high",
+    "defaultDaysToComplete": 1,
+    "actionSource": "condition-override"
   },
   {
     "conditionId": "MSHA_CONTRACTOR_HAZARD_COMMUNICATION",

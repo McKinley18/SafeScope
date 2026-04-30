@@ -132,14 +132,18 @@ export class ReportsController {
   @Post(':reportId/classify')
   classify(
     @Param('reportId') reportId: string,
-    @Body() body: { observation?: string },
+    @Body() body: { observation?: string; context?: any },
   ) {
     if (body?.observation) {
-      const result = this.conditionService.classify(body.observation);
+      const result = this.conditionService.classify(
+        body.observation,
+        body.context || {},
+      );
 
       return {
         reportId,
         observation: body.observation,
+        context: body.context || {},
         classification: result,
       };
     }

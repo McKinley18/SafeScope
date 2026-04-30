@@ -158,8 +158,35 @@ function classifyObservation(observation, options = {}) {
       const result = scoreCondition(text, condition);
       return { condition, score: result.score, reasons: result.reason };
     })
-    .filter(item => item.score >= 60 && item.reasons.some(r => r.startsWith("failure:")))
-    .sort((a, b) => b.score - a.score);
+    .filter(item => item.score >= 60 && item.reasons.some(r => r.startsWith("failure:")));
+
+  const context = options.context || {};
+
+  if (context.industryScope) {
+    for (const item of scored) {
+      if (item.condition.scope === context.industryScope) {
+        item.score += 60;
+        item.reasons.push(`contextScopeBoost:${context.industryScope}`);
+      } else {
+        item.score -= 40;
+        item.reasons.push(`contextScopePenalty:${context.industryScope}`);
+      }
+    }
+  }
+
+  if (context.location) {
+    const loc = norm(context.location);
+    for (const item of scored) {
+      const locationHits = phraseHits(loc, item.condition.contextTerms || [])
+        .concat(phraseHits(loc, item.condition.equipmentTerms || []));
+      if (locationHits.length) {
+        item.score += 15;
+        item.reasons.push(`contextLocation:${context.location}`);
+      }
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
 
   if (!scored.length) {
     return {
