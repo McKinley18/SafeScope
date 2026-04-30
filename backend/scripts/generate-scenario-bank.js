@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const out = "test-data/scenario-bank/safescope-scenario-bank-001.json";
+const out = "test-data/scenario-bank/sentinel-safety-scenario-bank-001.json";
 
 let scenarios = [];
 let n = 1;

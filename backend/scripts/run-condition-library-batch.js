@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { classifyObservation } = require("./safescope-condition-engine");
+const { classifyObservation } = require("./sentinel-condition-engine");
 
 const input = process.argv[2];
 
