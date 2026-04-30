@@ -60,7 +60,7 @@ async function seed() {
             hazardCategoryCode: savedStandard.keywords?.[0] || 'general',
             standardId: savedStandard.id,
             title: `Corrective action for ${savedStandard.citation}`,
-            recommendedAction: `Correct the condition related to ${savedStandard.heading} and document verification.`,
+            recommendedAction: `Correct the condition related to ${savedStandard.title} and document verification.`,
             lowCostOption: 'Remove exposure, barricade the area if needed, and complete a documented field correction.',
             bestPracticeOption: 'Create a permanent engineered or administrative control, assign ownership, and verify completion.',
             verificationSteps: 'Verify the hazard was corrected, photograph the corrected condition, and document the responsible person/date.',

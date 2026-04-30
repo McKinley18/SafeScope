@@ -17,9 +17,12 @@ import {
   UpdateReportDto,
 } from './dto/report.dto';
 import { ClassificationsService } from '../classifications/classifications.service';
+import { ConditionService } from '../engine/condition.service';
 
 @Controller('reports')
 export class ReportsController {
+  private readonly conditionService = new ConditionService();
+
   constructor(
     private readonly reportsService: ReportsService,
     private readonly classificationsService: ClassificationsService,
@@ -69,7 +72,10 @@ export class ReportsController {
   }
 
   @Post()
-  create(@Headers('authorization') authorization: string, @Body() createReportDto: CreateReportDto) {
+  create(
+    @Headers('authorization') authorization: string,
+    @Body() createReportDto: CreateReportDto,
+  ) {
     const auth = this.getAuthContext(authorization);
 
     return this.reportsService.create({
@@ -124,7 +130,20 @@ export class ReportsController {
   }
 
   @Post(':reportId/classify')
-  classify(@Param('reportId') reportId: string) {
+  classify(
+    @Param('reportId') reportId: string,
+    @Body() body: { observation?: string },
+  ) {
+    if (body?.observation) {
+      const result = this.conditionService.classify(body.observation);
+
+      return {
+        reportId,
+        observation: body.observation,
+        classification: result,
+      };
+    }
+
     return this.classificationsService.classify(reportId);
   }
 

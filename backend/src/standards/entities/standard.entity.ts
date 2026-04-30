@@ -1,46 +1,57 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity('standards')
+export type AgencyCode = 'OSHA' | 'MSHA';
+export type StandardScope = 'general_industry' | 'construction' | 'mining' | 'mixed';
+
+@Entity('standards_master')
+@Index(['agencyCode', 'citation'], { unique: true })
 export class Standard {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  source: 'MSHA' | 'OSHA';
+  @Column({ name: 'agency_code' })
+  agencyCode: AgencyCode;
 
   @Column()
-  titleNumber: string;
-
-  @Column({ nullable: true })
-  part: string;
-
-  @Column({ nullable: true })
-  section: string;
-
-  @Column({ unique: true })
   citation: string;
 
-  @Column()
-  heading: string;
+  @Column({ name: 'part_number', nullable: true })
+  partNumber?: string;
 
-  @Column('text')
+  @Column({ name: 'subpart', nullable: true })
+  subpart?: string;
+
+  @Column()
+  title: string;
+
+  @Column({ name: 'standard_text', type: 'text' })
   standardText: string;
 
-  @Column('text', { nullable: true })
-  summaryPlainLanguage: string;
+  @Column({ name: 'plain_language_summary', type: 'text', nullable: true })
+  plainLanguageSummary?: string;
 
-  @Column('simple-array', { nullable: true })
-  keywords: string[];
+  @Column({ name: 'scope_code' })
+  scopeCode: StandardScope;
 
-  @Column({ type: 'timestamp', nullable: true })
-  effectiveDate: Date;
+  @Column({ name: 'hazard_codes', type: 'simple-array', nullable: true })
+  hazardCodes?: string[];
 
-  @Column({ type: 'timestamp', nullable: true })
-  lastSyncedAt: Date;
+  @Column({ name: 'keywords', type: 'simple-array', nullable: true })
+  keywords?: string[];
 
-  @CreateDateColumn()
+  @Column({ name: 'is_active', default: true })
+  isActive: boolean;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

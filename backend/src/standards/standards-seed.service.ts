@@ -34,7 +34,6 @@ export class StandardsSeedService {
           this.standardRepo.create({
             ...existing,
             ...item,
-            lastSyncedAt: new Date(),
           }),
         );
         updated += 1;
@@ -42,7 +41,6 @@ export class StandardsSeedService {
         await this.standardRepo.save(
           this.standardRepo.create({
             ...item,
-            lastSyncedAt: new Date(),
           } as any),
         );
         created += 1;
@@ -67,7 +65,7 @@ export class StandardsSeedService {
           hazardCategoryCode: standard.keywords?.[0] || 'general',
           standardId: standard.id,
           title: `Corrective action for ${standard.citation}`,
-          recommendedAction: `Correct the condition related to ${standard.heading} and document verification.`,
+          recommendedAction: `Correct the condition related to ${standard.title} and document verification.`,
           lowCostOption: 'Remove exposure, barricade the area if needed, and complete a documented field correction.',
           bestPracticeOption: 'Create a permanent engineered or administrative control, assign ownership, and verify completion.',
           verificationSteps: 'Verify the hazard was corrected, photograph the corrected condition, and document the responsible person/date.',
