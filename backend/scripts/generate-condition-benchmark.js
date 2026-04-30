@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 const lib = JSON.parse(fs.readFileSync("test-data/condition-library/hazard-condition-library.json", "utf8"));
-const out = "test-data/gemini/condition-benchmark-001.json";
+const out = "tests/regression/condition-benchmark-001.json";
 
 const safeCases = [
   "Equipment inspected and functioning properly.",
