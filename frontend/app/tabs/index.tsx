@@ -139,7 +139,7 @@ const toneColors = {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#F6F8FB', paddingBottom: 110 },
+  container: { padding: tokens.spacing.md, backgroundColor: '#F6F8FB', paddingBottom: 110 },
   subtitle: { fontSize: 14, color: '#475467', marginBottom: 18, textAlign: 'center', lineHeight: 21 },
   switchRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 18 },
   switchButton: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D0D5DD', paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999 },
