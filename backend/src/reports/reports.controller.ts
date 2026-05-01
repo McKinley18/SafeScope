@@ -130,25 +130,38 @@ export class ReportsController {
   }
 
   @Post(':reportId/classify')
-  classify(
+  async classify(
     @Param('reportId') reportId: string,
     @Body() body: { observation?: string; context?: any },
   ) {
-    if (body?.observation) {
-      const result = this.conditionService.classify(
-        body.observation,
-        body.context || {},
-      );
+    const report: any = await this.reportsService.findOne(reportId);
 
-      return {
-        reportId,
-        observation: body.observation,
-        context: body.context || {},
-        classification: result,
-      };
-    }
+    const observation =
+      body?.observation ||
+      report?.hazardDescription ||
+      report?.narrative ||
+      report?.description ||
+      report?.title ||
+      '';
 
-    return this.classificationsService.classify(reportId);
+    const context = {
+      industryScope:
+        body?.context?.industryScope ||
+        report?.industryScope ||
+        report?.regulatoryScope ||
+        report?.scope ||
+        'mining',
+      ...(body?.context || {}),
+    };
+
+    const result = this.conditionService.classify(observation, context);
+
+    return {
+      reportId,
+      observation,
+      context,
+      classification: result,
+    };
   }
 
   @Get(':reportId/classifications')
