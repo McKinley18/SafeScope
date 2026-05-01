@@ -689,8 +689,8 @@ const saveAndReview = async () => {
       <Text style={styles.secondaryButtonText}>Review</Text>
     </TouchableOpacity>
 
-    <TouchableOpacity style={[styles.quietButton, { flex: 1 }]} onPress={saveAndQuit}>
-      <Text style={styles.quietButtonText}>Quit</Text>
+    <TouchableOpacity style={[styles.primaryButton, { flex: 1, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#D1D5DB' }]} onPress={saveAndQuit}>
+      <Text style={[styles.primaryButtonText, { color: "#111827" }]}>Quit</Text>
     </TouchableOpacity>
   </View>
 
