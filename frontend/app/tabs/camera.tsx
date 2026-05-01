@@ -676,32 +676,33 @@ const saveAndReview = async () => {
             />
           </Section>
 
-          <View
-            onLayout={(event) => {
-              sectionOffsets.current.save = event.nativeEvent.layout.y;
-            }}
-            style={styles.saveCard}
-          >
-            <Text style={[styles.saveTitle, { color: '#000000' }]}>6. Save Options</Text>
+          
+<View style={styles.saveCard}>
+  <Text style={[styles.saveTitle, { color: '#000000' }]}>6. Save Options</Text>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={saveAndAddNew}>
-              <Text style={styles.primaryButtonText}>Save & Add New Hazard</Text>
-            </TouchableOpacity>
+  <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+    <TouchableOpacity style={[styles.primaryButton, { flex: 1 }]} onPress={saveAndAddNew}>
+      <Text style={styles.primaryButtonText}>Add New</Text>
+    </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryButton} onPress={saveAndReview}>
-              <Text style={styles.secondaryButtonText}>Save & Review Report</Text>
-            </TouchableOpacity>
+    <TouchableOpacity style={[styles.secondaryButton, { flex: 1 }]} onPress={saveAndReview}>
+      <Text style={styles.secondaryButtonText}>Review</Text>
+    </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quietButton} onPress={saveAndQuit}>
-              <Text style={styles.quietButtonText}>Save & Quit</Text>
-            </TouchableOpacity>
+    <TouchableOpacity style={[styles.quietButton, { flex: 1 }]} onPress={saveAndQuit}>
+      <Text style={styles.quietButtonText}>Quit</Text>
+    </TouchableOpacity>
+  </View>
 
-            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: '#16A34A' }]} onPress={submitReport}>
-              <Text style={styles.primaryButtonText}>Submit Report</Text>
-            </TouchableOpacity>
-          </View>
+  <View style={{ marginTop: 10 }}>
+    <TouchableOpacity style={[styles.primaryButton, { width: '100%', backgroundColor: '#111827' }]} onPress={submitReport}>
+      <Text style={styles.primaryButtonText}>Submit Report</Text>
+    </TouchableOpacity>
+  </View>
+</View>
 
-          {hazards.length > 0 && (
+
+{hazards.length > 0 && (
             <View style={styles.completedCard}>
               <TouchableOpacity style={styles.exportButton} onPress={copyReportPackage}>
                 <Text style={styles.exportButtonText}>Copy Report Package</Text>
