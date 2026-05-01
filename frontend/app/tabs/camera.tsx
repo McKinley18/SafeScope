@@ -279,23 +279,21 @@ export default function InspectScreen() {
   };
 
   const saveCurrentHazard = async () => {
-    if (!isHazardComplete()) {
-      Alert.alert(
-        'Hazard incomplete',
-        `Complete the following before saving: ${missingItems().join(', ')}.`
-      );
+    if (!currentHazard.hazardDescription.trim()) {
+      Alert.alert('Hazard incomplete', 'Enter a hazard description before saving.');
       return null;
     }
 
     const completedHazard = {
       ...currentHazard,
+      id: currentHazard.id || `HZ-${Date.now()}`,
       generatedReport: buildProfessionalReportLanguage(),
       completed: true,
     };
 
     const nextHazards = [...hazards, completedHazard];
     setHazards(nextHazards);
-    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({ hazards: nextHazards }));
+    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({ hazards: nextHazards, inProgress: emptyHazard() }));
 
     return nextHazards;
   };
@@ -315,6 +313,27 @@ export default function InspectScreen() {
     setCurrentHazard(emptyHazard());
     Alert.alert('Ready for review', `Report package contains ${saved.length} completed hazard(s).`);
   };
+
+  const editSavedHazard = async (hazardId: string) => {
+    const hazardToEdit = hazards.find((hazard) => hazard.id === hazardId);
+    if (!hazardToEdit) return;
+
+    const nextHazards = hazards.filter((hazard) => hazard.id !== hazardId);
+    setHazards(nextHazards);
+    setCurrentHazard({
+      ...hazardToEdit,
+      completed: false,
+    });
+    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({ hazards: nextHazards, inProgress: hazardToEdit }));
+    Alert.alert('Hazard loaded', 'Edit the finding, then save it again.');
+  };
+
+  const deleteSavedHazard = async (hazardId: string) => {
+    const nextHazards = hazards.filter((hazard) => hazard.id !== hazardId);
+    setHazards(nextHazards);
+    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({ hazards: nextHazards, inProgress: currentHazard }));
+  };
+
 
   const copyReportPackage = async () => {
     const reportText = hazards
@@ -653,23 +672,62 @@ export default function InspectScreen() {
                 <Text style={styles.exportButtonText}>Copy Report Package</Text>
               </TouchableOpacity>
 
-              <Text style={[styles.completedTitle, { color: '#000000' }]}>Completed Hazards</Text>
-              {hazards.map((hazard, index) => (
-                <View key={hazard.id} style={[styles.completedItem, { borderBottomColor: colors.border }]}>
-                  <Text style={[styles.completedName, { color: '#000000' }]}>
-                    Hazard {index + 1}
-                  </Text>
-                  <Text style={[styles.completedText, { color: '#111111' }]}>
-                    {hazard.hazardDescription}
-                  </Text>
+              <Text style={[styles.completedTitle, { color: '#000000' }]}>Inspection Findings Summary</Text>
 
-                  {hazard.generatedReport ? (
-                    <Text style={[styles.generatedReportText, { color: '#344054' }]}>
-                      {hazard.generatedReport}
+              {hazards.map((hazard, index) => {
+                const standard = hazard.possibleStandards?.[0];
+                const priority = hazard.riskAssessment?.finalPriority || standard?.riskAssessment?.finalPriority || 'Review';
+                const score = hazard.riskAssessment?.customerRiskScore ?? standard?.riskAssessment?.customerRiskScore ?? 'N/A';
+
+                return (
+                  <View key={hazard.id} style={[styles.completedItem, { borderBottomColor: colors.border, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', padding: 14, marginBottom: 12 }]}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.completedName, { color: '#000000' }]}>
+                          Finding {index + 1}: {hazard.hazardCategory || 'Uncategorized'}
+                        </Text>
+                        <Text style={[styles.completedText, { color: '#111111', marginTop: 4 }]}>
+                          {hazard.hazardDescription}
+                        </Text>
+                      </View>
+
+                      <Text style={{ backgroundColor: '#FEE2E2', color: '#991B1B', fontWeight: '800', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>
+                        {String(priority).toUpperCase()}
+                      </Text>
+                    </View>
+
+                    <Text style={{ color: '#475467', marginTop: 8 }}>
+                      Location: {hazard.location || hazard.equipment || 'Not specified'}
                     </Text>
-                  ) : null}
-                </View>
-              ))}
+
+                    <Text style={{ color: '#475467', marginTop: 4 }}>
+                      Standard: {standard?.citation || hazard.selectedStandard || 'Review Required'} · Score: {score}
+                    </Text>
+
+                    {hazard.correctiveAction ? (
+                      <Text style={{ color: '#344054', marginTop: 8 }}>
+                        Action: {hazard.correctiveAction}
+                      </Text>
+                    ) : null}
+
+                    <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                      <TouchableOpacity
+                        style={[styles.secondaryButton, { flex: 1 }]}
+                        onPress={() => editSavedHazard(hazard.id)}
+                      >
+                        <Text style={styles.secondaryButtonText}>Edit</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.quietButton, { flex: 1, borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 10 }]}
+                        onPress={() => deleteSavedHazard(hazard.id)}
+                      >
+                        <Text style={[styles.quietButtonText, { color: '#B91C1C' }]}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           )}
         </View>
