@@ -38,7 +38,10 @@ export default function CommandCenter() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <BrandedHeader title="Safety Command Center" />
+      <BrandedHeader
+        title="Safety Command Center"
+        subtitle="Monitor inspections, hazards, corrective actions, and safety intelligence."
+      />
 
       <Text style={styles.subtitle}>
         Fast executive view of risk exposure, overdue work, and priority actions across operations.
