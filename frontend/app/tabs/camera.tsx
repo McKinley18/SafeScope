@@ -1,6 +1,5 @@
-import { Alert, Image, HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
 import React, { useMemo, useRef, useState } from 'react';
-import { Alert, Image,
+import {
   Alert,
   Image,
   Modal,
@@ -15,9 +14,9 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
-import { Alert, Image, useAppTheme } from '../../src/theme/ThemeContext';
-import { Alert, Image, tokens } from '../../src/theme/tokens';
-import { Alert, Image, apiClient } from '../../src/api/client';
+import { useAppTheme } from '../../src/theme/ThemeContext';
+import { tokens } from '../../src/theme/tokens';
+import { apiClient } from '../../src/api/client';
 
 type HazardDraft = {
   id: string;
@@ -754,7 +753,21 @@ const saveAndReview = async () => {
                 const score = hazard.riskAssessment?.customerRiskScore ?? standard?.riskAssessment?.customerRiskScore ?? 'N/A';
 
                 return (
-                  <View key={hazard.id} style={[styles.completedItem
+                  <View
+                    key={hazard.id}
+                    style={[
+                      styles.completedItem,
+                      {
+                        borderBottomColor: colors.border,
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: 14,
+                        borderWidth: 1,
+                        borderColor: '#E5E7EB',
+                        padding: 14,
+                        marginBottom: 12,
+                      },
+                    ]}
+                  >
                     {photos.length > 0 ? (
                       <ScrollView
                         horizontal
@@ -777,7 +790,7 @@ const saveAndReview = async () => {
                         ))}
                       </ScrollView>
                     ) : null}
-, { borderBottomColor: colors.border, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', padding: 14, marginBottom: 12 }]}>
+
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.completedName, { color: '#000000' }]}>
@@ -816,10 +829,10 @@ const saveAndReview = async () => {
                       </TouchableOpacity>
 
                       <TouchableOpacity
-                        style={[styles.quietButton, { flex: 1, borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 10 }]}
+                        style={[styles.primaryButton, { flex: 1, backgroundColor: '#FEE2E2', borderWidth: 1, borderColor: '#FCA5A5' }]}
                         onPress={() => deleteSavedHazard(hazard.id)}
                       >
-                        <Text style={[styles.quietButtonText, { color: '#B91C1C' }]}>Delete</Text>
+                        <Text style={[styles.primaryButtonText, { color: '#B91C1C' }]}>Delete</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
