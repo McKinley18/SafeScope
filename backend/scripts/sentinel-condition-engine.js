@@ -271,6 +271,8 @@ function classifyObservation(observation, options = {}) {
     scope: best.condition.scope,
     agency: best.condition.agency,
     family: best.condition.family,
+    primaryFamily: best.condition.family,
+    secondaryFamilies: secondaryMatches.map(m => m.family),
     confidence,
     reviewRequired,
     reasons: best.reasons,
