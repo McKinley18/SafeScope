@@ -1,8 +1,9 @@
-import { HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
+import { Alert, Image, HazardFindingTile } from '../../src/components/ui/HazardFindingTile';
 import React, { useMemo, useRef, useState } from 'react';
-import {
+import { Alert, Image,
   Alert,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,9 +15,9 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
-import { useAppTheme } from '../../src/theme/ThemeContext';
-import { tokens } from '../../src/theme/tokens';
-import { apiClient } from '../../src/api/client';
+import { Alert, Image, useAppTheme } from '../../src/theme/ThemeContext';
+import { Alert, Image, tokens } from '../../src/theme/tokens';
+import { Alert, Image, apiClient } from '../../src/api/client';
 
 type HazardDraft = {
   id: string;
@@ -104,6 +105,7 @@ export default function InspectScreen() {
   const [scrollY, setScrollY] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [selectedPhotoUri, setSelectedPhotoUri] = useState<string | null>(null);
   const [dueDatePickerOpen, setDueDatePickerOpen] = useState(false);
 
   const updateHazard = (patch: Partial<HazardDraft>) => {
@@ -135,20 +137,6 @@ export default function InspectScreen() {
     const fallback = new Date(currentHazard.dueDate);
     return Number.isNaN(fallback.getTime()) ? new Date() : fallback;
   };
-
-  const loadMockHazard = () => {
-    setCurrentHazard({
-      ...emptyHazard(),
-      hazardCategory: 'Machine Guarding',
-      hazardDescription: 'unguarded edge at crusher',
-      location: 'Crusher platform',
-      equipment: 'Crusher',
-      assignedTo: 'Maintenance Supervisor',
-      notes: 'Mock inspection finding for UI validation.',
-    });
-  };
-
-
   const checks = {
     photos: currentHazard.photos.length > 0,
     description: currentHazard.hazardDescription.trim().length >= 8,
@@ -446,16 +434,6 @@ const saveAndReview = async () => {
       contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}
     >
       <BrandedHeader title="Inspect" subtitle="Document one hazard at a time. Complete the blanks, save it, then add the next hazard." />
-
-      <TouchableOpacity
-        style={[styles.primaryButton, { marginBottom: 14, backgroundColor: '#0B3B75' }]}
-        onPress={loadMockHazard}
-      >
-        <Text style={styles.primaryButtonText}>Load Mock Finding</Text>
-      </TouchableOpacity>
-
-
-
       <View style={styles.layout}>
         <View style={styles.formColumn}>
           <Section id="photos" sectionOffsets={sectionOffsets} title="1. Photo Evidence" helper="Take or upload one or more photos. They will appear here for the user to verify before saving.">
@@ -770,12 +748,36 @@ const saveAndReview = async () => {
               <Text style={[styles.completedTitle, { color: '#000000' }]}>Inspection Findings Summary</Text>
 
               {hazards.map((hazard, index) => {
+                const photos = hazard.photos || [];
                 const standard = hazard.possibleStandards?.[0];
                 const priority = hazard.riskAssessment?.finalPriority || standard?.riskAssessment?.finalPriority || 'Review';
                 const score = hazard.riskAssessment?.customerRiskScore ?? standard?.riskAssessment?.customerRiskScore ?? 'N/A';
 
                 return (
-                  <View key={hazard.id} style={[styles.completedItem, { borderBottomColor: colors.border, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', padding: 14, marginBottom: 12 }]}>
+                  <View key={hazard.id} style={[styles.completedItem
+                    {photos.length > 0 ? (
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.hazardPhotoRow}
+                      >
+                        {photos.slice(0, 4).map((uri, photoIndex) => (
+                          <TouchableOpacity
+                            key={`${hazard.id}-photo-${photoIndex}`}
+                            onPress={() => setSelectedPhotoUri(uri)}
+                            style={styles.hazardPhotoThumbWrap}
+                          >
+                            <Image source={{ uri }} style={styles.hazardPhotoThumb} />
+                            {photoIndex === 3 && photos.length > 4 ? (
+                              <View style={styles.morePhotosOverlay}>
+                                <Text style={styles.morePhotosText}>+{photos.length - 4}</Text>
+                              </View>
+                            ) : null}
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    ) : null}
+, { borderBottomColor: colors.border, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', padding: 14, marginBottom: 12 }]}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.completedName, { color: '#000000' }]}>
@@ -827,6 +829,24 @@ const saveAndReview = async () => {
           )}
         </View>
       </View>
+
+      <Modal
+        visible={!!selectedPhotoUri}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedPhotoUri(null)}
+      >
+        <View style={styles.photoModalBackdrop}>
+          <TouchableOpacity style={styles.photoModalClose} onPress={() => setSelectedPhotoUri(null)}>
+            <Text style={styles.photoModalCloseText}>Close</Text>
+          </TouchableOpacity>
+
+          {selectedPhotoUri ? (
+            <Image source={{ uri: selectedPhotoUri }} style={styles.photoModalImage} resizeMode="contain" />
+          ) : null}
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 }
