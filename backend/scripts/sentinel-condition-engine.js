@@ -175,6 +175,79 @@ function scoreCondition(text, condition) {
   if ((text.includes("manway") || text.includes("open hole") || text.includes("opening")) && text.includes("unguarded") && condition.conditionId === "V1_MSHA_OPEN_HOLE_UNGUARDED") score += 160;
   if ((text.includes("manway") || text.includes("open hole") || text.includes("opening")) && text.includes("unguarded") && condition.family === "machine_guarding") score -= 140;
 
+  // OSHA/MSHA field validation upgrades
+  if (
+    (
+      text.includes("elevated platform edge") ||
+      text.includes("platform edge") ||
+      text.includes("unguarded elevated platform") ||
+      text.includes("unguarded edge at screen deck")
+    ) &&
+    !(
+      text.includes("conveyor") ||
+      text.includes("pulley") ||
+      text.includes("roller") ||
+      text.includes("shaft") ||
+      text.includes("nip point")
+    ) &&
+    (text.includes("unguarded") || text.includes("without fall protection")) &&
+    condition.conditionId === "V1_MSHA_WORKING_AT_HEIGHT_NO_PROTECTION"
+  ) {
+    score += 190;
+    reasons.push("failure:unguarded elevated edge");
+  }
+
+  if (
+    (text.includes("backup alarm") || text.includes("back up alarm") || text.includes("reverse alarm")) &&
+    (text.includes("not working") || text.includes("inoperative") || text.includes("failed")) &&
+    condition.citation === "56.14132(a)"
+  ) {
+    score += 220;
+    reasons.push("failure:backup alarm not working");
+  }
+
+  if (
+    (text.includes("fire extinguisher") || text.includes("extinguisher")) &&
+    (text.includes("inspection tag expired") || text.includes("tag expired") || text.includes("expired")) &&
+    condition.citation === "1910.157(c)(1)"
+  ) {
+    score += 220;
+    reasons.push("failure:fire extinguisher inspection expired");
+  }
+
+  if (
+    (text.includes("spraying coating") || text.includes("paint booth") || text.includes("spray operation")) &&
+    (text.includes("without respirator") || text.includes("no respirator") || text.includes("respirator not used")) &&
+    condition.family === "respiratory"
+  ) {
+    score += 220;
+    reasons.push("failure:respirator not used");
+  }
+
+  if (
+    (text.includes("stored lumber") || text.includes("stacked unstable") || text.includes("material area") || text.includes("jobsite material")) &&
+    condition.conditionId === "OSHA_CONSTRUCTION_MATERIAL_STORAGE_UNSTABLE"
+  ) {
+    score += 220;
+    reasons.push("failure:unstable material storage");
+  }
+
+  if (
+    (text.includes("stored lumber") || text.includes("stacked unstable") || text.includes("material area") || text.includes("jobsite material")) &&
+    condition.family === "ladder_safety"
+  ) {
+    score -= 180;
+  }
+
+  if (
+    (text.includes("leading edge") || text.includes("construction deck")) &&
+    (text.includes("exposed") || text.includes("without fall protection")) &&
+    condition.conditionId === "V2_OSHA_CONSTRUCTION_FALL_LEADING_EDGE"
+  ) {
+    score += 220;
+    reasons.push("failure:leading edge exposure");
+  }
+
   // Field validation gap: open electrical panel / energized conductors
   if (
     (
