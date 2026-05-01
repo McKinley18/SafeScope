@@ -5,7 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "nodemon src/main.ts",
-    "build": "tsc",
+    "build": "tsc && npm run copy:engine",
     "start": "node dist/main.js",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate src/database/migrations/InitialMigration -d src/database/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
@@ -13,7 +13,9 @@
     "seed": "ts-node src/database/seed.ts",
     "standards:seed": "ts-node src/standards/seed/run-standards-seed.ts",
     "standards:test": "ts-node src/standards/tests/golden-standards-tests.ts",
-    "standards:gemini": "node scripts/run-gemini-standards-batch.js"
+    "standards:gemini": "node scripts/run-gemini-standards-batch.js",
+    "copy:engine": "mkdir -p dist/engine && cp src/engine/*.js dist/engine/",
+    "postbuild": "npm run copy:engine"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
