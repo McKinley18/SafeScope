@@ -793,7 +793,7 @@ const saveAndReview = async () => {
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.completedName, { color: '#000000' }]}>
+                        <Text testID={`finding-title-${hazard.id}`} style={[styles.completedName, { color: '#000000' }]}>
                           Finding {index + 1}: {hazard.hazardCategory || 'Uncategorized'}
                         </Text>
                         <Text style={[styles.completedText, { color: '#111111', marginTop: 4 }]}>
@@ -822,6 +822,7 @@ const saveAndReview = async () => {
 
                     <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
                       <TouchableOpacity
+                        testID={`finding-edit-${hazard.id}`}
                         style={[styles.secondaryButton, { flex: 1 }]}
                         onPress={() => editSavedHazard(hazard.id)}
                       >
@@ -829,6 +830,7 @@ const saveAndReview = async () => {
                       </TouchableOpacity>
 
                       <TouchableOpacity
+                        testID={`finding-delete-${hazard.id}`}
                         style={[styles.primaryButton, { flex: 1, backgroundColor: '#FEE2E2', borderWidth: 1, borderColor: '#FCA5A5' }]}
                         onPress={() => deleteSavedHazard(hazard.id)}
                       >
