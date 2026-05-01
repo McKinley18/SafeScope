@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
@@ -103,10 +104,50 @@ export default function InspectScreen() {
   const [scrollY, setScrollY] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [dueDatePickerOpen, setDueDatePickerOpen] = useState(false);
 
   const updateHazard = (patch: Partial<HazardDraft>) => {
     setCurrentHazard((prev) => ({ ...prev, ...patch }));
   };
+
+  const setDueDateFromPicker = (_event: any, selectedDate?: Date) => {
+    setDueDatePickerOpen(false);
+
+    if (!selectedDate) return;
+
+    const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(selectedDate.getDate()).padStart(2, '0');
+    const yyyy = selectedDate.getFullYear();
+
+    updateHazard({ dueDate: `${mm}/${dd}/${yyyy}` });
+  };
+
+  const getPickerDate = () => {
+    if (!currentHazard.dueDate) return new Date();
+
+    const parts = currentHazard.dueDate.split('/');
+    if (parts.length === 3) {
+      const [mm, dd, yyyy] = parts;
+      const parsed = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+
+    const fallback = new Date(currentHazard.dueDate);
+    return Number.isNaN(fallback.getTime()) ? new Date() : fallback;
+  };
+
+  const loadMockHazard = () => {
+    setCurrentHazard({
+      ...emptyHazard(),
+      hazardCategory: 'Machine Guarding',
+      hazardDescription: 'unguarded edge at crusher',
+      location: 'Crusher platform',
+      equipment: 'Crusher',
+      assignedTo: 'Maintenance Supervisor',
+      notes: 'Mock inspection finding for UI validation.',
+    });
+  };
+
 
   const checks = {
     photos: currentHazard.photos.length > 0,
@@ -406,6 +447,14 @@ const saveAndReview = async () => {
     >
       <BrandedHeader title="Inspect" subtitle="Document one hazard at a time. Complete the blanks, save it, then add the next hazard." />
 
+      <TouchableOpacity
+        style={[styles.primaryButton, { marginBottom: 14, backgroundColor: '#0B3B75' }]}
+        onPress={loadMockHazard}
+      >
+        <Text style={styles.primaryButtonText}>Load Mock Finding</Text>
+      </TouchableOpacity>
+
+
 
       <View style={styles.layout}>
         <View style={styles.formColumn}>
@@ -529,7 +578,7 @@ const saveAndReview = async () => {
                   selectedStandard: c.citation,
                   riskAssessment: c.riskAssessment,
                   correctiveAction: (c.correctiveActions || []).join(' '),
-                  dueDate: c.riskAssessment?.dueDate || currentHazard.dueDate,
+                  dueDate: c.riskAssessment?.dueDate ? formatDate(c.riskAssessment.dueDate) : currentHazard.dueDate,
                   notes: `Priority: ${c.suggestedPriority || 'review'} | Confidence: ${c.confidence}%`,
                 } as any);
               } catch (e) {
@@ -658,13 +707,23 @@ const saveAndReview = async () => {
               onChangeText={(assignedTo) => updateHazard({ assignedTo })}
             />
 
-            <TextInput
-              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8', color: '#101828' }]}
-              placeholder="Due Date"
-              placeholderTextColor={colors.muted}
-              value={currentHazard.dueDate}
-              onChangeText={(dueDate) => updateHazard({ dueDate })}
-            />
+            <TouchableOpacity
+              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8', justifyContent: 'center' }]}
+              onPress={() => setDueDatePickerOpen(true)}
+            >
+              <Text style={{ color: currentHazard.dueDate ? '#101828' : colors.muted }}>
+                {currentHazard.dueDate || 'Select Due Date'}
+              </Text>
+            </TouchableOpacity>
+
+            {dueDatePickerOpen ? (
+              <DateTimePicker
+                value={getPickerDate()}
+                mode="date"
+                display="default"
+                onChange={setDueDateFromPicker}
+              />
+            ) : null}
 
             <TextInput
               style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#D7DEE8', color: '#101828' }]}
