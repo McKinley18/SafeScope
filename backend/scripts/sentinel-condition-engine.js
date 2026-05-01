@@ -175,6 +175,22 @@ function scoreCondition(text, condition) {
   if ((text.includes("manway") || text.includes("open hole") || text.includes("opening")) && text.includes("unguarded") && condition.conditionId === "V1_MSHA_OPEN_HOLE_UNGUARDED") score += 160;
   if ((text.includes("manway") || text.includes("open hole") || text.includes("opening")) && text.includes("unguarded") && condition.family === "machine_guarding") score -= 140;
 
+  // Field validation gap: open electrical panel / energized conductors
+  if (
+    (
+      text.includes("electrical panel left open") ||
+      text.includes("panel left open") ||
+      text.includes("control panel left open") ||
+      text.includes("energized conductors exposed") ||
+      text.includes("energized components exposed") ||
+      text.includes("live parts exposed")
+    ) &&
+    condition.family === "electrical"
+  ) {
+    score += 180;
+    reasons.push("failure:energized conductors exposed");
+  }
+
   return { score, reason: reasons };
 }
 
