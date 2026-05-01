@@ -459,7 +459,7 @@ export default function InspectScreen() {
             {currentHazard.riskAssessment && (
               <View style={[styles.standardCard, { borderColor: "#F97316", padding: 16 }]}>
                 <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
-                  Risk Assessment: {currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.riskLevel || 'Review'}
+                  Risk Assessment: {String(currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.riskLevel || 'Review').toUpperCase()}
                 </Text>
                 <Text>
                   Score: {currentHazard.riskAssessment.customerRiskScore ?? currentHazard.riskAssessment.riskScore ?? 'N/A'} | Priority: {currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.priorityLabel || 'Review'}
