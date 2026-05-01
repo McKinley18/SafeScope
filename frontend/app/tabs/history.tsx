@@ -38,7 +38,21 @@ export default function HistoryScreen() {
   const [search, setSearch] = useState('');
   const [severity, setSeverity] = useState('all');
 
-  const loadReports = async () => {
+  
+  const deleteReport = async (id: string) => {
+    try {
+      await apiClient.deleteReport(id);
+      loadReports();
+    } catch {
+      alert('Failed to delete report');
+    }
+  };
+
+  const editReport = (id: string) => {
+    router.push(`/tabs/camera?reportId=${id}`);
+  };
+
+const loadReports = async () => {
     try {
       setLoading(true);
 
@@ -101,6 +115,7 @@ export default function HistoryScreen() {
   };
 
   return (
+<View>
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <BrandedHeader
         title="Records Center"
@@ -117,7 +132,23 @@ export default function HistoryScreen() {
             <Ionicons name={icon as any} size={18} color={colors.accent} />
             <Text style={[styles.kpiValue, { color: colors.text }]}>{value}</Text>
             <Text style={[styles.kpiLabel, { color: colors.sub }]}>{label}</Text>
-          </AppCard>
+          
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
+          onPress={() => editReport(item.id)}
+        >
+          <Text style={{ color: '#fff', textAlign: 'center' }}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: '#FEE2E2', padding: 10, borderRadius: 8 }}
+          onPress={() => deleteReport(item.id)}
+        >
+          <Text style={{ color: '#991B1B', textAlign: 'center' }}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </AppCard>
         ))}
       </View>
 
@@ -142,6 +173,7 @@ export default function HistoryScreen() {
           const active = severity === item;
 
           return (
+<View>
             <TouchableOpacity
               key={item}
               style={[
@@ -175,7 +207,23 @@ export default function HistoryScreen() {
           <Text style={[styles.emptyText, { color: colors.sub }]}>
             No matching reports found.
           </Text>
-        </AppCard>
+        
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
+          onPress={() => editReport(item.id)}
+        >
+          <Text style={{ color: '#fff', textAlign: 'center' }}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: '#FEE2E2', padding: 10, borderRadius: 8 }}
+          onPress={() => deleteReport(item.id)}
+        >
+          <Text style={{ color: '#991B1B', textAlign: 'center' }}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </AppCard>
       ) : (
         filtered.map((item) => (
           <TouchableOpacity
@@ -212,7 +260,23 @@ export default function HistoryScreen() {
               <Text style={[styles.statusLine, { color: colors.sub }]}>
                 Status: {item.reportStatus || 'unknown'}
               </Text>
-            </AppCard>
+            
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
+          onPress={() => editReport(item.id)}
+        >
+          <Text style={{ color: '#fff', textAlign: 'center' }}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: '#FEE2E2', padding: 10, borderRadius: 8 }}
+          onPress={() => deleteReport(item.id)}
+        >
+          <Text style={{ color: '#991B1B', textAlign: 'center' }}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </AppCard>
           </TouchableOpacity>
         ))
       )}

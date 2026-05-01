@@ -1,3 +1,6 @@
+import { ReportAttachment } from './reports/entities/attachment.entity';
+import { AuditEntryFinding } from './audit-session/entities/audit-entry-finding.entity';
+import { AuditEntryAttachment } from './audit-session/entities/audit-entry-attachment.entity';
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -54,7 +57,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
                     ? { rejectUnauthorized: false }
                     : false,
               }),
-          entities: [__dirname + '/**/*.entity{.ts,.js}', HazardTaxonomy],
+          entities: [__dirname + '/**/*.entity{.ts,.js}', HazardTaxonomy, AuditEntryAttachment, AuditEntryFinding, ReportAttachment],
           synchronize: true,
         };
       },

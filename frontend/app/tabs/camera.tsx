@@ -306,7 +306,38 @@ export default function InspectScreen() {
     Alert.alert('Hazard saved', 'Start documenting the next hazard.');
   };
 
-  const saveAndReview = async () => {
+  
+  const submitReport = async () => {
+    if (hazards.length === 0) {
+      Alert.alert('No hazards', 'Add at least one hazard before submitting.');
+      return;
+    }
+
+    try {
+      const payload = {
+        title: 'Inspection Report',
+        narrative: hazards.map(h => h.generatedReport || h.hazardDescription).join('\n\n---\n\n'),
+        hazardDescription: hazards[0]?.hazardDescription || 'Multiple hazards recorded',
+        area: hazards[0]?.location || '',
+        severity: hazards.some(h => (h.riskAssessment?.finalPriority || '').toLowerCase() === 'critical')
+          ? 'critical'
+          : 'medium',
+        reportStatus: 'submitted'
+      };
+
+      await apiClient.createReport(payload);
+
+      Alert.alert('Submitted', 'Report saved to Records.');
+
+      setHazards([]);
+      setCurrentHazard(emptyHazard());
+
+    } catch (e) {
+      Alert.alert('Error', 'Failed to submit report.');
+    }
+  };
+
+const saveAndReview = async () => {
     const saved = await saveCurrentHazard();
     if (!saved) return;
 
@@ -663,6 +694,10 @@ export default function InspectScreen() {
 
             <TouchableOpacity style={styles.quietButton} onPress={saveAndQuit}>
               <Text style={styles.quietButtonText}>Save & Quit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: '#16A34A' }]} onPress={submitReport}>
+              <Text style={styles.primaryButtonText}>Submit Report</Text>
             </TouchableOpacity>
           </View>
 
