@@ -1,0 +1,105 @@
+{
+  "generatedAt": "2026-05-01T23:31:40.404Z",
+  "engine": "SafeScope OSHA/MSHA condition engine",
+  "summary": {
+    "totalSuites": 8,
+    "totalCases": 10037,
+    "totalFailures": 0,
+    "speed": {
+      "cases": 10000,
+      "totalMs": 9747,
+      "avgMsPerCase": 0.9747,
+      "casesPerSecond": 1025.96
+    }
+  },
+  "suites": [
+    {
+      "name": "MSHA field validation",
+      "file": "tests/regression/msha/msha-field-validation-001.json",
+      "totalCases": 3,
+      "routeAccuracy": "3/3 = 100%",
+      "familyAccuracy": "3/3 = 100%",
+      "noMatchAccuracy": "0/0 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "OSHA general industry validation",
+      "file": "tests/regression/osha/osha-gi-field-validation-001.json",
+      "totalCases": 3,
+      "routeAccuracy": "3/3 = 100%",
+      "familyAccuracy": "3/3 = 100%",
+      "noMatchAccuracy": "0/0 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "OSHA construction validation",
+      "file": "tests/regression/osha/osha-construction-field-validation-001.json",
+      "totalCases": 3,
+      "routeAccuracy": "3/3 = 100%",
+      "familyAccuracy": "3/3 = 100%",
+      "noMatchAccuracy": "0/0 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "Mixed OSHA/MSHA routing",
+      "file": "tests/regression/mixed-scope-routing-001.json",
+      "totalCases": 3,
+      "routeAccuracy": "3/3 = 100%",
+      "familyAccuracy": "3/3 = 100%",
+      "noMatchAccuracy": "0/0 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "Manual field validation",
+      "file": "tests/regression/manual-field-validation-001.json",
+      "totalCases": 5,
+      "routeAccuracy": "5/5 = 100%",
+      "familyAccuracy": "4/4 = 100%",
+      "noMatchAccuracy": "1/1 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "Ambiguity benchmark",
+      "file": "tests/regression/ambiguity-benchmark-001.json",
+      "totalCases": 10,
+      "routeAccuracy": "10/10 = 100%",
+      "familyAccuracy": "10/10 = 100%",
+      "noMatchAccuracy": "0/0 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "False-positive benchmark",
+      "file": "tests/regression/false-positive-benchmark-001.json",
+      "totalCases": 10,
+      "routeAccuracy": "10/10 = 100%",
+      "familyAccuracy": "0/0 = 100%",
+      "noMatchAccuracy": "10/10 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "10k realistic benchmark",
+      "file": "tests/scale/condition-scale-10000-library-derived-v3-alt-aware.json",
+      "totalCases": 10000,
+      "routeAccuracy": "10000/10000 = 100%",
+      "familyAccuracy": "9925/10000 = 99%",
+      "noMatchAccuracy": "0/0 = 100%",
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    }
+  ]
+}
