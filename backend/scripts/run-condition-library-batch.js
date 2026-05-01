@@ -51,7 +51,8 @@ for (const testCase of cases) {
     citationOk,
     pass,
     reasons: result.reasons || [],
-    secondaryMatches: result.secondaryMatches || []
+    secondaryMatches: result.secondaryMatches || [],
+    sourceConditionId: testCase.sourceConditionId || null
   };
 
   results.push(row);
