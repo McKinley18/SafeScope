@@ -156,6 +156,29 @@ export class ReportsController {
 
     const result = this.conditionService.classify(observation, context);
 
+    await this.reportsService.update(reportId, {
+      aiStatus: 'classified',
+      confidenceScore: result.confidence,
+      severity: String(result.suggestedSeverity || ''),
+      likelyStandards: [
+        {
+          citation: result.citation,
+          agency: result.agency,
+          scope: result.scope,
+          family: result.family,
+          primaryFamily: result.primaryFamily,
+          secondaryFamilies: result.secondaryFamilies || [],
+          conditionId: result.conditionId,
+          confidence: result.confidence,
+          reviewRequired: result.reviewRequired,
+          suggestedPriority: result.suggestedPriority,
+          correctiveActions: result.correctiveActions || [],
+          verificationSteps: result.verificationSteps || [],
+          riskAssessment: result.riskAssessment || null,
+        },
+      ],
+    } as any);
+
     return {
       reportId,
       observation,
