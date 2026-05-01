@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +15,6 @@ import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../src/theme/ThemeContext';
 import { tokens } from '../../src/theme/tokens';
 import { apiClient } from '../../src/api/client';
-
 import AppCard from '../../src/components/ui/AppCard';
 import BrandedHeader from '../../src/components/ui/BrandedHeader';
 
@@ -38,29 +38,10 @@ export default function HistoryScreen() {
   const [search, setSearch] = useState('');
   const [severity, setSeverity] = useState('all');
 
-  
-  const deleteReport = async (id: string) => {
-    try {
-      await apiClient.deleteReport(id);
-      loadReports();
-    } catch {
-      alert('Failed to delete report');
-    }
-  };
-
-  const editReport = (id: string) => {
-    router.push(`/tabs/camera?reportId=${id}`);
-  };
-
-const loadReports = async () => {
+  const loadReports = async () => {
     try {
       setLoading(true);
-
-      const res = await apiClient.getReports({
-        page: 1,
-        limit: 100,
-      });
-
+      const res = await apiClient.getReports({ page: 1, limit: 100, status: 'submitted' });
       setReports(Array.isArray(res) ? res : res?.data || []);
     } catch {
       setReports([]);
@@ -73,10 +54,23 @@ const loadReports = async () => {
     loadReports();
   }, []);
 
+  const deleteReport = async (id: string) => {
+    Alert.alert('Delete report?', 'This will remove the submitted report from Records.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await apiClient.deleteReport(id);
+          await loadReports();
+        },
+      },
+    ]);
+  };
+
   const filtered = useMemo(() => {
     return reports.filter((r) => {
       const q = search.toLowerCase();
-
       const matchesSearch =
         !q ||
         String(r.title || '').toLowerCase().includes(q) ||
@@ -84,8 +78,7 @@ const loadReports = async () => {
         String(r.area || '').toLowerCase().includes(q);
 
       const matchesSeverity =
-        severity === 'all' ||
-        String(r.severity || '').toLowerCase() === severity;
+        severity === 'all' || String(r.severity || '').toLowerCase() === severity;
 
       return matchesSearch && matchesSeverity;
     });
@@ -94,70 +87,33 @@ const loadReports = async () => {
   const stats = useMemo(() => {
     const total = reports.length;
     const critical = reports.filter((r) =>
-      ['critical', 'high'].includes(String(r.severity || '').toLowerCase())
+      ['critical', 'high', '5'].includes(String(r.severity || '').toLowerCase())
     ).length;
-
-    const open = reports.filter((r) =>
-      ['submitted', 'draft', 'pending'].includes(
-        String(r.reportStatus || '').toLowerCase()
-      )
-    ).length;
-
-    return { total, critical, open };
+    return { total, critical };
   }, [reports]);
 
-  const severityColor = (sev?: string) => {
-    const s = String(sev || '').toLowerCase();
-    if (s === 'critical') return '#ef4444';
-    if (s === 'high') return '#f97316';
-    if (s === 'medium') return '#f59e0b';
-    return '#10b981';
-  };
-
   return (
-<View>
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
       <BrandedHeader
         title="Records Center"
-        subtitle="Search inspections, findings, trends, and historical reports."
+        subtitle="Submitted inspection reports only. Edit or delete completed reports here."
       />
 
       <View style={styles.kpiRow}>
-        {[
-          ['Reports', stats.total, 'documents-outline'],
-          ['Open', stats.open, 'time-outline'],
-          ['High Risk', stats.critical, 'warning-outline'],
-        ].map(([label, value, icon]) => (
-          <AppCard key={String(label)} style={styles.kpiCard}>
-            <Ionicons name={icon as any} size={18} color={colors.accent} />
-            <Text style={[styles.kpiValue, { color: colors.text }]}>{value}</Text>
-            <Text style={[styles.kpiLabel, { color: colors.sub }]}>{label}</Text>
-          
-      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
-          onPress={() => editReport(item.id)}
-        >
-          <Text style={{ color: '#fff', textAlign: 'center' }}>Edit</Text>
-        </TouchableOpacity>
+        <AppCard style={styles.kpiCard}>
+          <Ionicons name="documents-outline" size={18} color={colors.accent} />
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.total}</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>Submitted</Text>
+        </AppCard>
 
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: '#FEE2E2', padding: 10, borderRadius: 8 }}
-          onPress={() => deleteReport(item.id)}
-        >
-          <Text style={{ color: '#991B1B', textAlign: 'center' }}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </AppCard>
-        ))}
+        <AppCard style={styles.kpiCard}>
+          <Ionicons name="warning-outline" size={18} color={colors.accent} />
+          <Text style={[styles.kpiValue, { color: colors.text }]}>{stats.critical}</Text>
+          <Text style={[styles.kpiLabel, { color: colors.sub }]}>High Risk</Text>
+        </AppCard>
       </View>
 
-      <View
-        style={[
-          styles.searchWrap,
-          { backgroundColor: colors.cardAlt, borderColor: colors.border },
-        ]}
-      >
+      <View style={[styles.searchWrap, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
         <Ionicons name="search-outline" size={18} color={colors.sub} />
         <TextInput
           value={search}
@@ -171,9 +127,7 @@ const loadReports = async () => {
       <View style={styles.filterRow}>
         {['all', 'critical', 'high', 'medium', 'low'].map((item) => {
           const active = severity === item;
-
           return (
-<View>
             <TouchableOpacity
               key={item}
               style={[
@@ -185,12 +139,7 @@ const loadReports = async () => {
               ]}
               onPress={() => setSeverity(item)}
             >
-              <Text
-                style={[
-                  styles.filterText,
-                  { color: active ? '#fff' : colors.text },
-                ]}
-              >
+              <Text style={[styles.filterText, { color: active ? '#fff' : colors.text }]}>
                 {item.toUpperCase()}
               </Text>
             </TouchableOpacity>
@@ -205,82 +154,46 @@ const loadReports = async () => {
       ) : filtered.length === 0 ? (
         <AppCard>
           <Text style={[styles.emptyText, { color: colors.sub }]}>
-            No matching reports found.
+            No submitted reports found.
           </Text>
-        
-      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
-          onPress={() => editReport(item.id)}
-        >
-          <Text style={{ color: '#fff', textAlign: 'center' }}>Edit</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: '#FEE2E2', padding: 10, borderRadius: 8 }}
-          onPress={() => deleteReport(item.id)}
-        >
-          <Text style={{ color: '#991B1B', textAlign: 'center' }}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </AppCard>
+        </AppCard>
       ) : (
         filtered.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() => router.push(`/tabs/report?id=${item.id}` as any)}
-          >
-            <AppCard style={styles.card}>
-              <View style={styles.cardTop}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.cardTitle, { color: colors.text }]}>
-                    {item.title || item.hazardDescription || 'Inspection Report'}
-                  </Text>
+          <AppCard key={item.id} style={styles.reportCard}>
+            <Text style={[styles.reportTitle, { color: colors.text }]}>
+              {item.title || 'Inspection Report'}
+            </Text>
 
-                  <Text style={[styles.cardMeta, { color: colors.sub }]}>
-                    {item.area || 'No area'} •{' '}
-                    {item.createdAt
-                      ? new Date(item.createdAt).toLocaleDateString()
-                      : 'No date'}
-                  </Text>
-                </View>
+            <Text style={[styles.reportText, { color: colors.sub }]}>
+              {item.hazardDescription || 'No description'}
+            </Text>
 
-                <View
-                  style={[
-                    styles.badge,
-                    { backgroundColor: severityColor(item.severity) },
-                  ]}
-                >
-                  <Text style={styles.badgeText}>
-                    {String(item.severity || 'low').toUpperCase()}
-                  </Text>
-                </View>
-              </View>
+            <Text style={[styles.meta, { color: colors.sub }]}>
+              Area: {item.area || 'N/A'} · Severity: {item.severity || 'N/A'}
+            </Text>
 
-              <Text style={[styles.statusLine, { color: colors.sub }]}>
-                Status: {item.reportStatus || 'unknown'}
-              </Text>
-            
-      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
-          onPress={() => editReport(item.id)}
-        >
-          <Text style={{ color: '#fff', textAlign: 'center' }}>Edit</Text>
-        </TouchableOpacity>
+            <Text style={[styles.meta, { color: colors.sub }]}>
+              Date: {item.reportedDatetime ? new Date(item.reportedDatetime).toLocaleDateString('en-US') : 'N/A'}
+            </Text>
 
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: '#FEE2E2', padding: 10, borderRadius: 8 }}
-          onPress={() => deleteReport(item.id)}
-        >
-          <Text style={{ color: '#991B1B', textAlign: 'center' }}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </AppCard>
-          </TouchableOpacity>
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: '#2563EB' }]}
+                onPress={() => router.push(`/tabs/camera?reportId=${item.id}` as any)}
+              >
+                <Text style={styles.actionText}>Edit</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: '#FEE2E2' }]}
+                onPress={() => deleteReport(item.id)}
+              >
+                <Text style={[styles.actionText, { color: '#991B1B' }]}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </AppCard>
         ))
       )}
-
     </ScrollView>
   );
 }
@@ -291,113 +204,88 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     flexGrow: 1,
   },
-
-  center: {
-    paddingTop: 80,
-    alignItems: 'center',
-  },
-
   kpiRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
+    gap: 12,
+    marginBottom: 16,
   },
-
   kpiCard: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: 14,
   },
-
   kpiValue: {
-    marginTop: 6,
     fontSize: 24,
     fontWeight: '900',
+    marginTop: 6,
   },
-
   kpiLabel: {
-    marginTop: 4,
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 12,
+    fontWeight: '700',
   },
-
   searchWrap: {
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    marginBottom: 14,
   },
-
   searchInput: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: '700',
+    paddingVertical: 12,
   },
-
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 14,
+    marginBottom: 16,
   },
-
   filterChip: {
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-
   filterText: {
-    fontSize: 10,
-    fontWeight: '900',
-  },
-
-  card: {
-    marginBottom: 10,
-  },
-
-  cardTop: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    marginBottom: 5,
-  },
-
-  cardMeta: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
   },
-
-  badge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    alignSelf: 'flex-start',
+  center: {
+    padding: 32,
+    alignItems: 'center',
   },
-
-  badgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '900',
-  },
-
-  statusLine: {
-    marginTop: 10,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
   emptyText: {
-    fontSize: 14,
     fontWeight: '700',
+  },
+  reportCard: {
+    marginBottom: 12,
+  },
+  reportTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  reportText: {
+    marginTop: 6,
+    lineHeight: 20,
+  },
+  meta: {
+    marginTop: 6,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+  },
+  actionButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 10,
+  },
+  actionText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: '800',
   },
 });
