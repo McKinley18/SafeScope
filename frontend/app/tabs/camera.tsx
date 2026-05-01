@@ -458,16 +458,30 @@ export default function InspectScreen() {
 
             {currentHazard.riskAssessment && (
               <View style={[styles.standardCard, { borderColor: "#F97316", padding: 16 }]}>
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Risk Assessment: {currentHazard.riskAssessment.riskLevel}</Text>
-                <Text>Score: {currentHazard.riskAssessment.riskScore} | Priority: {currentHazard.riskAssessment.priorityLabel}</Text>
-                <Text style={{ fontSize: 12, marginTop: 8, color: '#475467' }}>{currentHazard.riskAssessment.riskReasoning}</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
+                  Risk Assessment: {currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.riskLevel || 'Review'}
+                </Text>
+                <Text>
+                  Score: {currentHazard.riskAssessment.customerRiskScore ?? currentHazard.riskAssessment.riskScore ?? 'N/A'} | Priority: {currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.priorityLabel || 'Review'}
+                </Text>
+                <Text style={{ fontSize: 12, marginTop: 8, color: '#475467' }}>
+                  Severity: {currentHazard.riskAssessment.severity ?? 'N/A'} | Likelihood: {currentHazard.riskAssessment.likelihood ?? 'N/A'} | Exposure: {currentHazard.riskAssessment.exposure ?? 'N/A'}
+                </Text>
               </View>
             )}
             
             {currentHazard.possibleStandards.map((standard) => (
-              <View key={standard.citation} style={styles.standardCard}>
-                 <Text style={styles.standardCitation}>{standard.citation}</Text>
+              <View key={`${standard.citation}-${standard.conditionId || standard.family}`} style={styles.standardCard}>
+                 <Text style={styles.standardCitation}>{standard.citation || 'Review Required'}</Text>
                  <Text style={styles.standardText}>{standard.heading}</Text>
+                 {standard.family ? <Text style={styles.standardText}>Primary: {standard.family}</Text> : null}
+                 {standard.secondaryFamilies?.length ? (
+                   <Text style={styles.standardText}>Related: {standard.secondaryFamilies.join(', ')}</Text>
+                 ) : null}
+                 {standard.confidence ? <Text style={styles.standardText}>Confidence: {standard.confidence}%</Text> : null}
+                 {standard.correctiveActions?.length ? (
+                   <Text style={styles.standardText}>Actions: {standard.correctiveActions.join(' ')}</Text>
+                 ) : null}
               </View>
             ))}
           </Section>
