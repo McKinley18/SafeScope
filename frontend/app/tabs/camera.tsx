@@ -419,19 +419,39 @@ export default function InspectScreen() {
           
           <Section id="standards" sectionOffsets={sectionOffsets} title="3. Standards & Risk" helper="MSHA/OSHA standards and risk assessment.">
             <TouchableOpacity style={styles.primaryButton} onPress={async () => {
-                const hazardCategory = currentHazard.hazardCategory || 'Machine Guarding';
                 const hazardDescription = currentHazard.hazardDescription || '';
+                const area = currentHazard.location || currentHazard.equipment || '';
 
-                await runStandardMatch();
-
-                const risk = await apiClient.riskSuggest({
-                    hazardCategory,
-                    description: hazardDescription,
-                    hazardDescription,
-                    citation: currentHazard.selectedStandard
+                const report = await apiClient.createReport({
+                  title: currentHazard.hazardCategory || 'Hazard finding',
+                  hazardDescription,
+                  narrative: hazardDescription,
+                  area,
+                  equipment: currentHazard.equipment || null,
                 });
 
-                updateHazard({ riskAssessment: risk });
+                const classified = await apiClient.classifyReport(report.id);
+                const c = classified.classification;
+                const standard = {
+                  citation: c.citation,
+                  heading: `${c.agency || ''} ${c.primaryFamily || c.family || 'Hazard'} (${c.suggestedPriority || 'review'})`,
+                  family: c.primaryFamily || c.family,
+                  secondaryFamilies: c.secondaryFamilies || [],
+                  conditionId: c.conditionId,
+                  confidence: c.confidence,
+                  correctiveActions: c.correctiveActions || [],
+                  verificationSteps: c.verificationSteps || [],
+                  riskAssessment: c.riskAssessment || null,
+                };
+
+                updateHazard({
+                  possibleStandards: [standard],
+                  selectedStandard: c.citation,
+                  riskAssessment: c.riskAssessment,
+                  correctiveAction: (c.correctiveActions || []).join(' '),
+                  dueDate: c.riskAssessment?.dueDate || currentHazard.dueDate,
+                  notes: `Priority: ${c.suggestedPriority || 'review'} | Confidence: ${c.confidence}%`,
+                } as any);
             }}>
               <Text style={styles.primaryButtonText}>Check Standards & Risk</Text>
             </TouchableOpacity>
