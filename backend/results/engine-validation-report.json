@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-01T23:31:40.404Z",
+  "generatedAt": "2026-05-01T23:42:58.813Z",
   "engine": "SafeScope OSHA/MSHA condition engine",
   "summary": {
-    "totalSuites": 8,
-    "totalCases": 10037,
-    "totalFailures": 0,
+    "totalSuites": 9,
+    "totalCases": 10044,
+    "totalFailures": 4,
     "speed": {
       "cases": 10000,
-      "totalMs": 9747,
-      "avgMsPerCase": 0.9747,
-      "casesPerSecond": 1025.96
+      "totalMs": 9837,
+      "avgMsPerCase": 0.9837,
+      "casesPerSecond": 1016.57
     }
   },
   "suites": [
@@ -54,6 +54,17 @@
       "familyAccuracy": "3/3 = 100%",
       "noMatchAccuracy": "0/0 = 100%",
       "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "Expanded field-language validation",
+      "file": "tests/regression/expanded/field-language-validation-001.json",
+      "totalCases": 7,
+      "routeAccuracy": "4/7 = 57%",
+      "familyAccuracy": "2/6 = 33%",
+      "noMatchAccuracy": "1/1 = 100%",
+      "failureCount": 4,
       "report": "results/condition-batch-report.json",
       "failures": "results/condition-batch-failures.json"
     },
