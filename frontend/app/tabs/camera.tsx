@@ -54,6 +54,21 @@ const hazardCategories = [
   "Other / Not Sure"
 ];
 
+const formatDate = (isoDate?: string) => {
+  if (!isoDate) return 'N/A';
+  const d = new Date(isoDate);
+  if (Number.isNaN(d.getTime())) return 'N/A';
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${mm}/${dd}/${yyyy}`;
+};
+
+const formatLabel = (value?: string) =>
+  String(value || 'Review')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
 const emptyHazard = (): HazardDraft => ({
   id: `HZ-${Date.now()}`,
   photos: [],
@@ -429,6 +444,7 @@ export default function InspectScreen() {
           
           <Section id="standards" sectionOffsets={sectionOffsets} title="3. Standards & Risk" helper="MSHA/OSHA standards and risk assessment.">
             <TouchableOpacity style={styles.primaryButton} onPress={async () => {
+              try {
                 const hazardDescription = currentHazard.hazardDescription || '';
                 const area = currentHazard.location || currentHazard.equipment || '';
 
@@ -441,6 +457,13 @@ export default function InspectScreen() {
                 });
 
                 const classified = await apiClient.classifyReport(report.id);
+                console.log("CLASSIFY RESPONSE:", classified);
+
+                if (!classified || !classified.classification) {
+                  Alert.alert("Error", "Classification failed. Check network or backend.");
+                  return;
+                }
+
                 const c = classified.classification;
                 const standard = {
                   citation: c.citation,
@@ -462,6 +485,10 @@ export default function InspectScreen() {
                   dueDate: c.riskAssessment?.dueDate || currentHazard.dueDate,
                   notes: `Priority: ${c.suggestedPriority || 'review'} | Confidence: ${c.confidence}%`,
                 } as any);
+              } catch (e) {
+                console.error("HAZARD CARD ERROR:", e);
+                Alert.alert("Error", "Something went wrong. Check logs.");
+              }
             }}>
               <Text style={styles.primaryButtonText}>Check Standards & Risk</Text>
             </TouchableOpacity>
