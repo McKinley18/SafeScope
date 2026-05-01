@@ -153,6 +153,16 @@ function scoreCondition(text, condition) {
   if ((text.includes("inspection expired") || text.includes("fire extinguisher") || text.includes("extinguisher")) && condition.conditionId === "OSHA_GI_FIRE_EGRESS_EXTINGUISHER") score += 35;
   if ((text.includes("top of equipment") || text.includes("platform") || text.includes("unguarded edge")) && condition.family === "fall_protection") score += 75;
 
+  // True NO_MATCH coverage gaps from 10k library-derived benchmark
+  if ((text.includes("unsafe condition left open") || text.includes("inspection not performed")) && condition.family === "site_controls") score += 115;
+  if ((text.includes("pit") && (text.includes("no permit") || text.includes("no attendant") || text.includes("no atmospheric test") || text.includes("ventilation missing"))) && condition.family === "confined_space") score += 115;
+  if ((text.includes("defective") || text.includes("unstable")) && condition.family === "ladder_safety") score += 115;
+  if ((text.includes("fire protection") && (text.includes("missing") || text.includes("blocked"))) && condition.family === "fire_safety") score += 115;
+  if ((text.includes("scrap material") || text.includes("poor housekeeping") || text.includes("debris") || text.includes("trip hazard")) && condition.family === "housekeeping") score += 115;
+  if (text.includes("inadequate illumination") && condition.family === "illumination") score += 115;
+  if ((text.includes("no shielding") || text.includes("welding")) && condition.family === "welding_cutting") score += 80;
+  if ((text.includes("clearing jam while energized") || text.includes("while energized")) && condition.family === "lockout_tagout") score += 115;
+
   return { score, reason: reasons };
 }
 
