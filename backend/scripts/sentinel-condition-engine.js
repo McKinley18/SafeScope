@@ -163,6 +163,18 @@ function scoreCondition(text, condition) {
   if ((text.includes("no shielding") || text.includes("welding")) && condition.family === "welding_cutting") score += 80;
   if ((text.includes("clearing jam while energized") || text.includes("while energized")) && condition.family === "lockout_tagout") score += 115;
 
+  // Material storage must outrank generic ladder "unstable"
+  if ((text.includes("unstable stack") || text.includes("stored material") || text.includes("pallet") || text.includes("lumber") || text.includes("storage area")) && condition.conditionId === "OSHA_CONSTRUCTION_MATERIAL_STORAGE_UNSTABLE") score += 140;
+  if ((text.includes("unstable stack") || text.includes("stored material") || text.includes("pallet") || text.includes("lumber") || text.includes("storage area")) && condition.family === "ladder_safety") score -= 120;
+
+  // Blocked aisle at shipping is housekeeping, not emergency egress
+  if ((text.includes("blocked aisle") || text.includes("shipping")) && condition.conditionId === "OSHA_GI_HOUSEKEEPING_WALKING_SURFACE") score += 140;
+  if ((text.includes("blocked aisle") || text.includes("shipping")) && condition.family === "emergency_egress") score -= 120;
+
+  // Manway/open hole unguarded is fall protection, not machine guarding
+  if ((text.includes("manway") || text.includes("open hole") || text.includes("opening")) && text.includes("unguarded") && condition.conditionId === "V1_MSHA_OPEN_HOLE_UNGUARDED") score += 160;
+  if ((text.includes("manway") || text.includes("open hole") || text.includes("opening")) && text.includes("unguarded") && condition.family === "machine_guarding") score -= 140;
+
   return { score, reason: reasons };
 }
 

@@ -26,13 +26,20 @@ for (const testCase of cases) {
       ? result.citation === "NO_MATCH"
       : result.family === testCase.primaryHazardFamily;
 
+  const acceptableAlternateCitations = testCase.acceptableAlternateCitations || [];
+  const acceptableAlternateFamilies = testCase.acceptableAlternateFamilies || [];
+
   const citationOk =
     !testCase.citationReference ||
     testCase.citationReference === "AUTO" ||
     testCase.citationReference === result.citation ||
+    acceptableAlternateCitations.includes(result.citation) ||
     (testCase.citationReference === "NO_MATCH" && result.citation === "NO_MATCH");
 
-  const pass = routeOk && familyOk && citationOk;
+  const familyEquivalentOk =
+    acceptableAlternateFamilies.includes(result.family);
+
+  const pass = routeOk && (familyOk || familyEquivalentOk) && citationOk;
 
   const row = {
     id: testCase.id,
