@@ -13,4 +13,3 @@ backend/node_modules
 backend/results/archive/
 verification/
 *.swp
-.github/workflows/
