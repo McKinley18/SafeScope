@@ -467,31 +467,82 @@ export default function InspectScreen() {
             </TouchableOpacity>
 
             {currentHazard.riskAssessment && (
-              <View style={[styles.standardCard, { borderColor: "#F97316", padding: 16 }]}>
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
-                  Risk Assessment: {String(currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.riskLevel || 'Review').toUpperCase()}
+              <View style={[styles.standardCard, { borderColor: "#DC2626", backgroundColor: "#FFF7ED", padding: 16 }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <Text style={{ fontWeight: '800', fontSize: 16, color: '#111827' }}>Risk Assessment</Text>
+                  <Text style={{ fontWeight: '800', color: '#FFFFFF', backgroundColor: '#DC2626', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>
+                    {String(currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.riskLevel || 'Review').toUpperCase()}
+                  </Text>
+                </View>
+
+                <Text style={{ fontSize: 22, fontWeight: '900', color: '#111827', marginBottom: 6 }}>
+                  Score: {currentHazard.riskAssessment.customerRiskScore ?? currentHazard.riskAssessment.riskScore ?? 'N/A'}
                 </Text>
-                <Text>
-                  Score: {currentHazard.riskAssessment.customerRiskScore ?? currentHazard.riskAssessment.riskScore ?? 'N/A'} | Priority: {currentHazard.riskAssessment.finalPriority || currentHazard.riskAssessment.priorityLabel || 'Review'}
+
+                <Text style={{ color: '#374151', marginBottom: 4 }}>
+                  Severity {currentHazard.riskAssessment.severity ?? 'N/A'} · Likelihood {currentHazard.riskAssessment.likelihood ?? 'N/A'} · Exposure {currentHazard.riskAssessment.exposure ?? 'N/A'}
                 </Text>
-                <Text style={{ fontSize: 12, marginTop: 8, color: '#475467' }}>
-                  Severity: {currentHazard.riskAssessment.severity ?? 'N/A'} | Likelihood: {currentHazard.riskAssessment.likelihood ?? 'N/A'} | Exposure: {currentHazard.riskAssessment.exposure ?? 'N/A'}
+
+                <Text style={{ color: '#374151' }}>
+                  Due: {formatDate(currentHazard.riskAssessment.dueDate)} · Approval: {formatLabel(currentHazard.riskAssessment.requiredApprover)}
                 </Text>
               </View>
             )}
             
             {currentHazard.possibleStandards.map((standard) => (
-              <View key={`${standard.citation}-${standard.conditionId || standard.family}`} style={styles.standardCard}>
-                 <Text style={styles.standardCitation}>{standard.citation || 'Review Required'}</Text>
-                 <Text style={styles.standardText}>{standard.heading}</Text>
-                 {standard.family ? <Text style={styles.standardText}>Primary: {standard.family}</Text> : null}
-                 {standard.secondaryFamilies?.length ? (
-                   <Text style={styles.standardText}>Related: {standard.secondaryFamilies.join(', ')}</Text>
-                 ) : null}
-                 {standard.confidence ? <Text style={styles.standardText}>Confidence: {standard.confidence}%</Text> : null}
-                 {standard.correctiveActions?.length ? (
-                   <Text style={styles.standardText}>Actions: {standard.correctiveActions.join(' ')}</Text>
-                 ) : null}
+              <View key={`${standard.citation}-${standard.conditionId || standard.family}`} style={[styles.standardCard, { borderColor: '#2563EB', backgroundColor: '#F8FAFC', padding: 16 }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#64748B', fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      Applicable Standard
+                    </Text>
+                    <Text style={[styles.standardCitation, { fontSize: 22, marginTop: 4 }]}>
+                      {standard.citation || 'Review Required'}
+                    </Text>
+                  </View>
+
+                  <Text style={{ color: '#1D4ED8', backgroundColor: '#DBEAFE', fontWeight: '800', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 }}>
+                    {standard.confidence ? `${standard.confidence}%` : 'Review'}
+                  </Text>
+                </View>
+
+                <Text style={[styles.standardText, { marginTop: 10, fontWeight: '700', color: '#111827' }]}>
+                  {standard.heading}
+                </Text>
+
+                {standard.family ? (
+                  <Text style={[styles.standardText, { marginTop: 8 }]}>
+                    Primary Hazard: {formatLabel(standard.family)}
+                  </Text>
+                ) : null}
+
+                {standard.secondaryFamilies?.length ? (
+                  <Text style={styles.standardText}>
+                    Related Hazards: {standard.secondaryFamilies.map(formatLabel).join(', ')}
+                  </Text>
+                ) : null}
+
+                {standard.correctiveActions?.length ? (
+                  <View style={{ marginTop: 12, padding: 12, backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB' }}>
+                    <Text style={{ fontWeight: '800', marginBottom: 6, color: '#111827' }}>Required Corrective Actions</Text>
+                    {standard.correctiveActions.map((action: string, index: number) => (
+                      <Text key={`${standard.citation}-action-${index}`} style={{ color: '#374151', marginBottom: 4 }}>
+                        {index + 1}. {action}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+
+                {standard.verificationSteps?.length ? (
+                  <View style={{ marginTop: 10, padding: 12, backgroundColor: '#ECFDF5', borderRadius: 12, borderWidth: 1, borderColor: '#BBF7D0' }}>
+                    <Text style={{ fontWeight: '800', marginBottom: 6, color: '#065F46' }}>Verification Steps</Text>
+                    {standard.verificationSteps.map((step: string, index: number) => (
+                      <Text key={`${standard.citation}-verify-${index}`} style={{ color: '#065F46', marginBottom: 4 }}>
+                        ✓ {step}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
               </View>
             ))}
           </Section>
