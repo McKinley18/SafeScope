@@ -54,6 +54,11 @@ const hazardCategories = [
   "Other / Not Sure"
 ];
 
+
+
+
+
+
 const formatDate = (isoDate?: string) => {
   if (!isoDate) return 'N/A';
   const d = new Date(isoDate);
@@ -86,14 +91,6 @@ const emptyHazard = (): HazardDraft => ({
 });
 
 
-const formatDate = (isoDate?: string) => {
-  if (!isoDate) return 'N/A';
-  const d = new Date(isoDate);
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${mm}/${dd}/${yyyy}`;
-};
 
 export default function InspectScreen() {
   const { colors } = useAppTheme();
