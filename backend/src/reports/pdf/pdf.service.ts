@@ -100,44 +100,34 @@ export class PdfService {
     // Summary
     text('Executive Summary', 50, y, 13);
     y -= 24;
-    const summaryParagraphs = String(data.summary || 'No executive summary available.')
-      .split(/\n+/)
-      .map((p) => p.trim())
-      .filter(Boolean);
+    const { overview, riskEvaluation, standards, correctiveActions, complianceNote, metadata } = data;
 
-    for (const paragraph of summaryParagraphs) {
-      for (const line of wrapText(paragraph, 86)) {
-        if (y < 145) break;
-        text(line, 70, y, 10);
-        y -= 15;
-      }
-      y -= 8;
-    }
-
-    // Footer / compliance note
-    rect(50, 118, 512, 1, '0.85 0.88 0.92');
-    text('Compliance Note', 50, 96, 12);
-
-    const note =
-      'Suggested standards and corrective actions support qualified review. Final compliance determinations remain with qualified safety personnel.';
-
-    let noteY = 78;
-    for (const line of wrapText(note, 98)) {
-      text(line, 50, noteY, 8);
-      noteY -= 12;
-    }
-
-    const content = commands.join('\n');
-
-    const objects = [
-      '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
-      '2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj',
-      '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj',
-      '4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj',
-      `5 0 obj << /Length ${Buffer.byteLength(content)} >> stream\n${content}\nendstream endobj`,
-    ];
+const content = [
+  `EXECUTIVE SUMMARY`,
+  ``,
+  `Overview:`,
+  overview,
+  ``,
+  `Risk Evaluation:`,
+  riskEvaluation,
+  ``,
+  `Standards:`,
+  standards,
+  ``,
+  `Corrective Actions:`,
+  correctiveActions,
+  ``,
+  `Compliance Note:`,
+  complianceNote,
+  ``,
+  `---`,
+  `Severity: `,
+  `Findings Count: `,
+];
 
     let pdf = '%PDF-1.4\n';
+
+    const objects: string[] = [];
     const offsets = [0];
 
     for (const obj of objects) {
