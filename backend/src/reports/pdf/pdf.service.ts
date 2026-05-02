@@ -10,11 +10,11 @@ export class PdfService {
 
     doc.on('data', buffers.push.bind(buffers));
 
-    const logoPath = path.join(process.cwd(), 'src/assets/logo.png');
+    const logoPath = path.join(process.cwd(), 'src/assets/logo-icon.png');
 
     // ===== HEADER =====
     try {
-      doc.image(logoPath, 50, 45, { width: 45 });
+      doc.image(logoPath, 50, 45, { width: 80 });
     } catch (e) {
       console.warn('Logo not found');
     }
