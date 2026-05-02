@@ -63,10 +63,43 @@ export class PdfService {
     text(`High-Risk Findings: ${data.highRiskFindings}`, 235, 566, 10);
     text(`Dominant Hazard: ${dominantHazard}`, 400, 566, 10);
 
-    // Summary
-    text('Executive Summary', 50, 508, 13);
+    // Findings
+    text('Identified Hazards', 50, 518, 13);
+    let y = 496;
 
-    let y = 484;
+    const findings = Array.isArray(data.findings) ? data.findings : [];
+    if (findings.length === 0) {
+      text('No finding details available.', 70, y, 10);
+      y -= 18;
+    } else {
+      for (const finding of findings.slice(0, 6)) {
+        const label = `Finding ${finding.findingNumber}: ${String(finding.hazardFamily || 'review').replace(/_/g, ' ')}`;
+        text(label, 70, y, 10);
+        y -= 15;
+        text(`Standard: ${finding.citation || 'Review Required'} | Priority: ${finding.priority || 'review'} | Score: ${finding.riskScore ?? 'N/A'}`, 90, y, 9);
+        y -= 15;
+
+        const actions = Array.isArray(finding.correctiveActions) ? finding.correctiveActions : [];
+        if (actions.length) {
+          for (const line of wrapText(`Actions: ${actions.join(' ')}`, 82).slice(0, 2)) {
+            text(line, 90, y, 8);
+            y -= 12;
+          }
+        }
+
+        y -= 8;
+      }
+    }
+
+    // Photo Evidence placeholder
+    if (Array.isArray(data.photos) && data.photos.length > 0) {
+      text(`Photo Evidence: ${data.photos.length} image(s) attached`, 50, y, 11);
+      y -= 22;
+    }
+
+    // Summary
+    text('Executive Summary', 50, y, 13);
+    y -= 24;
     const summaryParagraphs = String(data.summary || 'No executive summary available.')
       .split(/\n+/)
       .map((p) => p.trim())
