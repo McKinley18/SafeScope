@@ -51,7 +51,7 @@ export class ExecutiveService {
     }
 
     // PROFESSIONAL SUMMARY
-    const summary = \`
+    const generatedSummary = \`
 Inspection findings identified a condition involving \${hazard}.
 
 The condition presents a \${severity} risk to personnel and site operations.
@@ -68,16 +68,16 @@ Recommended corrective action: \${correctiveAction}.
 \`.trim();
 
     return {
-      reportId: report.id,
-      summary,
-      details: {
-        hazard,
-        severity,
-        findingsCount: findings.length,
-        hasStandards: findings.length > 0,
-        primaryStandard,
-      },
-      findings,
-    };
+  reportId: report.id,
+  displayId: report.displayId,
+  title: report.title,
+  hazardDescription: report.hazardDescription,
+  totalFindings: findings.length,
+  highRiskFindings: findings.length,
+  dominantHazard: findings[0]?.hazardFamily || "unknown",
+  findings,
+  photos,
+  summary,
+  generatedAt: new Date().toISOString(),
   }
 }
