@@ -18,6 +18,10 @@ export class PdfService {
     } = data;
 
     // ===== Header =====
+    const path = require("path");
+    const logoPath = path.join(process.cwd(), "src/assets/logo.png");
+    try { doc.image(logoPath, 50, 45, { width: 50 }); } catch (e) { console.warn("Logo missing"); }
+    doc.moveDown(1);
     doc
       .fontSize(20)
       .fillColor('#1f4e79')
