@@ -11,7 +11,10 @@ export class ExecutiveService {
   ) {}
 
   async generateExecutiveSummary(reportId: string) {
-    const report = await this.repo.findOne({ where: { id: reportId } });
+    const report = await this.repo.findOne({
+      where: { id: reportId },
+      relations: ['attachments'],
+    });
 
     if (!report) throw new NotFoundException('Report not found');
 
@@ -19,49 +22,57 @@ export class ExecutiveService {
       ? report.likelyStandards
       : [];
 
-    const hazards = standards.map((s: any) => s.primaryFamily || 'other');
+    const findings = standards.map((s: any, index: number) => ({
+      findingNumber: index + 1,
+      hazardFamily: s.primaryFamily || s.family || 'other',
+      citation: s.citation || 'Review Required',
+      priority:
+        s.suggestedPriority ||
+        s.riskAssessment?.finalPriority ||
+        report.severity ||
+        'review',
+      confidence: s.confidence ?? null,
+      correctiveActions: s.correctiveActions || [],
+      verificationSteps: s.verificationSteps || [],
+      riskScore: s.riskAssessment?.customerRiskScore ?? null,
+    }));
 
     const topHazard =
-      hazards.length > 0
-        ? hazards.sort((a, b) =>
-            hazards.filter(v => v === a).length -
-            hazards.filter(v => v === b).length
-          ).pop()
-        : 'unknown';
+      findings.length > 0
+        ? findings[0].hazardFamily
+        : report.severity || 'unknown';
 
-    const highRisk = standards.filter((s: any) =>
-      ['high', 'critical'].includes(
-        String(
-          s.suggestedPriority ||
-          s.riskAssessment?.finalPriority ||
-          ''
-        ).toLowerCase()
-      )
+    const highRisk = findings.filter((f: any) =>
+      ['high', 'critical'].includes(String(f.priority).toLowerCase()),
     );
 
-    const summary = `
-During this inspection, ${standards.length} safety findings were identified.
-
-The most significant hazard category observed was ${topHazard.replace(/_/g, ' ')}.
-
-${
-  highRisk.length > 0
-    ? `A total of ${highRisk.length} high-risk conditions were identified requiring immediate attention.`
-    : `No high-risk conditions were identified during this inspection.`
-}
-
-Key applicable standards include:
-${standards.map((s: any) => `- ${s.citation || 'Review Required'}`).join('\n')}
-
-It is recommended that corrective actions be prioritized based on risk level and recurrence trends.
-    `.trim();
+    const photos = Array.isArray((report as any).attachments)
+      ? (report as any).attachments
+          .map((a: any) => a.url || a.uri || a.fileUrl)
+          .filter(Boolean)
+      : [];
 
     return {
       reportId,
-      totalFindings: standards.length,
+      displayId: report.displayId,
+      title: report.title,
+      hazardDescription: report.hazardDescription,
+      totalFindings: findings.length,
       highRiskFindings: highRisk.length,
       dominantHazard: topHazard,
-      summary,
+      findings,
+      photos,
+      summary: `
+During this inspection, ${findings.length} safety finding(s) were identified.
+
+The most significant hazard category observed was ${String(topHazard).replace(/_/g, ' ')}.
+
+${
+  highRisk.length
+    ? `${highRisk.length} high-risk condition(s) require immediate attention.`
+    : `No high-risk conditions identified.`
+}
+      `.trim(),
       generatedAt: new Date().toISOString(),
     };
   }
