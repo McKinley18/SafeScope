@@ -14,7 +14,7 @@ export class PdfService {
 
     // ===== HEADER =====
     try {
-      doc.image(logoPath, 50, 45, { width: 80 });
+      doc.image(logoPath, 50, 45, { width: 50 });
     } catch (e) {
       console.warn('Logo not found');
     }
@@ -22,22 +22,22 @@ export class PdfService {
     doc
       .fontSize(20)
       .fillColor('#1f4e79')
-      .text('Sentinel Safety', 110, 50);
+      .text('Sentinel Safety', 120, 50);
 
     doc
       .fontSize(10)
       .fillColor('#666666')
-      .text('See Risk. Prevent Harm.', 110, 72);
+      .text('See Risk. Prevent Harm.', 120, 72);
 
     doc
       .strokeColor('#cccccc')
       .lineWidth(1)
-      .moveTo(50, 100)
-      .lineTo(550, 100)
+      .moveTo(50, 110)
+      .lineTo(550, 110)
       .stroke();
 
     doc.x = 50;
-    doc.y = 120;
+    doc.y = 140;
 
     const section = (title: string, body: string) => {
       doc
