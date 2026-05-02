@@ -38,7 +38,7 @@ export class PdfService {
       .stroke();
 
     doc.x = 50;
-    doc.y = 115;
+    doc.y = 100;
 
     const section = (title: string, body: string) => {
       doc
