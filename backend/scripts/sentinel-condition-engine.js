@@ -276,6 +276,41 @@ function scoreCondition(text, condition) {
   }
 
   if (
+    (text.includes("belt drive") || text.includes("drive belt")) &&
+    (text.includes("no guard") || text.includes("exposed") || text.includes("unguarded")) &&
+    condition.family === "machine_guarding"
+  ) {
+    score += 230;
+    reasons.push("failure:belt drive exposed/no guard");
+  }
+
+  if (
+    (text.includes("respirator") || text.includes("dusty cleanup") || text.includes("dust exposure")) &&
+    (text.includes("not worn") || text.includes("without respirator") || text.includes("no respirator")) &&
+    condition.family === "respiratory"
+  ) {
+    score += 260;
+    reasons.push("failure:respirator not worn");
+  }
+
+  if (
+    (text.includes("respirator") || text.includes("dusty cleanup")) &&
+    (text.includes("not worn") || text.includes("without respirator") || text.includes("no respirator")) &&
+    condition.family === "ppe"
+  ) {
+    score -= 160;
+  }
+
+  if (
+    (text.includes("roof edge") || text.includes("elevated edge") || text.includes("leading edge")) &&
+    (text.includes("without harness") || text.includes("not tied off") || text.includes("no harness")) &&
+    condition.family === "fall_protection"
+  ) {
+    score += 260;
+    reasons.push("failure:fall protection not used");
+  }
+
+  if (
     (text.includes("stairway") || text.includes("stairs")) &&
     (text.includes("missing handrail") || text.includes("no handrail")) &&
     (condition.family === "safe_access" || condition.citation === "1926.1052(c)")

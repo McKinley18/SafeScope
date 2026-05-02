@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-02T00:30:13.517Z",
+  "generatedAt": "2026-05-02T00:48:49.875Z",
   "engine": "SafeScope OSHA/MSHA condition engine",
   "summary": {
     "totalSuites": 10,
@@ -7,9 +7,9 @@
     "totalFailures": 0,
     "speed": {
       "cases": 10000,
-      "totalMs": 9971,
-      "avgMsPerCase": 0.9971,
-      "casesPerSecond": 1002.91
+      "totalMs": 10140,
+      "avgMsPerCase": 1.014,
+      "casesPerSecond": 986.19
     }
   },
   "suites": [
