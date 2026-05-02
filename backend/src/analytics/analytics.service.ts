@@ -61,6 +61,38 @@ export class AnalyticsService {
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
 
+
+    const highRiskCount = submittedReports.filter((r) => {
+      const standards = Array.isArray(r.likelyStandards) ? r.likelyStandards : [];
+      return standards.some((standard) =>
+        ['high', 'critical'].includes(
+          String(
+            standard.suggestedPriority ||
+            standard.riskAssessment?.finalPriority ||
+            r.severity ||
+            '',
+          ).toLowerCase(),
+        ),
+      );
+    }).length;
+
+    const repeatThreshold = 3;
+
+    const repeatIssues = Array.from(standards.entries())
+      .filter(([_, count]) => count >= repeatThreshold)
+      .map(([citation, count]) => ({ citation, count }));
+
+    const topHazard = top(hazardFamilies, 1)[0]?.label || null;
+
+    const riskTrend =
+      submittedReports.length === 0
+        ? 'insufficient_data'
+        : highRiskCount > submittedReports.length * 0.3
+          ? 'increasing'
+          : highRiskCount > submittedReports.length * 0.1
+            ? 'stable'
+            : 'decreasing';
+
     return {
       totalReports: submittedReports.length,
       classifiedReports: submittedReports.filter((r) => r.aiStatus === 'classified').length,
@@ -68,6 +100,10 @@ export class AnalyticsService {
       topStandards: top(standards),
       priorityDistribution: top(priorities),
       repeatAreas: top(areas),
+      highRiskCount,
+      repeatIssues,
+      dominantHazard: topHazard,
+      riskTrend,
       generatedAt: new Date().toISOString(),
     };
   }
