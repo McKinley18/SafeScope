@@ -33,12 +33,12 @@ export class PdfService {
     doc
       .strokeColor('#cccccc')
       .lineWidth(1)
-      .moveTo(50, 110)
-      .lineTo(550, 110)
+      .moveTo(50, 90)
+      .lineTo(550, 90)
       .stroke();
 
     doc.x = 50;
-    doc.y = 150;
+    doc.y = 115;
 
     const section = (title: string, body: string) => {
       doc
