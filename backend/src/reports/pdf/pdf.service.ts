@@ -21,27 +21,26 @@ export class PdfService {
     const path = require("path");
     const logoPath = path.join(process.cwd(), "src/assets/logo.png");
 
-    const startY = doc.y;
-
-    // Logo (left)
+    // Draw logo (absolute position)
     try {
-      doc.image(logoPath, 50, startY, { width: 40 });
-    } catch (e) {
-      console.warn("Logo missing");
-    }
+      doc.image(logoPath, 50, 40, { width: 40 });
+    } catch (e) {}
 
-    // Text (right of logo)
+    // Draw title centered (NOT affected by logo)
     doc
       .fontSize(20)
       .fillColor("#1f4e79")
-      .text("Sentinel Safety", 100, startY);
+      .text("Sentinel Safety", 0, 40, { align: "center" });
 
     doc
       .fontSize(10)
       .fillColor("#666666")
-      .text("See Risk. Prevent Harm.", 100, startY + 22);
+      .text("See Risk. Prevent Harm.", { align: "center" });
 
-    doc.moveDown(2);
+    // Move cursor BELOW header area
+    doc.y = 110;
+
+    doc.strokeColor("#cccccc").lineWidth(1).moveTo(50, 95).lineTo(550, 95).stroke();
 
     doc
       .fontSize(16)
