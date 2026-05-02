@@ -4,7 +4,7 @@ const PDFDocument = require('pdfkit');
 @Injectable()
 export class PdfService {
   async generateExecutivePdf(data: any): Promise<Buffer> {
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: "LETTER" });
     const buffers: any[] = [];
     doc.on('data', buffers.push.bind(buffers));
 
@@ -20,26 +20,25 @@ export class PdfService {
     // ===== Header =====
     const path = require("path");
     const logoPath = path.join(process.cwd(), "src/assets/logo.png");
+    console.log("USING LOGO:", logoPath);
 
-    // Draw logo (absolute position)
+    // Draw logo (fixed)
     try {
-      doc.image(logoPath, 50, 40, { width: 40 });
+      doc.image(logoPath, 50, 45, { width: 40 });
     } catch (e) {}
 
-    // Draw title centered (NOT affected by logo)
+    // Title block (centered)
     doc
       .fontSize(20)
       .fillColor("#1f4e79")
-      .text("Sentinel Safety", 0, 40, { align: "center" });
+      .text("Sentinel Safety", 0, 45, { align: "center" });
 
     doc
       .fontSize(10)
       .fillColor("#666666")
       .text("See Risk. Prevent Harm.", { align: "center" });
 
-    // Move cursor BELOW header area
-    doc.y = 110;
-
+    // Divider
     doc.strokeColor("#cccccc").lineWidth(1).moveTo(50, 95).lineTo(550, 95).stroke();
 
     doc
