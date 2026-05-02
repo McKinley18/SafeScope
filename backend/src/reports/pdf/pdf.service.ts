@@ -59,11 +59,11 @@ export class PdfService {
       doc.moveDown(1);
     };
 
-    section('Overview', data.overview);
-    section('Risk Evaluation', data.riskEvaluation);
-    section('Standards', data.standards);
-    section('Corrective Actions', data.correctiveActions);
-    section('Compliance Note', data.complianceNote);
+    renderSection(doc, 'Overview', data.overview);
+    renderSection(doc, 'Risk Evaluation', data.riskEvaluation);
+    renderSection(doc, 'Standards', data.standards);
+    renderSection(doc, 'Corrective Actions', data.correctiveActions);
+    renderSection(doc, 'Compliance Note', data.complianceNote);
 
     doc.end();
 
@@ -72,3 +72,29 @@ export class PdfService {
     });
   }
 }
+
+// ===== Improved Section Renderer =====
+const renderSection = (doc: any, title: string, body: string) => {
+  doc
+    .strokeColor('#e0e0e0')
+    .lineWidth(1)
+    .moveTo(50, doc.y)
+    .lineTo(550, doc.y)
+    .stroke();
+
+  doc.moveDown(0.5);
+
+  doc
+    .fontSize(14)
+    .fillColor('#1f4e79')
+    .text(title, { underline: true });
+
+  doc.moveDown(0.5);
+
+  doc
+    .fontSize(11)
+    .fillColor('#333333')
+    .text(body || '', { lineGap: 2 });
+
+  doc.moveDown(1.2);
+};
