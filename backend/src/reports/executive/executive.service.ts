@@ -18,7 +18,6 @@ export class ExecutiveService {
 
     if (!report) throw new NotFoundException('Report not found');
 
-    // SAFE NORMALIZATION
     const hazard = report.hazardDescription ?? 'No hazard identified';
     const severity = report.severity ?? 'unknown';
 
@@ -26,56 +25,35 @@ export class ExecutiveService {
       ? report.likelyStandards
       : [];
 
-    // SAFE FINDINGS BUILD
     const findings = standards.map((s: any, i: number) => ({
       index: i + 1,
       citation: s?.citation ?? 'Not identified',
-      agency: s?.agency ?? 'Unknown',
-      scope: s?.scope ?? 'General',
-      confidence: s?.confidence ?? 0,
     }));
 
     const primaryStandard =
       findings.length > 0 ? findings[0].citation : 'Not identified';
 
-    // EXTRACT CORRECTIVE ACTION
-    let correctiveAction = 'Corrective action required — refer to report details';
-
-    if (narrative.includes('Recommended Corrective Action:')) {
-      correctiveAction =
-        narrative
-          .split('Recommended Corrective Action:')[1]
-          ?.split('\\n')[0]
-          ?.trim() || correctiveAction;
-    }
-
-    // PROFESSIONAL SUMMARY
-    const generatedSummary = \`
-Inspection findings identified a condition involving \${hazard}.
-
-The condition presents a \${severity} risk to personnel and site operations.
-
-\${
+    const summaryParts = [
+      "Inspection findings identified a condition involving " + hazard + ".",
+      "The condition presents a " + severity + " risk to personnel and operations.",
       findings.length > 0
-        ? \`Applicable regulatory consideration includes: \${findings
-            .map((f) => f.citation)
-            .join(', ')}.\`
-        : 'No specific regulatory standard was automatically identified. A compliance review is recommended.'
-    }
+        ? "Applicable standard(s): " + findings.map(f => f.citation).join(', ') + "."
+        : "No specific regulatory standard was identified. Review recommended."
+    ];
 
-Recommended corrective action: \${correctiveAction}.
-\`.trim();
+    const summary = summaryParts.join(" ");
 
     return {
-  displayId: report.displayId,
-  title: report.title,
-  hazardDescription: report.hazardDescription,
-  totalFindings: findings.length,
-  highRiskFindings: findings.length,
-  dominantHazard: findings[0]?.hazardFamily || "unknown",
-  findings,
-  photos,
-  summary,
-  generatedAt: new Date().toISOString(),
+      reportId: report.id,
+      summary,
+      details: {
+        hazard,
+        severity,
+        findingsCount: findings.length,
+        hasStandards: findings.length > 0,
+        primaryStandard,
+      },
+      findings,
+    };
   }
 }
