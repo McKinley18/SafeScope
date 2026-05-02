@@ -21,7 +21,6 @@ export class ExecutiveService {
     // SAFE NORMALIZATION
     const hazard = report.hazardDescription ?? 'No hazard identified';
     const severity = report.severity ?? 'unknown';
-    const narrative = report.narrative ?? '';
 
     const standards = Array.isArray(report.likelyStandards)
       ? report.likelyStandards
@@ -68,7 +67,6 @@ Recommended corrective action: \${correctiveAction}.
 \`.trim();
 
     return {
-  reportId: report.id,
   displayId: report.displayId,
   title: report.title,
   hazardDescription: report.hazardDescription,
