@@ -10,65 +10,91 @@ export class PdfService {
         .replace(/\)/g, '\\)')
         .replace(/\r?\n/g, '\\n');
 
-    const title = 'Sentinel Safety Executive Report';
+    const wrapText = (text: string, maxChars = 82) => {
+      const words = String(text || '').split(/\s+/);
+      const lines: string[] = [];
+      let line = '';
+
+      for (const word of words) {
+        const next = line ? `${line} ${word}` : word;
+        if (next.length > maxChars) {
+          if (line) lines.push(line);
+          line = word;
+        } else {
+          line = next;
+        }
+      }
+
+      if (line) lines.push(line);
+      return lines;
+    };
+
     const generated = new Date(data.generatedAt).toLocaleString();
     const dominantHazard = String(data.dominantHazard || 'Unknown').replace(/_/g, ' ');
 
-    const lines = [
-      { text: title, size: 18, x: 50, y: 750 },
-      { text: 'See Risk. Prevent Harm.', size: 10, x: 50, y: 728 },
-      { text: 'Executive Inspection Summary', size: 14, x: 50, y: 690 },
-      { text: `Report ID: ${data.reportId}`, size: 10, x: 50, y: 670 },
-      { text: `Generated: ${generated}`, size: 10, x: 50, y: 654 },
-      { text: 'Key Metrics', size: 13, x: 50, y: 610 },
-      { text: `Total Findings: ${data.totalFindings}`, size: 10, x: 70, y: 588 },
-      { text: `High-Risk Findings: ${data.highRiskFindings}`, size: 10, x: 70, y: 572 },
-      { text: `Dominant Hazard: ${dominantHazard}`, size: 10, x: 70, y: 556 },
-      { text: 'Executive Summary', size: 13, x: 50, y: 520 },
-    ];
+    const commands: string[] = [];
 
-    const summaryLines = String(data.summary || 'No executive summary available.')
-      .split('\n')
-      .flatMap((line) => {
-        const chunks = [];
-        let remaining = line;
-        while (remaining.length > 88) {
-          chunks.push(remaining.slice(0, 88));
-          remaining = remaining.slice(88);
-        }
-        chunks.push(remaining);
-        return chunks;
-      });
+    const text = (value: string, x: number, y: number, size = 10) => {
+      commands.push(`BT /F1 ${size} Tf ${x} ${y} Td (${escapePdf(value)}) Tj ET`);
+    };
 
-    let y = 498;
-    for (const line of summaryLines) {
-      lines.push({ text: line, size: 10, x: 70, y });
-      y -= 15;
+    const rect = (x: number, y: number, w: number, h: number, color = '0.95 0.97 1') => {
+      commands.push(`${color} rg ${x} ${y} ${w} ${h} re f`);
+      commands.push('0 0 0 rg');
+    };
+
+    // Header
+    rect(0, 720, 612, 72, '0.031 0.094 0.153');
+    text('Sentinel Safety Executive Report', 50, 755, 18);
+    text('See Risk. Prevent Harm.', 50, 735, 10);
+
+    // Report info
+    text('Executive Inspection Summary', 50, 685, 14);
+    text(`Report ID: ${data.reportId}`, 50, 662, 10);
+    text(`Generated: ${generated}`, 50, 646, 10);
+
+    // Divider safely below metadata
+    rect(50, 626, 512, 1, '0.85 0.88 0.92');
+
+    // Metrics
+    text('Key Metrics', 50, 598, 13);
+    rect(50, 540, 512, 42, '0.96 0.98 1');
+    text(`Total Findings: ${data.totalFindings}`, 70, 566, 10);
+    text(`High-Risk Findings: ${data.highRiskFindings}`, 235, 566, 10);
+    text(`Dominant Hazard: ${dominantHazard}`, 400, 566, 10);
+
+    // Summary
+    text('Executive Summary', 50, 508, 13);
+
+    let y = 484;
+    const summaryParagraphs = String(data.summary || 'No executive summary available.')
+      .split(/\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    for (const paragraph of summaryParagraphs) {
+      for (const line of wrapText(paragraph, 86)) {
+        if (y < 145) break;
+        text(line, 70, y, 10);
+        y -= 15;
+      }
+      y -= 8;
     }
 
-    lines.push({ text: 'Compliance Note', size: 12, x: 50, y: 110 });
-    lines.push({
-      text: 'Suggested standards and corrective actions support qualified review. Final compliance determinations remain with qualified safety personnel.',
-      size: 8,
-      x: 50,
-      y: 92,
-    });
+    // Footer / compliance note
+    rect(50, 118, 512, 1, '0.85 0.88 0.92');
+    text('Compliance Note', 50, 96, 12);
 
-    const drawText = lines
-      .map((line) => `BT /F1 ${line.size} Tf ${line.x} ${line.y} Td (${escapePdf(line.text)}) Tj ET`)
-      .join('\n');
+    const note =
+      'Suggested standards and corrective actions support qualified review. Final compliance determinations remain with qualified safety personnel.';
 
-    const graphics = [
-      '0.031 0.094 0.153 rg 0 720 612 72 re f',
-      '1 1 1 rg',
-      '0.9 0.9 0.9 rg 50 625 512 1 re f',
-      '0.05 0.23 0.46 rg 50 615 512 1 re f',
-      '0.95 0.97 1 rg 50 540 512 1 re f',
-      '0.9 0.9 0.9 rg 50 125 512 1 re f',
-      '0 0 0 rg',
-    ].join('\n');
+    let noteY = 78;
+    for (const line of wrapText(note, 98)) {
+      text(line, 50, noteY, 8);
+      noteY -= 12;
+    }
 
-    const content = `${graphics}\n${drawText}`;
+    const content = commands.join('\n');
 
     const objects = [
       '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
