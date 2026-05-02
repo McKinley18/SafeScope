@@ -18,40 +18,66 @@ export class ExecutiveService {
 
     if (!report) throw new NotFoundException('Report not found');
 
+    // SAFE NORMALIZATION
+    const hazard = report.hazardDescription ?? 'No hazard identified';
+    const severity = report.severity ?? 'unknown';
+    const narrative = report.narrative ?? '';
+
     const standards = Array.isArray(report.likelyStandards)
       ? report.likelyStandards
       : [];
 
+    // SAFE FINDINGS BUILD
     const findings = standards.map((s: any, i: number) => ({
-      findingNumber: i + 1,
-      hazardFamily: s.primaryFamily || s.family || 'other',
-      citation: s.citation || 'Review Required',
-      priority:
-        s.riskAssessment?.finalPriority ||
-        report.severity ||
-        'review',
-      riskScore: s.riskAssessment?.customerRiskScore ?? null,
+      index: i + 1,
+      citation: s?.citation ?? 'Not identified',
+      agency: s?.agency ?? 'Unknown',
+      scope: s?.scope ?? 'General',
+      confidence: s?.confidence ?? 0,
     }));
 
-    const photos = Array.isArray((report as any).attachments)
-      ? (report as any).attachments
-          .map((a: any) => a.url || a.uri || a.fileUrl || a.publicUrl)
-          .filter(Boolean)
-      : [];
+    const primaryStandard =
+      findings.length > 0 ? findings[0].citation : 'Not identified';
+
+    // EXTRACT CORRECTIVE ACTION
+    let correctiveAction = 'Corrective action required — refer to report details';
+
+    if (narrative.includes('Recommended Corrective Action:')) {
+      correctiveAction =
+        narrative
+          .split('Recommended Corrective Action:')[1]
+          ?.split('\\n')[0]
+          ?.trim() || correctiveAction;
+    }
+
+    // PROFESSIONAL SUMMARY
+    const summary = \`
+Inspection findings identified a condition involving \${hazard}.
+
+The condition presents a \${severity} risk to personnel and site operations.
+
+\${
+      findings.length > 0
+        ? \`Applicable regulatory consideration includes: \${findings
+            .map((f) => f.citation)
+            .join(', ')}.\`
+        : 'No specific regulatory standard was automatically identified. A compliance review is recommended.'
+    }
+
+Recommended corrective action: \${correctiveAction}.
+\`.trim();
 
     return {
-      reportId,
-      displayId: report.displayId,
-      title: report.title,
-      hazardDescription: report.hazardDescription,
-      totalFindings: findings.length,
-      highRiskFindings: findings.length,
-      dominantHazard:
-        findings[0]?.hazardFamily || 'unknown',
+      reportId: report.id,
+      summary,
+      details: {
+        hazard,
+        severity,
+        findingsCount: findings.length,
+        hasStandards: findings.length > 0,
+        primaryStandard,
+      },
       findings,
-      photos,
-      summary: report.narrative || 'No summary available',
-      generatedAt: new Date().toISOString(),
     };
   }
 }
