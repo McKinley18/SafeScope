@@ -30,28 +30,37 @@ export class ExecutiveService {
       citation: s?.citation ?? 'Not identified',
     }));
 
-    const primaryStandard =
-      findings.length > 0 ? findings[0].citation : 'Not identified';
+    const overview = "An inspection identified a condition involving " + hazard + ".";
 
-    const summaryParts = [
-      "Inspection findings identified a condition involving " + hazard + ".",
-      "The condition presents a " + severity + " risk to personnel and operations.",
+    const riskEvaluation =
+      "The condition presents a " +
+      severity +
+      " risk to personnel and site operations, requiring timely corrective action.";
+
+    const standardsText =
       findings.length > 0
-        ? "Applicable standard(s): " + findings.map(f => f.citation).join(', ') + "."
-        : "No specific regulatory standard was identified. Review recommended."
-    ];
+        ? "Applicable regulatory standards include: " +
+          findings.map(f => f.citation).join(', ') +
+          "."
+        : "No specific regulatory standard was automatically identified. A compliance review is recommended.";
 
-    const summary = summaryParts.join(" ");
+    const correctiveActions =
+      "Recommended corrective action should be implemented to address the identified hazard and restore compliance.";
+
+    const complianceNote =
+      "Final compliance determination should be made by a qualified safety professional in accordance with MSHA/OSHA regulations.";
 
     return {
       reportId: report.id,
-      summary,
-      details: {
-        hazard,
+      overview,
+      riskEvaluation,
+      standards: standardsText,
+      correctiveActions,
+      complianceNote,
+      metadata: {
         severity,
-        findingsCount: findings.length,
         hasStandards: findings.length > 0,
-        primaryStandard,
+        findingsCount: findings.length,
       },
       findings,
     };
