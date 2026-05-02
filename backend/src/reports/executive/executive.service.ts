@@ -41,7 +41,7 @@ export class ExecutiveService {
         : "No specific regulatory standard was identified. Review recommended."
     ];
 
-    const summary = summaryParts.join(" ");
+    const summary = "DEBUG_EXECUTIVE_SERVICE_WORKING"; //  summaryParts.join(" ");
 
     return {
       reportId: report.id,
