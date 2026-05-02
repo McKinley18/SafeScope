@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthModule } from './health/health.module';
 import { ReportsModule } from './reports/reports.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
 import { ClassificationsModule } from './classifications/classifications.module';
@@ -62,7 +63,8 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
         };
       },
     }),
-    HealthModule, ReportsModule, TaxonomyModule, DashboardsModule, ClassificationsModule, AuditModule,
+    HealthModule, ReportsModule,
+    AnalyticsModule, TaxonomyModule, DashboardsModule, ClassificationsModule, AuditModule,
     ReviewsModule, RiskModule, CorrectiveActionsModule, AuditSessionModule, AuthModule, AlertsModule,
     StandardsModule, RegulatoryModule, ApplicableStandardsModule, MatchEngineModule, IntelligenceLibraryModule, NotificationsModule,
   ],
