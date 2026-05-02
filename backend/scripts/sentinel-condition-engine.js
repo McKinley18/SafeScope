@@ -248,6 +248,50 @@ function scoreCondition(text, condition) {
     reasons.push("failure:leading edge exposure");
   }
 
+  if (
+    (text.includes("catwalk") || text.includes("screen deck")) &&
+    (text.includes("open edge") || text.includes("no handrail") || text.includes("missing handrail")) &&
+    condition.conditionId === "V1_MSHA_WORKING_AT_HEIGHT_NO_PROTECTION"
+  ) {
+    score += 230;
+    reasons.push("failure:catwalk open edge/no handrail");
+  }
+
+  if (
+    (text.includes("electrical cabinet") || text.includes("cabinet door") || text.includes("energized parts")) &&
+    (text.includes("left open") || text.includes("exposing") || text.includes("exposed")) &&
+    condition.family === "electrical"
+  ) {
+    score += 230;
+    reasons.push("failure:energized parts exposed");
+  }
+
+  if (
+    text.includes("compressed air") &&
+    (text.includes("without eye protection") || text.includes("no eye protection") || text.includes("not wearing eye protection")) &&
+    condition.family === "ppe"
+  ) {
+    score += 230;
+    reasons.push("failure:eye protection not used");
+  }
+
+  if (
+    (text.includes("stairway") || text.includes("stairs")) &&
+    (text.includes("missing handrail") || text.includes("no handrail")) &&
+    (condition.family === "safe_access" || condition.citation === "1926.1052(c)")
+  ) {
+    score += 240;
+    reasons.push("failure:stairway handrail missing");
+  }
+
+  if (
+    (text.includes("stairway") || text.includes("stairs")) &&
+    (text.includes("missing handrail") || text.includes("no handrail")) &&
+    condition.family === "fire_safety"
+  ) {
+    score -= 180;
+  }
+
   // Field validation gap: open electrical panel / energized conductors
   if (
     (

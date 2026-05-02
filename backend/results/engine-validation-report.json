@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-01T23:42:58.813Z",
+  "generatedAt": "2026-05-02T00:30:13.517Z",
   "engine": "SafeScope OSHA/MSHA condition engine",
   "summary": {
-    "totalSuites": 9,
-    "totalCases": 10044,
-    "totalFailures": 4,
+    "totalSuites": 10,
+    "totalCases": 10047,
+    "totalFailures": 0,
     "speed": {
       "cases": 10000,
-      "totalMs": 9837,
-      "avgMsPerCase": 0.9837,
-      "casesPerSecond": 1016.57
+      "totalMs": 9971,
+      "avgMsPerCase": 0.9971,
+      "casesPerSecond": 1002.91
     }
   },
   "suites": [
@@ -61,10 +61,21 @@
       "name": "Expanded field-language validation",
       "file": "tests/regression/expanded/field-language-validation-001.json",
       "totalCases": 7,
-      "routeAccuracy": "4/7 = 57%",
-      "familyAccuracy": "2/6 = 33%",
+      "routeAccuracy": "7/7 = 100%",
+      "familyAccuracy": "6/6 = 100%",
       "noMatchAccuracy": "1/1 = 100%",
-      "failureCount": 4,
+      "failureCount": 0,
+      "report": "results/condition-batch-report.json",
+      "failures": "results/condition-batch-failures.json"
+    },
+    {
+      "name": "Hard negative validation",
+      "file": "tests/regression/expanded/hard-negative-validation-001.json",
+      "totalCases": 3,
+      "routeAccuracy": "3/3 = 100%",
+      "familyAccuracy": "0/0 = 100%",
+      "noMatchAccuracy": "3/3 = 100%",
+      "failureCount": 0,
       "report": "results/condition-batch-report.json",
       "failures": "results/condition-batch-failures.json"
     },

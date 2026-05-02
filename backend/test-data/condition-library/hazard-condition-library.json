@@ -4200,6 +4200,29 @@
       ],
       "priority": 90,
       "confidenceFloor": 90
+    },
+    {
+      "conditionId": "OSHA_CONSTRUCTION_STAIRWAY_HANDRAIL_MISSING",
+      "citation": "1926.1052(c)",
+      "scope": "construction",
+      "agency": "OSHA",
+      "family": "safe_access",
+      "equipmentKeywords": [
+        "stairway",
+        "stairs",
+        "stair"
+      ],
+      "failureKeywords": [
+        "missing handrail",
+        "no handrail",
+        "handrail missing"
+      ],
+      "contextKeywords": [
+        "jobsite",
+        "construction",
+        "access"
+      ],
+      "summary": "Stairways must have required handrails where applicable."
     }
   ]
 }

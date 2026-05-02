@@ -20,7 +20,7 @@
     "observation": "electrical cabinet door left open exposing energized parts",
     "scopeExpected": "general_industry",
     "primaryHazardFamily": "electrical",
-    "citationReference": "1910.303(g)(2)",
+    "citationReference": "1910.303(b)(1)",
     "context": { "industryScope": "general_industry" }
   },
   {

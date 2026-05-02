@@ -7,6 +7,7 @@ const suites = [
   ['OSHA construction validation', 'tests/regression/osha/osha-construction-field-validation-001.json'],
   ['Mixed OSHA/MSHA routing', 'tests/regression/mixed-scope-routing-001.json'],
   ['Expanded field-language validation', 'tests/regression/expanded/field-language-validation-001.json'],
+  ['Hard negative validation', 'tests/regression/expanded/hard-negative-validation-001.json'],
   ['Manual field validation', 'tests/regression/manual-field-validation-001.json'],
   ['Ambiguity benchmark', 'tests/regression/ambiguity-benchmark-001.json'],
   ['False-positive benchmark', 'tests/regression/false-positive-benchmark-001.json'],
