@@ -20,19 +20,28 @@ export class PdfService {
     // ===== Header =====
     const path = require("path");
     const logoPath = path.join(process.cwd(), "src/assets/logo.png");
-    try { doc.image(logoPath, 50, 45, { width: 50 }); } catch (e) { console.warn("Logo missing"); }
-    doc.moveDown(1);
+
+    const startY = doc.y;
+
+    // Logo (left)
+    try {
+      doc.image(logoPath, 50, startY, { width: 40 });
+    } catch (e) {
+      console.warn("Logo missing");
+    }
+
+    // Text (right of logo)
     doc
       .fontSize(20)
-      .fillColor('#1f4e79')
-      .text('Sentinel Safety', { align: 'left' });
+      .fillColor("#1f4e79")
+      .text("Sentinel Safety", 100, startY);
 
     doc
       .fontSize(10)
-      .fillColor('#666666')
-      .text('See Risk. Prevent Harm.', { align: 'left' });
+      .fillColor("#666666")
+      .text("See Risk. Prevent Harm.", 100, startY + 22);
 
-    doc.moveDown(1.2);
+    doc.moveDown(2);
 
     doc
       .fontSize(16)
