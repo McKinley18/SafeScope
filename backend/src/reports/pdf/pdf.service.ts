@@ -14,6 +14,10 @@ export class PdfService {
 
     // ===== HEADER =====
     try {
+    // outline (draw slightly larger behind)
+    doc.image(logoPath, 49, 44, { width: 37 });
+
+    // main logo
     doc.image(logoPath, 50, 45, { width: 35 });
     } catch (e) {
       console.warn('Logo not found');
