@@ -75,12 +75,14 @@ export class PdfService {
 
 // ===== Improved Section Renderer =====
 const renderSection = (doc: any, title: string, body: string) => {
-  doc
-    .strokeColor('#e0e0e0')
-    .lineWidth(1)
-    .moveTo(50, doc.y)
-    .lineTo(550, doc.y)
-    .stroke();
+  if (doc.y > 140) {
+    doc
+      .strokeColor("#e0e0e0")
+      .lineWidth(1)
+      .moveTo(50, doc.y)
+      .lineTo(550, doc.y)
+      .stroke();
+  }
 
   doc.moveDown(0.5);
 
