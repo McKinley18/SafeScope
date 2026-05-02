@@ -14,7 +14,7 @@ export class PdfService {
 
     // ===== HEADER =====
     try {
-      doc.rect(45, 40, 45, 45).fill("#ffffff");
+      doc.roundedRect(45, 40, 45, 45).fill("#f5f5f5");
     doc.image(logoPath, 50, 45, { width: 35 });
     } catch (e) {
       console.warn('Logo not found');
