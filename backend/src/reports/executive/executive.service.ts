@@ -22,33 +22,20 @@ export class ExecutiveService {
       ? report.likelyStandards
       : [];
 
-    const findings = standards.map((s: any, index: number) => ({
-      findingNumber: index + 1,
+    const findings = standards.map((s: any, i: number) => ({
+      findingNumber: i + 1,
       hazardFamily: s.primaryFamily || s.family || 'other',
       citation: s.citation || 'Review Required',
       priority:
-        s.suggestedPriority ||
         s.riskAssessment?.finalPriority ||
         report.severity ||
         'review',
-      confidence: s.confidence ?? null,
-      correctiveActions: s.correctiveActions || [],
-      verificationSteps: s.verificationSteps || [],
       riskScore: s.riskAssessment?.customerRiskScore ?? null,
     }));
 
-    const topHazard =
-      findings.length > 0
-        ? findings[0].hazardFamily
-        : report.severity || 'unknown';
-
-    const highRisk = findings.filter((f: any) =>
-      ['high', 'critical'].includes(String(f.priority).toLowerCase()),
-    );
-
     const photos = Array.isArray((report as any).attachments)
       ? (report as any).attachments
-          .map((a: any) => a.url || a.uri || a.fileUrl)
+          .map((a: any) => a.url || a.uri || a.fileUrl || a.publicUrl)
           .filter(Boolean)
       : [];
 
@@ -58,21 +45,12 @@ export class ExecutiveService {
       title: report.title,
       hazardDescription: report.hazardDescription,
       totalFindings: findings.length,
-      highRiskFindings: highRisk.length,
-      dominantHazard: topHazard,
+      highRiskFindings: findings.length,
+      dominantHazard:
+        findings[0]?.hazardFamily || 'unknown',
       findings,
       photos,
-      summary: `
-During this inspection, ${findings.length} safety finding(s) were identified.
-
-The most significant hazard category observed was ${String(topHazard).replace(/_/g, ' ')}.
-
-${
-  highRisk.length
-    ? `${highRisk.length} high-risk condition(s) require immediate attention.`
-    : `No high-risk conditions identified.`
-}
-      `.trim(),
+      summary: report.narrative || 'No summary available',
       generatedAt: new Date().toISOString(),
     };
   }
