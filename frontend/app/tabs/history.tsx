@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Linking,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -53,6 +54,11 @@ export default function HistoryScreen() {
   useEffect(() => {
     loadReports();
   }, []);
+
+  const openExecutivePdf = async (id: string) => {
+    const url = apiClient.getExecutivePdfUrl(id);
+    await Linking.openURL(url);
+  };
 
   const deleteReport = async (id: string) => {
     Alert.alert('Delete report?', 'This will remove the submitted report from Records.', [

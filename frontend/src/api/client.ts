@@ -224,6 +224,8 @@ export const apiClient = {
     return res.json();
   },
 
+  getExecutivePdfUrl: (reportId: string) => `${BASE_URL}/reports/${reportId}/executive-summary/pdf`,
+
   getReportDetail: async (reportId: string) => {
     const res = await fetch(`${BASE_URL}/reports/${reportId}`, { headers: getHeaders() });
     return res.json();
