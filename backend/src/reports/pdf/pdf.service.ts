@@ -1,150 +1,55 @@
 import { Injectable } from '@nestjs/common';
+import PDFDocument from 'pdfkit';
 
 @Injectable()
 export class PdfService {
-  generateExecutivePdf(data: any): Buffer {
-    const escapePdf = (value: any) =>
-      String(value ?? '')
-        .replace(/\\/g, '\\\\')
-        .replace(/\(/g, '\\(')
-        .replace(/\)/g, '\\)')
-        .replace(/\r?\n/g, '\\n');
+  async generateExecutivePdf(data: any): Promise<Buffer> {
+    const doc = new PDFDocument();
+    const buffers: any[] = [];
 
-    const wrapText = (text: string, maxChars = 82) => {
-      const words = String(text || '').split(/\s+/);
-      const lines: string[] = [];
-      let line = '';
+    doc.on('data', buffers.push.bind(buffers));
 
-      for (const word of words) {
-        const next = line ? `${line} ${word}` : word;
-        if (next.length > maxChars) {
-          if (line) lines.push(line);
-          line = word;
-        } else {
-          line = next;
-        }
-      }
+    const {
+      overview,
+      riskEvaluation,
+      standards,
+      correctiveActions,
+      complianceNote,
+      metadata,
+    } = data;
 
-      if (line) lines.push(line);
-      return lines;
-    };
+    doc.fontSize(18).text('EXECUTIVE SUMMARY', { underline: true });
+    doc.moveDown();
 
-    const generated = new Date(data.generatedAt).toLocaleString();
-    const dominantHazard = String(data.dominantHazard || 'Unknown').replace(/_/g, ' ');
+    doc.fontSize(12).text('Overview:', { bold: true });
+    doc.text(overview);
+    doc.moveDown();
 
-    const commands: string[] = [];
+    doc.text('Risk Evaluation:', { bold: true });
+    doc.text(riskEvaluation);
+    doc.moveDown();
 
-    const text = (value: string, x: number, y: number, size = 10) => {
-      commands.push(`BT /F1 ${size} Tf ${x} ${y} Td (${escapePdf(value)}) Tj ET`);
-    };
+    doc.text('Standards:', { bold: true });
+    doc.text(standards);
+    doc.moveDown();
 
-    const rect = (x: number, y: number, w: number, h: number, color = '0.95 0.97 1') => {
-      commands.push(`${color} rg ${x} ${y} ${w} ${h} re f`);
-      commands.push('0 0 0 rg');
-    };
+    doc.text('Corrective Actions:', { bold: true });
+    doc.text(correctiveActions);
+    doc.moveDown();
 
-    // Header
-    rect(0, 720, 612, 72, '0.031 0.094 0.153');
-    text('Sentinel Safety Executive Report', 50, 755, 18);
-    text('See Risk. Prevent Harm.', 50, 735, 10);
+    doc.text('Compliance Note:', { bold: true });
+    doc.text(complianceNote);
+    doc.moveDown();
 
-    // Report info
-    text('Executive Inspection Summary', 50, 685, 14);
-    text(`Report ID: ${data.reportId}`, 50, 662, 10);
-    text(`Generated: ${generated}`, 50, 646, 10);
+    doc.text(`Severity: ${metadata.severity}`);
+    doc.text(`Findings Count: ${metadata.findingsCount}`);
 
-    // Divider safely below metadata
-    rect(50, 626, 512, 1, '0.85 0.88 0.92');
+    doc.end();
 
-    // Metrics
-    text('Key Metrics', 50, 598, 13);
-    rect(50, 540, 512, 42, '0.96 0.98 1');
-    text(`Total Findings: ${data.totalFindings}`, 70, 566, 10);
-    text(`High-Risk Findings: ${data.highRiskFindings}`, 235, 566, 10);
-    text(`Dominant Hazard: ${dominantHazard}`, 400, 566, 10);
-
-    // Findings
-    text('Identified Hazards', 50, 518, 13);
-    let y = 496;
-
-    const findings = Array.isArray(data.findings) ? data.findings : [];
-    if (findings.length === 0) {
-      text('No finding details available.', 70, y, 10);
-      y -= 18;
-    } else {
-      for (const finding of findings.slice(0, 6)) {
-        const label = `Finding ${finding.findingNumber}: ${String(finding.hazardFamily || 'review').replace(/_/g, ' ')}`;
-        text(label, 70, y, 10);
-        y -= 15;
-        text(`Standard: ${finding.citation || 'Review Required'} | Priority: ${finding.priority || 'review'} | Score: ${finding.riskScore ?? 'N/A'}`, 90, y, 9);
-        y -= 15;
-
-        const actions = Array.isArray(finding.correctiveActions) ? finding.correctiveActions : [];
-        if (actions.length) {
-          for (const line of wrapText(`Actions: ${actions.join(' ')}`, 82).slice(0, 2)) {
-            text(line, 90, y, 8);
-            y -= 12;
-          }
-        }
-
-        y -= 8;
-      }
-    }
-
-    // Photo Evidence placeholder
-    if (Array.isArray(data.photos) && data.photos.length > 0) {
-      text(`Photo Evidence: ${data.photos.length} image(s) attached`, 50, y, 11);
-      y -= 22;
-    }
-
-    // Summary
-    text('Executive Summary', 50, y, 13);
-    y -= 24;
-    const { overview, riskEvaluation, standards, correctiveActions, complianceNote, metadata } = data;
-
-const content = [
-  `EXECUTIVE SUMMARY`,
-  ``,
-  `Overview:`,
-  overview,
-  ``,
-  `Risk Evaluation:`,
-  riskEvaluation,
-  ``,
-  `Standards:`,
-  standards,
-  ``,
-  `Corrective Actions:`,
-  correctiveActions,
-  ``,
-  `Compliance Note:`,
-  complianceNote,
-  ``,
-  `---`,
-  `Severity: `,
-  `Findings Count: `,
-];
-
-    let pdf = '%PDF-1.4\n';
-
-    const objects: string[] = [];
-    const offsets = [0];
-
-    for (const obj of objects) {
-      offsets.push(Buffer.byteLength(pdf));
-      pdf += obj + '\n';
-    }
-
-    const xrefOffset = Buffer.byteLength(pdf);
-    pdf += `xref\n0 ${objects.length + 1}\n`;
-    pdf += '0000000000 65535 f \n';
-
-    for (let i = 1; i <= objects.length; i++) {
-      pdf += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
-    }
-
-    pdf += `trailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-    return Buffer.from(pdf);
+    return await new Promise((resolve) => {
+      doc.on('end', () => {
+        resolve(Buffer.concat(buffers));
+      });
+    });
   }
 }
