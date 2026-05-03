@@ -17,11 +17,10 @@ import {
   UpdateReportDto,
 } from './dto/report.dto';
 import { ClassificationsService } from '../classifications/classifications.service';
-import { ConditionService } from '../engine/condition.service';
+
 
 @Controller('reports')
 export class ReportsController {
-  private readonly conditionService = new ConditionService();
 
   constructor(
     private readonly reportsService: ReportsService,
@@ -154,27 +153,26 @@ export class ReportsController {
       ...(body?.context || {}),
     };
 
-    const result = this.conditionService.classify(observation, context);
 
     await this.reportsService.update(reportId, {
       aiStatus: 'classified',
-      confidenceScore: result.confidence,
-      severity: String(result.suggestedSeverity || ''),
+      confidenceScore: null,
+      severity: "unknown",
       likelyStandards: [
         {
-          citation: result.citation,
-          agency: result.agency,
-          scope: result.scope,
-          family: result.family,
-          primaryFamily: result.primaryFamily,
-          secondaryFamilies: result.secondaryFamilies || [],
-          conditionId: result.conditionId,
-          confidence: result.confidence,
-          reviewRequired: result.reviewRequired,
-          suggestedPriority: result.suggestedPriority,
-          correctiveActions: result.correctiveActions || [],
-          verificationSteps: result.verificationSteps || [],
-          riskAssessment: result.riskAssessment || null,
+          citation: null,
+          agency: null,
+          scope: null,
+          family: null,
+          primaryFamily: null,
+          secondaryFamilies: [],
+          conditionId: null,
+          confidence: null,
+          reviewRequired: null,
+          suggestedPriority: null,
+          correctiveActions: [],
+          verificationSteps: [],
+          riskAssessment: null,
         },
       ],
     } as any);
@@ -183,7 +181,7 @@ export class ReportsController {
       reportId,
       observation,
       context,
-      classification: result,
+      classification: null,
     };
   }
 

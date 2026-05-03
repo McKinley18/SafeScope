@@ -1,11 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { ExecutiveService } from "../executive/executive.service";
 const PDFDocument = require('pdfkit');
 const path = require('path');
 
 @Injectable()
 export class PdfService {
+  constructor(private readonly executiveService: ExecutiveService) {}
+
   async generateExecutivePdf(data: any): Promise<Buffer> {
+    const intel = await this.executiveService.generateExecutiveSummary(data.id);
+
     const doc = new PDFDocument({ margin: 50 });
+
+    const renderSection = (doc: any, title: string, body: string) => {
+  doc.fontSize(12).fillColor("#1f4e79").text(title);
+
+  doc.moveDown(0.3);
+
+  doc
+    .fontSize(11)
+    .fillColor("#000000")
+    .text(body || "", {
+      width: 500,
+      align: "left",
+    });
+
+  doc.moveDown(1);
+};
+
     const buffers: any[] = [];
 
     doc.on('data', buffers.push.bind(buffers));
@@ -43,7 +65,8 @@ export class PdfService {
     doc.x = 50;
     doc.y = 100;
 
-    const section = (title: string, body: string) => {
+
+const section = (title: string, body: string) => {
       doc
         .fontSize(12)
         .fillColor('#1f4e79')
@@ -59,44 +82,21 @@ export class PdfService {
       doc.moveDown(1);
     };
 
-    renderSection(doc, 'Overview', data.overview);
-    renderSection(doc, 'Risk Evaluation', data.riskEvaluation);
-    renderSection(doc, 'Standards', data.standards);
-    renderSection(doc, 'Corrective Actions', data.correctiveActions);
-    renderSection(doc, 'Compliance Note', data.complianceNote);
+
+    renderSection(doc, 'Overview', intel.overview);
+    renderSection(doc, 'Risk Evaluation', intel.riskEvaluation);
+    renderSection(doc, "Top Risk Priorities", intel.riskPriorities);
+    renderSection(doc, "Immediate Actions Required", intel.immediateAction);
+    renderSection(doc, "Priority Actions", intel.prioritizedActions);
+
+    renderSection(doc, 'Standards', intel.standards);
+    renderSection(doc, 'Corrective Actions', intel.correctiveActions);
+    renderSection(doc, 'Compliance Note', intel.complianceNote);
 
     doc.end();
 
     return await new Promise((resolve) => {
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
+      doc.on("end", () => resolve(Buffer.concat(buffers)));
     });
   }
 }
-
-// ===== Improved Section Renderer =====
-const renderSection = (doc: any, title: string, body: string) => {
-  if (doc.y > 140) {
-    doc
-      .strokeColor("#e0e0e0")
-      .lineWidth(1)
-      .moveTo(50, doc.y)
-      .lineTo(550, doc.y)
-      .stroke();
-  }
-
-  doc.moveDown(0.5);
-
-  doc
-    .fontSize(14)
-    .fillColor('#1f4e79')
-    .text(title, { underline: true });
-
-  doc.moveDown(0.5);
-
-  doc
-    .fontSize(11)
-    .fillColor('#333333')
-    .text(body || '', { lineGap: 2 });
-
-  doc.moveDown(1.2);
-};

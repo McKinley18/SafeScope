@@ -14,3 +14,4 @@ backend/results/archive/
 verification/
 *.swp
 backend/results/
+node_modules/
