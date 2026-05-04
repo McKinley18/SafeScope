@@ -1,0 +1,5 @@
+"splash": {
+  "image": "./assets/images/logo-shield.png",
+  "resizeMode": "contain",
+  "backgroundColor": "#0A1F33"
+}
