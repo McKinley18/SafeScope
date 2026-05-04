@@ -31,6 +31,7 @@ export class StandardsService {
     private readonly feedbackRepo: Repository<StandardMatchFeedback>,
   ) {}
 
+
   async search(query: string) {
     return this.standardsRepo.find({
       where: [
@@ -42,6 +43,24 @@ export class StandardsService {
       order: { citation: 'ASC' },
     });
   }
+
+async findByControls(controlCodes: string[]) {
+  if (!controlCodes?.length) return [];
+
+  const whereClause = controlCodes
+    .map((_, i) => `(',' || s.required_controls || ',') LIKE :c${i}`)
+    .join(" OR ");
+
+  const params = Object.fromEntries(
+    controlCodes.map((c, i) => [`c${i}`, `%,${c},%`])
+  );
+
+  return this.standardsRepo
+    .createQueryBuilder("s")
+    .where(whereClause, params)
+    .andWhere("s.is_active = true")
+    .getMany();
+}
 
   async findOne(citation: string) {
     return this.standardsRepo.findOne({

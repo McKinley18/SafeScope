@@ -1,25 +1,55 @@
 import { classifyHazard } from './hazard.classifier';
 import { HazardRules } from './hazard.rules';
 
-export const generateActions = (text: string) => {
-  const hazardType = classifyHazard(text);
+export const generateActions = (text: string, riskBand: string) => {
+  const classification = classifyHazard(text);
 
-  if (!hazardType) {
-    return {
-      immediateAction: "No immediate shutdown condition identified.",
-      prioritizedActions: "No prioritized actions generated.",
-      correctiveAction:
-        "Evaluate condition and implement appropriate controls.",
-      standards: [],
-    };
+  console.log("CLASSIFICATION:", classification);
+
+  const hazardTypes = classification.hazardTypes || [];
+
+  let combinedImmediate = "";
+  let combinedActions: string[] = [];
+  let combinedCorrective = "";
+  let combinedStandards: string[] = [];
+
+  hazardTypes.forEach((type) => {
+    const rule = HazardRules[type];
+
+    if (rule) {
+      combinedImmediate = combinedImmediate || rule.immediateAction;
+
+      combinedActions.push(...(rule.prioritizedActions || []));
+      combinedStandards.push(...(rule.standards || []));
+
+      combinedCorrective += " " + rule.correctiveAction;
+    }
+  });
+
+  // ===== FALLBACK =====
+  if (combinedActions.length === 0) {
+    if (riskBand === "CRITICAL") {
+      combinedImmediate = "IMMEDIATE ACTION REQUIRED: Stop work and correct hazard.";
+      combinedActions = [
+        "Inspect hazard immediately",
+        "Apply corrective action",
+        "Verify compliance",
+        "Document correction"
+      ];
+    } else {
+      combinedImmediate = "Corrective action required.";
+      combinedActions = [
+        "Inspect hazard",
+        "Apply corrective action",
+        "Verify condition"
+      ];
+    }
   }
 
-  const rule = HazardRules[hazardType];
-
   return {
-    immediateAction: rule.immediateAction,
-    prioritizedActions:  rule.prioritizedActions.map((a, i) => `${i + 1}. ${a}`).join('\n'),
-    correctiveAction: rule.correctiveAction,
-    standards: rule.standards,
+    immediateAction: combinedImmediate,
+    prioritizedActions: combinedActions.map((a, i) => `${i + 1}. ${a}`).join("\n"),
+    correctiveAction: combinedCorrective.trim(),
+    standards: Array.from(new Set(combinedStandards))
   };
 };

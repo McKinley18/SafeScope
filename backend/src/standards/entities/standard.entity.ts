@@ -8,7 +8,11 @@ import {
 } from 'typeorm';
 
 export type AgencyCode = 'OSHA' | 'MSHA';
-export type StandardScope = 'general_industry' | 'construction' | 'mining' | 'mixed';
+export type StandardScope =
+  | 'general_industry'
+  | 'construction'
+  | 'mining'
+  | 'mixed';
 
 @Entity('standards_master')
 @Index(['agencyCode', 'citation'], { unique: true })
@@ -37,15 +41,26 @@ export class Standard {
   @Column({ name: 'plain_language_summary', type: 'text', nullable: true })
   plainLanguageSummary?: string;
 
-  @Column({ name: 'scope_code' })
-  scopeCode: StandardScope;
+  @Column({ name: 'scope_code', nullable: true })
+  scopeCode?: StandardScope;
 
+  // 🔥 Hazard-based matching
   @Column({ name: 'hazard_codes', type: 'simple-array', nullable: true })
   hazardCodes?: string[];
 
+  // 🔥 Control-based matching (NEW ENGINE)
+  @Column({ name: 'required_controls', type: 'simple-array', nullable: true })
+  requiredControls?: string[];
+
+  // 🔥 Search + NLP support
   @Column({ name: 'keywords', type: 'simple-array', nullable: true })
   keywords?: string[];
 
+  // 🔥 Risk weighting (future scoring engine)
+  @Column({ name: 'severity_weight', default: 1 })
+  severityWeight: number;
+
+  // 🔥 Active toggle
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 

@@ -24,9 +24,9 @@ export const dataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
   port: 5432,
-  username: 'user',
-  password: 'password',
-  database: 'safescope',
+  username: "mckinley",
+  password: "",
+  database: "sentinel_safety",
   entities: [
     Report,
     ReportAttachment,
@@ -50,5 +50,5 @@ export const dataSource = new DataSource({
     HazardTaxonomy,
   ],
   migrations: ['src/database/migrations/*.ts'],
-  synchronize: true,
+  synchronize: false,
 });

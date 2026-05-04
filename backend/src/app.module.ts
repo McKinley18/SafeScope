@@ -30,11 +30,11 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
 // ... (other imports)
 
 @Module({
-  imports: [
+  imports: [require("./control-verifications/control-verifications.module").ControlVerificationsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [require("./control-verifications/control-verifications.module").ControlVerificationsModule,ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get<string>('DATABASE_URL');
@@ -58,7 +58,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
                     ? { rejectUnauthorized: false }
                     : false,
               }),
-          entities: [__dirname + '/**/*.entity{.ts,.js}', HazardTaxonomy, AuditEntryAttachment, AuditEntryFinding, ReportAttachment],
+          entities: [require("./control-verifications/entities/control-verification.entity").ControlVerification,__dirname + '/**/*.entity{.ts,.js}', HazardTaxonomy, AuditEntryAttachment, AuditEntryFinding, ReportAttachment],
           synchronize: true,
         };
       },
