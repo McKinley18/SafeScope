@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthController } from './auth.controller';
+
 import { AuthService } from './auth.service';
-import { User } from '../users/entities/user.entity';
-import { WorkspaceInvite } from './entities/workspace-invite.entity';
-import { EmailModule } from '../email/email.module';
+import { AuthController } from './auth.controller';
+import { User } from '../users/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, WorkspaceInvite]), EmailModule],
-  controllers: [AuthController],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    JwtModule.register({
+      secret: 'supersecret',
+      signOptions: { expiresIn: '1d' },
+    }),
+  ],
   providers: [AuthService],
+  controllers: [AuthController],
 })
 export class AuthModule {}
