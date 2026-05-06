@@ -30,6 +30,11 @@ yarn-error.*
 .DS_Store
 *.pem
 
+components/
+.next/
+dist/
+node_modules/
+
 # local env files
 .env*.local
 
