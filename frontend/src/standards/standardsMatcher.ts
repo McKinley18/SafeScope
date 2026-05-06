@@ -1,46 +1,41 @@
-import { analyzeHazardContext } from '../intelligence/hazardIntelligence';
+// Safe standards matcher (null-safe, production-ready)
 
-export type StandardMatch = {
+type Standard = {
   id: string;
-  source: 'MSHA' | 'OSHA' | 'Company';
-  citation: string;
-  title: string;
-  category: string;
-  confidence: 'high' | 'medium' | 'low';
-  rationale: string;
-  keywords: string[];
+  source: string;
+  citation?: string;
+  description?: string;
 };
 
-export function matchStandards(input: string): StandardMatch[] {
-  const results = analyzeHazardContext({
-    hazardDescription: input,
-  });
+type Result = {
+  standards?: Standard[];
+} | null;
 
-  const matches: StandardMatch[] = [];
+export function matchStandards(results: Result[]) {
+  const matches: {
+    id: string;
+    source: string;
+    citation?: string;
+    description?: string;
+  }[] = [];
 
-  for (const result of results) {
+  // 🧠 Null-safe iteration
+  for (const result of results || []) {
+    if (!result || !result.standards || !Array.isArray(result.standards)) {
+      continue;
+    }
+
     for (const standard of result.standards) {
+      if (!standard) continue;
+
       matches.push({
         id: standard.id,
         source: standard.source,
         citation: standard.citation,
-        title: standard.title,
-        category: standard.category,
-        confidence: result.confidence,
-        rationale: `Matched ${result.hazard.name}. Terms: ${result.matchedTerms.join(', ')}. ${standard.verificationNote}`,
-        keywords: standard.keywords,
+        description: standard.description,
       });
     }
   }
 
-  const seen = new Set<string>();
-  return matches.filter((match) => {
-    if (seen.has(match.id)) return false;
-    seen.add(match.id);
-    return true;
-  });
-}
-
-export async function getStandardSuggestions(input: string): Promise<StandardMatch[]> {
-  return matchStandards(input);
+  return matches;
 }
