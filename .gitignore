@@ -1,9 +1,12 @@
 # Node
 node_modules/
 
+# Backend build
+backend/dist/
+
 # Next.js
-.next/
-out/
+frontend/.next/
+frontend/out/
 
 # Env
 .env
@@ -16,3 +19,11 @@ out/
 
 # Vercel
 .vercel/
+
+# Python
+__pycache__/
+*.pyc
+
+# Misc
+dist/
+build/
