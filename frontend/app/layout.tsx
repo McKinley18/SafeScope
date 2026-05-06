@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function RootLayout({
   children,
 }: {
@@ -5,21 +7,35 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'sans-serif' }}>
+      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif' }}>
+        {/* HEADER */}
         <header
           style={{
-            padding: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '16px 24px',
             background: '#0a2540',
             color: 'white',
-            fontWeight: 'bold',
           }}
         >
-          Sentinel Safety
+          <Image
+            src="/logo.png"
+            alt="Sentinel Safety"
+            width={40}
+            height={40}
+          />
+
+          <div>
+            <div style={{ fontWeight: 700 }}>Sentinel Safety</div>
+            <div style={{ fontSize: 12, opacity: 0.8 }}>
+              See Risk. Prevent Harm.
+            </div>
+          </div>
         </header>
 
-        <main style={{ padding: '20px' }}>
-          {children}
-        </main>
+        {/* PAGE CONTENT */}
+        <main style={{ padding: '24px' }}>{children}</main>
       </body>
     </html>
   );
