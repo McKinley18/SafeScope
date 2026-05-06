@@ -8,12 +8,14 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
 
-  if (!res.ok) throw new Error('Login failed');
+  if (!res.ok) {
+    throw new Error('Login failed');
+  }
 
   return res.json();
 }
 
-// 🧠 AI MATCHING
+// 🧠 AI STANDARD MATCHING
 export async function matchStandards(data: {
   hazardType: string;
   description: string;
@@ -24,7 +26,9 @@ export async function matchStandards(data: {
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) throw new Error('AI match failed');
+  if (!res.ok) {
+    throw new Error('Standard matching failed');
+  }
 
   return res.json();
 }
@@ -33,7 +37,9 @@ export async function matchStandards(data: {
 export async function fetchTasks() {
   const res = await fetch(`${API_URL}/tasks`);
 
-  if (!res.ok) throw new Error('Failed to fetch tasks');
+  if (!res.ok) {
+    throw new Error('Failed to fetch tasks');
+  }
 
   return res.json();
 }
@@ -48,12 +54,14 @@ export async function createTask(data: {
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) throw new Error('Failed to create task');
+  if (!res.ok) {
+    throw new Error('Failed to create task');
+  }
 
   return res.json();
 }
 
-// 🧪 FEEDBACK LOOP (SafeScope learning)
+// 🧪 SAFESCOPE FEEDBACK LOOP
 export async function sendFeedback(payload: {
   citation: string;
   action: 'accepted' | 'rejected';
