@@ -1,5 +1,5 @@
 {
-  "name": "sentinel-platform-frontend",
+  "name": "sentinel-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,19 +8,12 @@
     "start": "next start"
   },
   "dependencies": {
-    "@nestjs/jwt": "^11.0.2",
-    "@nestjs/passport": "^11.0.5",
-    "bcrypt": "^6.0.0",
     "next": "14.2.5",
-    "passport": "^0.7.0",
-    "passport-jwt": "^4.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20.10.0",
-    "@types/passport-jwt": "^4.0.1",
     "@types/react": "^18.2.21",
     "typescript": "^5.3.3"
   }
