@@ -1,20 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { User } from '../users/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Task {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
-  hazardType: string;
+  title: string;
 
-  @Column()
-  description: string;
-
-  @Column({ default: 'Open' })
+  @Column({ default: 'open' })
   status: string;
 
-  @ManyToOne(() => User, { eager: true })
-  assignedTo: User;
+  @Column({ nullable: true })
+  description: string;
 }

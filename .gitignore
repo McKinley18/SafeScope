@@ -1,29 +1,6 @@
-# Node
-node_modules/
-
-# Backend build
-backend/dist/
-
-# Next.js
-frontend/.next/
-frontend/out/
-
-# Env
+node_modules
+dist
 .env
-
-# Logs
-*.log
-
-# Mac
 .DS_Store
-
-# Vercel
-.vercel/
-
-# Python
-__pycache__/
-*.pyc
-
-# Misc
-dist/
-build/
+npm-debug.log
+coverage

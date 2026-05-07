@@ -1,292 +1,168 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  AddReportEvidenceDto,
-  CreateReportDto,
-  UpdateReportDto,
-} from './dto/report.dto';
 import { Report } from './entities/report.entity';
-import { ReportAttachment } from './entities/attachment.entity';
-import { AuditService } from '../audit/audit.service';
-import { ClassificationsService } from '../classifications/classifications.service';
-import { Review } from '../reviews/entities/review.entity';
-import { CorrectiveAction } from '../corrective-actions/entities/corrective-action.entity';
+import { Finding } from './entities/finding.entity';
 import { StandardsService } from '../standards/standards.service';
+import { IntelligenceService } from '../intelligence/intelligence.service';
+import { AlertsService } from '../alerts/alerts.service';
 
 @Injectable()
 export class ReportsService {
   constructor(
     @InjectRepository(Report)
-    private reportsRepository: Repository<Report>,
-    @InjectRepository(ReportAttachment)
-    private attachmentsRepository: Repository<ReportAttachment>,
-    @InjectRepository(Review)
-    private reviewRepo: Repository<Review>,
-    @InjectRepository(CorrectiveAction)
-    private actionRepo: Repository<CorrectiveAction>,
-    private auditService: AuditService,
-    private classificationsService: ClassificationsService,
+    private reportRepo: Repository<Report>,
+
+    @InjectRepository(Finding)
+    private findingRepo: Repository<Finding>,
+
     private standardsService: StandardsService,
+    private intelligenceService: IntelligenceService,
+    private alertsService: AlertsService
   ) {}
 
-  async getAudit(reportId: string) {
-    const report = await this.reportsRepository.findOne({ where: { id: reportId } });
-    if (!report) throw new NotFoundException('Report not found');
-    return this.auditService.getAuditByEntityId(reportId);
-  }
+  // =========================
+  // CREATE REPORT (SAFE + DB)
+  // =========================
+  async create(body: any) {
+    // 🔍 DEBUG LOG (keep for now)
+    console.log('Incoming BODY:', body);
 
-  async findOne(id: string) {
-    const report = await this.reportsRepository.findOne({
-      where: { id },
-      relations: ['attachments'],
-    });
-    if (!report) throw new NotFoundException('Report not found');
+    // =========================
+    // 🚨 VALIDATION (PREVENT DB CRASH)
+    // =========================
+    if (!body) {
+      throw new BadRequestException('Request body is missing');
+    }
 
-    const classifications = await this.classificationsService.findByReportId(id);
-    const reviews = await this.reviewRepo.find({ where: { reportId: id } });
-    const actions = await this.actionRepo.find({ where: { reportId: id } });
+    const { company, site, inspector, type, findings } = body;
 
-    return {
-      ...report,
-      classifications,
-      reviews,
-      actions,
-    };
-  }
+    if (!company || !site || !inspector || !type) {
+      throw new BadRequestException(
+        'Missing required fields: company, site, inspector, type'
+      );
+    }
 
-  private buildFilter(status?: string, eventTypeCode?: string, tenantId?: string) {
-    const where: any = {};
-    if (tenantId) where.tenantId = tenantId;
-    if (status) where.reportStatus = status;
-    if (eventTypeCode) where.eventTypeCode = eventTypeCode;
-    where.deletedAt = null;
-    where.archivedAt = null;
-    return where;
-  }
+    if (!Array.isArray(findings) || findings.length === 0) {
+      throw new BadRequestException('At least one finding is required');
+    }
 
-  async findAll(options: {
-    page: number;
-    limit: number;
-    status?: string;
-    eventTypeCode?: string;
-    tenantId?: string;
-  }): Promise<{ data: Report[]; meta: { total: number; page: number; limit: number } }> {
-    const { page, limit, status, eventTypeCode, tenantId } = options;
-    const where = this.buildFilter(status, eventTypeCode, tenantId);
+    // =========================
+    // 🧱 BUILD ENTITY
+    // =========================
+    const report = this.reportRepo.create({
+      company,
+      site,
+      inspector,
+      type,
+      confidential: !!body.confidential,
+      findings: findings.map((f: any) => {
+        if (!f.hazard || f.severity == null || f.likelihood == null) {
+          throw new BadRequestException(
+            'Each finding must include hazard, severity, and likelihood'
+          );
+        }
 
-    const [data, total] = await this.reportsRepository.findAndCount({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { reportedDatetime: 'DESC' },
-    });
-
-    return {
-      data,
-      meta: { total, page, limit },
-    };
-  }
-
-  async export(status?: string, eventTypeCode?: string, tenantId?: string) {
-    const where = this.buildFilter(status, eventTypeCode, tenantId);
-    return this.reportsRepository.find({ where, order: { reportedDatetime: 'DESC' } });
-  }
-
-  async create(dto: CreateReportDto): Promise<Report> {
-    const count = await this.reportsRepository.count();
-    const displayId = `RPT-${String(count + 1001).padStart(4, '0')}`;
-
-    const report = this.reportsRepository.create({
-      ...dto,
-      displayId,
-      eventDatetime: dto.eventDatetime ? new Date(dto.eventDatetime) : undefined,
-      reportedDatetime: new Date(),
-      reportStatus: dto.reportStatus ?? 'draft',
-      intakeStatus: 'received',
-    });
-
-    const saved = await this.reportsRepository.save(report);
-
-    await this.auditService.log({
-      entityType: 'REPORT',
-      entityId: saved.id,
-      actionCode: 'REPORT_CREATED',
-      afterJson: saved,
-    });
-
-    return saved;
-  }
-
-  async update(id: string, dto: UpdateReportDto): Promise<Report> {
-    const report = await this.reportsRepository.findOne({ where: { id } });
-    if (!report) throw new NotFoundException('Report not found');
-
-    const next = this.reportsRepository.merge(report, {
-      ...dto,
-      eventDatetime: dto.eventDatetime ? new Date(dto.eventDatetime) : report.eventDatetime,
-    });
-
-    const saved = await this.reportsRepository.save(next);
-
-    await this.auditService.log({
-      entityType: 'REPORT',
-      entityId: saved.id,
-      actionCode: 'REPORT_UPDATED',
-      afterJson: saved,
-    });
-
-    return saved;
-  }
-
-  async decideReview(
-    id: string,
-    dto: { decision: 'approved' | 'rejected'; notes?: string },
-  ): Promise<Report> {
-    const report = await this.reportsRepository.findOne({ where: { id } });
-    if (!report) throw new NotFoundException('Report not found');
-
-    const decision = dto.decision;
-
-    const saved = await this.reportsRepository.save({
-      ...report,
-      reportStatus: decision,
-      reviewDecision: decision,
-      reviewDecisionNotes: dto.notes || report.reviewDecisionNotes || report.notes,
-      notes: dto.notes || report.notes,
-      reviewedAt: new Date(),
-    });
-
-    await this.auditService.log({
-      entityType: 'REPORT',
-      entityId: saved.id,
-      actionCode: decision === 'approved' ? 'REPORT_APPROVED' : 'REPORT_REJECTED',
-      afterJson: saved,
-    });
-
-    return saved;
-  }
-
-  async archive(id: string): Promise<Report> {
-    const report = await this.reportsRepository.findOne({ where: { id } });
-    if (!report) throw new NotFoundException('Report not found');
-
-    const saved = await this.reportsRepository.save({
-      ...report,
-      reportStatus: 'archived',
-      archivedAt: new Date(),
-    });
-
-    await this.auditService.log({
-      entityType: 'REPORT',
-      entityId: saved.id,
-      actionCode: 'REPORT_ARCHIVED',
-      afterJson: saved,
-    });
-
-    return saved;
-  }
-
-  async softDelete(id: string): Promise<Report> {
-    const report = await this.reportsRepository.findOne({ where: { id } });
-    if (!report) throw new NotFoundException('Report not found');
-
-    const saved = await this.reportsRepository.save({
-      ...report,
-      reportStatus: 'deleted',
-      deletedAt: new Date(),
-    });
-
-    await this.auditService.log({
-      entityType: 'REPORT',
-      entityId: saved.id,
-      actionCode: 'REPORT_DELETED',
-      afterJson: saved,
-    });
-
-    return saved;
-  }
-
-  async addEvidence(reportId: string, dto: AddReportEvidenceDto) {
-    const report = await this.reportsRepository.findOne({ where: { id: reportId } });
-    if (!report) throw new NotFoundException('Report not found');
-
-    const attachments = dto.attachments.map((item) =>
-      this.attachmentsRepository.create({
-        reportId,
-        imageUri: item.uri,
-        mimeType: item.mimeType,
-        fileName: item.fileName,
+        return {
+          hazard: f.hazard,
+          severity: Number(f.severity),
+          likelihood: Number(f.likelihood),
+          standards: this.standardsService.matchStandards(
+            f.hazard,
+            type
+          ),
+        };
       }),
-    );
-
-    const savedAttachments = await this.attachmentsRepository.save(attachments);
-
-    await this.auditService.log({
-      entityType: 'REPORT',
-      entityId: reportId,
-      actionCode: 'REPORT_EVIDENCE_ADDED',
-      afterJson: savedAttachments,
     });
 
+    // =========================
+    // 💾 SAVE TO DB
+    // =========================
+    const saved = await this.reportRepo.save(report);
+
+    // =========================
+    // 📊 BUILD INTELLIGENCE
+    // =========================
+    const allReports = await this.reportRepo.find({
+      relations: ['findings'],
+    });
+
+    const intel = this.intelligenceService.buildIntelligence(allReports);
+    const alerts = this.alertsService.generateAlerts(intel);
+
     return {
-      reportId,
-      attachments: savedAttachments,
+      ...saved,
+      summary: this.buildSummary(saved),
+      alerts,
     };
   }
 
-  async suggestStandards(reportId: string, source?: string) {
-    const report = await this.reportsRepository.findOne({ where: { id: reportId } });
-    if (!report) throw new NotFoundException('Report not found');
+  // =========================
+  // GET ALL REPORTS
+  // =========================
+  async findAll() {
+    return this.reportRepo.find({ relations: ['findings'] });
+  }
 
-    const description = [
-      report.hazardDescription,
-      report.narrative,
-      report.equipment,
-      report.area,
-      report.notes,
-    ]
-      .filter(Boolean)
-      .join(' ');
+  // =========================
+  // GET ONE REPORT
+  // =========================
+  async findOne(id: string) {
+    return this.reportRepo.findOne({
+      where: { id },
+      relations: ['findings'],
+    });
+  }
 
-    const standards = await this.standardsService.suggest(description, source);
+  // =========================
+  // INTELLIGENCE (DB)
+  // =========================
+  async getIntelligence() {
+    const reports = await this.reportRepo.find({
+      relations: ['findings'],
+    });
+
+    const intel = this.intelligenceService.buildIntelligence(reports);
+    const alerts = this.alertsService.generateAlerts(intel);
 
     return {
-      reportId,
-      description,
-      standards,
-      disclaimer:
-        'Possible standard matches are generated from keyword matching and must be verified by a qualified user.',
+      ...intel,
+      alerts,
     };
   }
 
-  async detectHazard(reportId: string) {
-    const report = await this.reportsRepository.findOne({
-      where: { id: reportId },
-      relations: ['attachments'],
-    });
+  // =========================
+  // FEEDBACK LOOP
+  // =========================
+  storeFeedback(body: any) {
+    return this.standardsService.storeFeedback(body);
+  }
 
-    if (!report) {
-      throw new NotFoundException('Report not found');
-    }
+  // =========================
+  // SUMMARY BUILDER
+  // =========================
+  private buildSummary(report: any) {
+    let criticalRisk = 0;
+    let highRisk = 0;
 
-    let suggestedHazardDescription = 'Potential workplace hazard detected';
-    let observationSummary =
-      'The uploaded image may contain a workplace condition that requires review.';
-    let confidence = 'medium';
+    for (const f of report.findings || []) {
+      const risk = f.severity * f.likelihood;
 
-    if (report.attachments?.length) {
-      suggestedHazardDescription = 'Possible missing guard or exposed hazard area';
-      observationSummary =
-        'The image appears to show equipment or a work area with a potentially unsafe condition that should be reviewed by a qualified person.';
-      confidence = 'medium';
+      if (risk >= 16) criticalRisk++;
+      else if (risk >= 9) highRisk++;
     }
 
     return {
-      reportId,
-      suggestedHazardDescription,
-      observationSummary,
-      confidence,
+      totalFindings: report.findings.length,
+      criticalRisk,
+      highRisk,
+      topFindings: report.findings.map((f: any) => ({
+        hazard: f.hazard,
+        priority:
+          f.severity * f.likelihood >= 16
+            ? 'Critical'
+            : 'Moderate',
+      })),
     };
   }
 }

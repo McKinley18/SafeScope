@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+} from 'typeorm';
+import { Finding } from './finding.entity';
 
 @Entity()
 export class Report {
@@ -6,23 +13,27 @@ export class Report {
   id: string;
 
   @Column()
-  hazardType: string;
+  company: string;
 
   @Column()
-  description: string;
+  site: string;
 
   @Column()
-  environment: string;
+  inspector: string;
 
   @Column()
-  equipment: string;
+  type: string;
 
-  @Column()
-  risk: string;
-
-  @Column('json')
-  matches: any;
+  @Column({ default: false })
+  confidential: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Finding, (finding) => finding.report, {
+    cascade: true,
+    eager: true,
+  })
+  findings: Finding[];
 }
+

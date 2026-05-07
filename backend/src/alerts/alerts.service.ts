@@ -1,67 +1,79 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CorrectiveAction } from '../corrective-actions/entities/corrective-action.entity';
-import { NotificationsService } from '../notifications/notifications.service';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AlertsService {
-  private readonly logger = new Logger(AlertsService.name);
+  generateAlerts(intel: any) {
+    const alerts: any[] = [];
 
-  constructor(
-    @InjectRepository(CorrectiveAction)
-    private actionRepo: Repository<CorrectiveAction>,
-    private notificationsService: NotificationsService,
-  ) {}
-
-  @Cron(CronExpression.EVERY_HOUR)
-  async scanDueDates() {
-    const now = Date.now();
-    const oneDay = 1000 * 60 * 60 * 24;
-
-    const actions = await this.actionRepo.find({
-      order: { dueDate: 'ASC' },
-    });
-
-    let created = 0;
-
-    for (const action of actions) {
-      if (!action.tenantId || !action.assignedToUserId || !action.dueDate) continue;
-      if (action.statusCode === 'closed' || action.statusCode === 'cancelled') continue;
-
-      const due = new Date(action.dueDate).getTime();
-      const isOverdue = due < now;
-      const isDueSoon = due >= now && due <= now + oneDay;
-
-      const type = isOverdue ? 'overdue_action' : isDueSoon ? 'due_soon_action' : null;
-      if (!type) continue;
-
-      const existing = await this.notificationsService.findExistingForEntity({
-        tenantId: action.tenantId,
-        userId: action.assignedToUserId,
-        type: type as any,
-        entityType: 'CORRECTIVE_ACTION',
-        entityId: action.id,
+    // =========================
+    // 🚨 CRITICAL RISK
+    // =========================
+    if (intel.companyRiskIndex >= 16) {
+      alerts.push({
+        type: 'CRITICAL_RISK',
+        level: 'HIGH',
+        message: `Company risk index is CRITICAL (${intel.companyRiskIndex})`,
       });
-
-      if (existing) continue;
-
-      await this.notificationsService.create({
-        tenantId: action.tenantId,
-        userId: action.assignedToUserId,
-        type: type as any,
-        title: isOverdue ? 'Corrective action overdue' : 'Corrective action due soon',
-        message: `${action.title || 'Corrective action'} is ${isOverdue ? 'overdue' : 'due within 24 hours'}.`,
-        entityType: 'CORRECTIVE_ACTION',
-        entityId: action.id,
-      });
-
-      created += 1;
     }
 
-    if (created > 0) {
-      this.logger.log(`Created ${created} due date alert(s).`);
+    // =========================
+    // 🚨 REPEAT VIOLATIONS (FIXED)
+    // =========================
+    for (const v of intel.repeatViolations || []) {
+      alerts.push({
+        type: 'REPEAT_VIOLATION',
+        level:
+          v.count >= 5 ? 'HIGH' :
+          v.count >= 3 ? 'MEDIUM' :
+          'LOW',
+        message: `Repeated hazard: ${v.hazard} (${v.count} occurrences)`,
+      });
     }
+
+    // =========================
+    // 🚨 CATEGORY DOMINANCE (FIXED)
+    // =========================
+    const topCategory = intel.topCategories?.[0];
+
+    if (topCategory && topCategory.count >= 2) {
+      alerts.push({
+        type: 'CATEGORY_DOMINANCE',
+        level: topCategory.count >= 5 ? 'HIGH' : 'MEDIUM',
+        message: `${topCategory.key} is trending (${topCategory.count} findings)`,
+      });
+    }
+
+    // =========================
+    // 🚨 HAZARD CLUSTER ALERT
+    // =========================
+    const topCluster = intel.hazardClusters?.[0];
+
+    if (topCluster && topCluster.count >= 2) {
+      alerts.push({
+        type: 'HAZARD_CLUSTER',
+        level: topCluster.count >= 5 ? 'HIGH' : 'MEDIUM',
+        message: `Cluster forming: ${topCluster.key} (${topCluster.count})`,
+      });
+    }
+
+    // =========================
+    // 🚨 RISK SPIKE
+    // =========================
+    const trend = intel.riskTrend || [];
+
+    if (trend.length >= 2) {
+      const latest = trend[trend.length - 1];
+      const prev = trend[trend.length - 2];
+
+      if (latest.avgRisk > prev.avgRisk * 1.25) {
+        alerts.push({
+          type: 'RISK_SPIKE',
+          level: 'HIGH',
+          message: `Risk spike detected (${prev.avgRisk} → ${latest.avgRisk})`,
+        });
+      }
+    }
+
+    return alerts;
   }
 }
