@@ -4,11 +4,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcryptjs'; // ✅ FIXED
+import { Repository, MoreThan } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
 import { User } from './user.entity';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -17,24 +18,51 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  // =========================
+  // 🔐 PASSWORD POLICY
+  // =========================
   validatePassword(password: string) {
-    if (password.length < 8) throw new BadRequestException('Min 8 chars');
-    if (!/[A-Z]/.test(password)) throw new BadRequestException('Uppercase required');
-    if (!/[a-z]/.test(password)) throw new BadRequestException('Lowercase required');
-    if (!/[0-9]/.test(password)) throw new BadRequestException('Number required');
-    if (!/[^A-Za-z0-9]/.test(password)) throw new BadRequestException('Special char required');
+    if (!password || password.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters');
+    }
+    if (!/[A-Z]/.test(password)) {
+      throw new BadRequestException('Must include uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      throw new BadRequestException('Must include lowercase letter');
+    }
+    if (!/[0-9]/.test(password)) {
+      throw new BadRequestException('Must include number');
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      throw new BadRequestException('Must include special character');
+    }
   }
 
+  // =========================
+  // 🧾 REGISTER
+  // =========================
   async register(email: string, password: string) {
-    const existing = await this.usersRepo.findOne({ where: { email } });
-    if (existing) throw new BadRequestException('User exists');
+    if (!email || !password) {
+      throw new BadRequestException('Email and password required');
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const existing = await this.usersRepo.findOne({
+      where: { email: normalizedEmail },
+    });
+
+    if (existing) {
+      throw new BadRequestException('User already exists');
+    }
 
     this.validatePassword(password);
 
     const hashed = await bcrypt.hash(password, 10);
 
     const user = this.usersRepo.create({
-      email,
+      email: normalizedEmail,
       password: hashed,
     });
 
@@ -43,27 +71,62 @@ export class AuthService {
     return { message: 'User created' };
   }
 
+  // =========================
+  // 🔑 LOGIN
+  // =========================
   async login(email: string, password: string) {
-    const user = await this.usersRepo.findOne({ where: { email } });
+    if (!email || !password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await this.usersRepo.findOne({
+      where: { email: normalizedEmail },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new UnauthorizedException('Invalid credentials');
+
+    if (!match) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const token = this.jwtService.sign({
       sub: user.id,
       email: user.email,
     });
 
-    return { access_token: token };
+    return {
+      access_token: token,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    };
   }
 
-  // 🔥 REQUEST RESET
+  // =========================
+  // 🔁 REQUEST PASSWORD RESET
+  // =========================
   async requestPasswordReset(email: string) {
-    const user = await this.usersRepo.findOne({ where: { email } });
+    if (!email) {
+      return { message: 'If email exists, reset sent' };
+    }
 
-    if (!user) return { message: 'If email exists, reset sent' };
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await this.usersRepo.findOne({
+      where: { email: normalizedEmail },
+    });
+
+    // 🔒 Prevent user enumeration
+    if (!user) {
+      return { message: 'If email exists, reset sent' };
+    }
 
     const token = randomBytes(32).toString('hex');
 
@@ -72,21 +135,31 @@ export class AuthService {
 
     await this.usersRepo.save(user);
 
-    console.log(`RESET LINK: http://localhost:3000/reset-password?token=${token}`);
+    // ⚠️ Replace with email service later
+    console.log(
+      `RESET LINK: http://localhost:3000/reset-password?token=${token}`,
+    );
 
-    return { message: 'Reset link generated (check backend logs)' };
+    return { message: 'If email exists, reset sent' };
   }
 
-  // 🔥 RESET PASSWORD
+  // =========================
+  // 🔁 RESET PASSWORD
+  // =========================
   async resetPassword(token: string, newPassword: string) {
+    if (!token || !newPassword) {
+      throw new BadRequestException('Token and new password required');
+    }
+
     const user = await this.usersRepo.findOne({
-      where: { resetToken: token },
+      where: {
+        resetToken: token,
+        resetTokenExpiry: MoreThan(new Date()),
+      },
     });
 
-    if (!user) throw new BadRequestException('Invalid token');
-
-    if (user.resetTokenExpiry < new Date()) {
-      throw new BadRequestException('Token expired');
+    if (!user) {
+      throw new BadRequestException('Invalid or expired token');
     }
 
     this.validatePassword(newPassword);
