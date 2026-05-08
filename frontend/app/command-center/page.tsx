@@ -1,77 +1,35 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Card from '../components/Card';
 
 export default function CommandCenter() {
-  const [reports, setReports] = useState<any[]>([]);
+  const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    fetch('http://localhost:4000/reports')
-      .then(res => res.json())
-      .then(setReports);
+    fetch('http://localhost:4000/reports/intelligence')
+      .then((res) => res.json())
+      .then(setData);
   }, []);
 
+  if (!data) return <div>Loading...</div>;
+
   return (
-    <div style={container}>
-      <h1 style={title}>Command Center</h1>
+    <div>
+      <h1>Command Center</h1>
 
-      {reports.length === 0 && (
-        <div>No reports yet</div>
-      )}
+      <div style={{ display: 'flex', gap: 20, marginBottom: 20 }}>
+        <Card>Reports: {data.totalReports}</Card>
+        <Card>Findings: {data.totalFindings}</Card>
+        <Card>Critical: {data.criticalRisk}</Card>
+      </div>
 
-      {reports.map((r) => (
-        <div
-          key={r.id}
-          style={card}
-          onClick={() => {
-            window.location.href = `/report/${r.id}`;
-          }}
-        >
-          <div style={cardTitle}>{r.site}</div>
-          <div style={sub}>{r.company}</div>
-
-          <div style={meta}>
-            {r.summary?.totalFindings} Findings •{' '}
-            {r.summary?.criticalRisk} Critical
-          </div>
-        </div>
-      ))}
+      <Card>
+        <h3>Top Hazards</h3>
+        {data.topHazards.map((h: any, i: number) => (
+          <div key={i}>{h.key} ({h.count})</div>
+        ))}
+      </Card>
     </div>
   );
 }
-
-/* STYLES */
-
-const container = {
-  padding: '30px',
-  maxWidth: '900px',
-  margin: 'auto'
-};
-
-const title = {
-  fontSize: '26px',
-  marginBottom: '20px'
-};
-
-const card = {
-  background: 'white',
-  padding: '20px',
-  marginTop: '15px',
-  borderRadius: '10px',
-  cursor: 'pointer',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-};
-
-const cardTitle = {
-  fontWeight: 'bold'
-};
-
-const sub = {
-  color: '#666'
-};
-
-const meta = {
-  marginTop: '10px',
-  fontSize: '12px',
-  color: '#555'
-};

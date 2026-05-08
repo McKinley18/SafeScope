@@ -1,28 +1,27 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-export default function ResetPassword() {
-  const params = useSearchParams();
-  const token = params.get('token');
+function ResetPasswordInner() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
 
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
 
-  const handleReset = async () => {
-    const res = await fetch('http://localhost:4000/auth/reset-password', {
+  async function handleReset() {
+    await fetch('http://localhost:4000/auth/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, password }),
+      body: JSON.stringify({ token, newPassword: password }),
     });
 
-    const data = await res.json();
-    setMessage(data.message);
-  };
+    alert('Password reset successful');
+  }
 
   return (
-    <div style={{ padding: '40px', textAlign: 'center' }}>
+    <div style={{ padding: 20 }}>
       <h1>Reset Password</h1>
 
       <input
@@ -30,14 +29,17 @@ export default function ResetPassword() {
         placeholder="New password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        style={{ padding: '10px', marginTop: '20px' }}
       />
 
-      <button onClick={handleReset} style={{ marginLeft: '10px' }}>
-        Reset
-      </button>
-
-      {message && <p>{message}</p>}
+      <button onClick={handleReset}>Reset</button>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordInner />
+    </Suspense>
   );
 }

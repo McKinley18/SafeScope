@@ -1,87 +1,116 @@
-import Image from 'next/image';
+import Link from 'next/link';
+import './globals.css';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          fontFamily: 'system-ui, sans-serif',
-          background: '#f5f7fa',
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-        }}
-      >
-        {/* HEADER */}
-        <header
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '14px',
-            background: '#0a2540',
-          }}
-        >
-          <div style={{ width: '220px' }}>
-            <Image
-              src="/logo.png"
-              alt="Sentinel Safety"
-              width={800}
-              height={300}
-              style={{
-                width: '100%',
-                height: 'auto',
-              }}
-              priority
-            />
-          </div>
+      <body style={{ margin: 0 }}>
+
+        {/* 🔷 FULL-WIDTH HEADER */}
+        <header style={styles.header}>
+          <img src="/logo.png" style={styles.logo} />
         </header>
 
-        {/* MAIN CONTENT */}
-        <main style={{ flex: 1 }}>{children}</main>
+        {/* 🔥 CONTENT (TIGHTER SPACING) */}
+        <main style={styles.main}>
+          {children}
+        </main>
 
-        {/* FOOTER */}
-        <footer
-          style={{
-            background: '#0a2540',
-            color: '#ffffff',
-            padding: '24px',
-            fontSize: '13px',
-          }}
-        >
-          <div
-            style={{
-              maxWidth: '1100px',
-              margin: '0 auto',
-              display: 'flex',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '20px',
-            }}
-          >
-            {/* LEFT */}
-            <div>
-              © {new Date().getFullYear()} Sentinel Safety  
-              <br />
-              SafeScope™ Engine
-            </div>
+        {/* 🔻 FULL-WIDTH FOOTER */}
+        <footer style={styles.footer}>
+          <div style={styles.footerInner}>
+            <span>© 2026 Sentinel Safety</span>
 
-            {/* RIGHT */}
-            <div style={{ textAlign: 'right' }}>
-              About Us  
-              <br />
-              Privacy Policy  
-              <br />
-              Terms of Use
+            <div style={styles.footerLinks}>
+              <Link href="/legal/privacy" style={styles.footerLink}>Privacy</Link>
+              <Link href="/legal/terms" style={styles.footerLink}>Terms</Link>
             </div>
           </div>
         </footer>
+
+        {/* FLOATING NAV */}
+        <div style={styles.navWrapper}>
+          <nav style={styles.nav}>
+            <Link href="/inspection" style={styles.navLink}>Inspection</Link>
+            <Link href="/report" style={styles.navLink}>Reports</Link>
+          </nav>
+        </div>
+
       </body>
     </html>
   );
 }
+
+const styles: any = {
+  /* HEADER */
+  header: {
+    width: '100vw',           // 🔥 FORCE EDGE-TO-EDGE
+    margin: 0,
+    background: '#0f172a',
+    height: 80,               // 🔥 slightly tighter
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  logo: {
+    height: 70,               // 🔥 LARGER LOGO
+  },
+
+  /* MAIN CONTENT */
+  main: {
+    maxWidth: '1200px',
+    margin: '10px auto',      // 🔥 REDUCED GAP FROM HEADER
+    padding: '0 20px',
+  },
+
+  /* FOOTER */
+  footer: {
+    width: '100vw',
+    background: '#0f172a',
+    color: '#fff',
+    padding: '20px 0',
+    marginTop: 40,
+  },
+
+  footerInner: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '0 20px',
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+
+  footerLinks: {
+    display: 'flex',
+    gap: 20,
+  },
+
+  footerLink: {
+    color: '#9ca3af',
+    textDecoration: 'none',
+  },
+
+  /* NAV */
+  navWrapper: {
+    position: 'fixed',
+    bottom: 20,
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+
+  nav: {
+    display: 'flex',
+    gap: 20,
+    padding: '12px 24px',
+    borderRadius: 20,
+    background: 'rgba(17,24,39,0.95)',
+  },
+
+  navLink: {
+    color: '#fff',
+    textDecoration: 'none',
+    fontWeight: 500,
+  },
+};

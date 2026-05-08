@@ -1,237 +1,203 @@
 'use client';
 
 import { useState } from 'react';
-import { analyzePhoto } from '../../lib/safescope';
-
-const RISK_OPTIONS = [
-  { label: 'Low', severity: 1, likelihood: 2, color: '#4caf50' },
-  { label: 'Medium', severity: 3, likelihood: 3, color: '#fbc02d' },
-  { label: 'High', severity: 4, likelihood: 3, color: '#fb8c00' },
-  { label: 'Critical', severity: 5, likelihood: 4, color: '#e53935' }
-];
 
 export default function InspectionPage() {
-  const [findings, setFindings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
 
-  const addFinding = () => {
-    setFindings([
-      ...findings,
-      { hazard: '', severity: 0, likelihood: 0, riskLabel: '', photo: '' }
-    ]);
-  };
-
-  const updateFinding = (index: number, field: string, value: any) => {
-    const updated = [...findings];
-    updated[index][field] = value;
-    setFindings(updated);
-  };
-
-  const setRisk = (index: number, option: any) => {
-    const updated = [...findings];
-    updated[index].severity = option.severity;
-    updated[index].likelihood = option.likelihood;
-    updated[index].riskLabel = option.label;
-    setFindings(updated);
-  };
-
-  const handlePhoto = async (index: number, file: File) => {
-    const reader = new FileReader();
-
-    reader.onloadend = async () => {
-      const base64 = reader.result as string;
-
-      updateFinding(index, 'photo', base64);
-
-      // 🔥 AI ANALYSIS
-      const ai = await analyzePhoto(base64);
-
-      // Only auto-fill if empty
-      if (!findings[index].hazard) {
-        updateFinding(index, 'hazard', ai.hazard);
-      }
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const saveReport = async () => {
-    setLoading(true);
-
-    const payload = {
-      company: 'Demo Company',
-      site: 'Demo Site',
-      inspector: 'Inspector Name',
-      type: 'MSHA',
-      confidential: true,
-      findings
-    };
-
-    const res = await fetch('http://localhost:4000/reports', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    setLoading(false);
-
-    window.location.href = `/report/${data.id}`;
-  };
+  const steps = ['Details', 'Hazard', 'Risk', 'Review'];
 
   return (
-    <div style={container}>
-      <h1 style={title}>Findings</h1>
+    <div style={styles.container}>
 
-      <div style={topActions}>
-        <button style={addBtn} onClick={addFinding}>
-          + Add Finding
-        </button>
+      {/* 🔶 PROGRESS BAR */}
+      <div style={styles.progressBar}>
+        {steps.map((s, i) => (
+          <div
+            key={i}
+            style={{
+              ...styles.progressStep,
+              background: i + 1 <= step ? '#f97316' : '#e5e7eb',
+            }}
+          />
+        ))}
       </div>
 
-      {findings.map((f, i) => (
-        <div key={i} style={card}>
+      <div style={styles.stepLabel}>
+        Step {step} of 4 — {steps[step - 1]}
+      </div>
 
-          {/* PHOTO */}
-          <div style={section}>
-            <label style={label}>Photo</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files?.[0]) {
-                  handlePhoto(i, e.target.files[0]);
-                }
-              }}
-            />
+      {/* STEP CONTENT */}
+      {step === 1 && <Step1 next={() => setStep(2)} />}
+      {step === 2 && <Step2 next={() => setStep(3)} back={() => setStep(1)} />}
+      {step === 3 && <Step3 next={() => setStep(4)} back={() => setStep(2)} />}
+      {step === 4 && <Step4 back={() => setStep(2)} />}
 
-            {f.photo && <img src={f.photo} style={preview} />}
-          </div>
+    </div>
+  );
+}
 
-          {/* HAZARD */}
-          <div style={section}>
-            <label style={label}>Hazard</label>
-            <input
-              style={input}
-              placeholder="Describe the hazard"
-              value={f.hazard}
-              onChange={(e) => updateFinding(i, 'hazard', e.target.value)}
-            />
+/* ---------------- STEPS ---------------- */
 
-            {f.hazard && (
-              <div style={aiNote}>
-                AI Suggested (editable)
-              </div>
-            )}
-          </div>
+function Step1({ next }: any) {
+  return (
+    <div style={styles.card}>
+      <h2>Inspection Details</h2>
 
-          {/* RISK */}
-          <div style={section}>
-            <label style={label}>Risk Level</label>
-            <div style={riskRow}>
-              {RISK_OPTIONS.map((opt) => (
-                <button
-                  key={opt.label}
-                  onClick={() => setRisk(i, opt)}
-                  style={{
-                    ...riskBtn,
-                    background:
-                      f.riskLabel === opt.label ? opt.color : '#eee',
-                    color:
-                      f.riskLabel === opt.label ? 'white' : '#333'
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      <Field label="Company" />
+      <Field label="Location" />
+      <Field label="Inspector" />
+      <Field label="Date" type="date" />
 
-        </div>
-      ))}
+      <div style={styles.buttonRight}>
+        <button onClick={next} style={styles.primary}>Next</button>
+      </div>
+    </div>
+  );
+}
 
-      {findings.length > 0 && (
-        <div style={bottomActions}>
-          <button style={saveBtn} onClick={saveReport} disabled={loading}>
-            {loading ? 'Saving...' : 'Save Report'}
-          </button>
-        </div>
+function Step2({ next, back }: any) {
+  return (
+    <div style={styles.card}>
+      <h2>Capture Hazard</h2>
+
+      <Field label="Hazard Description" textarea />
+
+      <div style={styles.buttonBetween}>
+        <button onClick={back} style={styles.secondary}>Back</button>
+        <button onClick={next} style={styles.primary}>Next</button>
+      </div>
+    </div>
+  );
+}
+
+function Step3({ next, back }: any) {
+  return (
+    <div style={styles.card}>
+      <h2>Risk Assessment</h2>
+
+      <div style={styles.row}>
+        <Field label="Probability" select half />
+        <Field label="Severity" select half />
+      </div>
+
+      <div style={styles.buttonBetween}>
+        <button onClick={back} style={styles.secondary}>Back</button>
+        <button onClick={next} style={styles.primary}>Add Finding</button>
+      </div>
+    </div>
+  );
+}
+
+function Step4({ back }: any) {
+  return (
+    <div style={styles.card}>
+      <h2>Review</h2>
+
+      <div style={styles.buttonBetween}>
+        <button onClick={back} style={styles.secondary}>+ Add Another</button>
+        <button style={styles.primary}>Generate Report</button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- FIELD ---------------- */
+
+function Field({ label, type, textarea, select, half }: any) {
+  return (
+    <div style={{ ...styles.field, flex: half ? 1 : undefined }}>
+      <label style={styles.label}>{label}</label>
+
+      {textarea && <textarea style={styles.input} />}
+      {select && (
+        <select style={styles.input}>
+          <option>Select</option>
+        </select>
+      )}
+      {!textarea && !select && (
+        <input type={type || 'text'} style={styles.input} />
       )}
     </div>
   );
 }
 
-/* STYLES */
+/* ---------------- STYLES ---------------- */
 
-const container = { padding: '30px', maxWidth: '700px', margin: 'auto' };
-const title = { fontSize: '26px', marginBottom: '10px' };
+const styles: any = {
+  container: {
+    maxWidth: 700,
+    margin: '10px auto',
+  },
 
-const topActions = { marginBottom: '20px' };
-const bottomActions = { marginTop: '30px', textAlign: 'center' as const };
+  progressBar: {
+    display: 'flex',
+    gap: 6,
+    marginBottom: 10,
+  },
 
-const addBtn = {
-  padding: '10px 15px',
-  background: '#0a2540',
-  color: 'white',
-  border: 'none',
-  borderRadius: '6px'
-};
+  progressStep: {
+    height: 6,
+    flex: 1,
+    borderRadius: 4,
+  },
 
-const saveBtn = {
-  padding: '12px 20px',
-  background: '#1a7f37',
-  color: 'white',
-  border: 'none',
-  borderRadius: '6px',
-  fontSize: '16px'
-};
+  stepLabel: {
+    fontSize: 13,
+    marginBottom: 10,
+  },
 
-const card = {
-  background: 'white',
-  padding: '20px',
-  marginTop: '15px',
-  borderRadius: '10px',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-};
+  card: {
+    background: '#fff',
+    padding: 20,
+    borderRadius: 8,
+  },
 
-const section = { marginBottom: '15px' };
+  field: {
+    marginBottom: 12,
+  },
 
-const label = {
-  display: 'block',
-  fontSize: '13px',
-  marginBottom: '5px',
-  color: '#555'
-};
+  label: {
+    fontSize: 13,
+    fontWeight: 600,
+    marginBottom: 4,
+    display: 'block',
+  },
 
-const input = {
-  width: '100%',
-  padding: '10px',
-  borderRadius: '6px',
-  border: '1px solid #ddd'
-};
+  input: {
+    width: '100%',
+    padding: '8px 10px',
+  },
 
-const preview = {
-  marginTop: '10px',
-  maxWidth: '200px',
-  borderRadius: '6px'
-};
+  row: {
+    display: 'flex',
+    gap: 10,
+  },
 
-const aiNote = {
-  fontSize: '12px',
-  color: '#777',
-  marginTop: '5px'
-};
+  buttonRight: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginTop: 16,
+  },
 
-const riskRow = {
-  display: 'flex',
-  gap: '10px',
-  flexWrap: 'wrap' as const
-};
+  buttonBetween: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
 
-const riskBtn = {
-  padding: '10px',
-  borderRadius: '6px',
-  border: 'none',
-  cursor: 'pointer'
+  primary: {
+    padding: '10px 18px',
+    background: '#111827',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 6,
+  },
+
+  secondary: {
+    padding: '10px 18px',
+    background: '#e5e7eb',
+    border: 'none',
+    borderRadius: 6,
+  },
 };
