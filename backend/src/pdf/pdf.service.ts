@@ -11,7 +11,7 @@ export class PdfService {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
-    const logo = await this.loadLogo();
+    const logo = await this.loadLogo(report.organizationId);
     const html = this.buildHtml(report, logo);
 
     await page.setContent(html, { waitUntil: 'networkidle0' });
@@ -25,8 +25,8 @@ export class PdfService {
     return Buffer.from(pdf);
   }
 
-  private async loadLogo(): Promise<string> {
-    const org = await this.orgService.get();
+  private async loadLogo(orgId: string): Promise<string> {
+    const org = await this.orgService.findOne(orgId);
 
     if (!org?.logoPath) return '';
 

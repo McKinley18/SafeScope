@@ -12,17 +12,13 @@ export class AnalyticsService {
 
   async getSafetyTrends() {
     const reports = await this.reportsRepo.find({
-      where: {
-        deletedAt: IsNull(),
-        archivedAt: IsNull(),
-      },
       order: { reportedDatetime: 'DESC' },
       take: 500,
     });
 
     const submittedReports = reports.filter((r) =>
       ['submitted', 'reviewed', 'closed', 'draft'].includes(
-        String(r.reportStatus || '').toLowerCase(),
+        String(r.status || '').toLowerCase(),
       ),
     );
 
@@ -95,7 +91,7 @@ export class AnalyticsService {
 
     return {
       totalReports: submittedReports.length,
-      classifiedReports: submittedReports.filter((r) => r.aiStatus === 'classified').length,
+      classifiedReports: submittedReports.filter((r) => r.status === 'classified').length,
       topHazardFamilies: top(hazardFamilies),
       topStandards: top(standards),
       priorityDistribution: top(priorities),

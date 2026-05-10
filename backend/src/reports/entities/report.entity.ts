@@ -28,8 +28,29 @@ export class Report {
   @Column({ default: false })
   confidential: boolean;
 
+  @Column({ default: 'active' })
+  status: string;
+
+  @Column({ nullable: true })
+  area: string;
+
+  @Column({ nullable: true })
+  severity: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  likelyStandards: any[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  narrative: any;
+
+  @Column({ nullable: true })
+  eventTypeCode: string;
+
+  @Column({ nullable: true })
+  aiStatus: string;
+
   @CreateDateColumn()
-  createdAt: Date;
+  reportedDatetime: Date;
 
   @OneToMany(() => Finding, (finding) => finding.report, {
     cascade: true,

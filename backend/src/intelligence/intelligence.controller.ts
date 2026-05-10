@@ -12,7 +12,7 @@ export class IntelligenceController {
   @Post('analyze')
   analyze(@Body() body: { text: string }) {
     const classification = this.intelligence.classify(body.text);
-    const standards = this.standards.matchStandards(body.text);
+    const standards = this.standards.match(body.text);
 
     return {
       classification,

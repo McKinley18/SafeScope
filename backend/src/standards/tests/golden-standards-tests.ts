@@ -50,16 +50,13 @@ async function main() {
     save: async (dto: any) => dto,
   } as any;
 
-  const service = new StandardsService(
-    dataSource.getRepository(Standard),
-    fakeFeedbackRepo,
-  );
+  const service = new StandardsService();
 
   let pass = 0;
 
   for (const [name, expectedCitation, request] of testCases as any[]) {
-    const result = await service.match(request);
-    const top = result.primaryMatches[0] ?? result.matches[0];
+    const result = await service.match(JSON.stringify(request));
+    const top = result[0];
     const ok = top?.citation === expectedCitation;
 
     if (ok) pass += 1;
