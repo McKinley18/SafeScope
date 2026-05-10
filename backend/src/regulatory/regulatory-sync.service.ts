@@ -46,8 +46,13 @@ export class RegulatorySyncService {
     let sectionsUpserted = 0, paragraphsUpserted = 0;
     const traverse = async (node: any) => {
         if (node.TYPE === 'SECTION') {
-            const sectionNo = node.N?.replace('§ ', '') || '0';
-            const citation = `${opts.titleNumber} CFR ${opts.part}.${sectionNo}`;
+            let sectionNo = node.N?.replace('§ ', '') || '0';
+            // 🔷 FIX: Prevent double part numbering (e.g. 56.56.1 -> 56.1)
+            if (sectionNo.startsWith(opts.part + '.' + opts.part)) {
+                sectionNo = sectionNo.substring(opts.part.length + 1);
+            }
+            const citation = `${opts.titleNumber} CFR ${sectionNo}`;
+            
             await this.sectionRepo.upsert({
                 agencyCode: opts.agencyCode, titleNumber: opts.titleNumber, part: opts.part, 
                 section: sectionNo, citation, heading: node.HEAD, textPlain: Array.isArray(node.P) ? node.P.join(' ') : (node.P || '')

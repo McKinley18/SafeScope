@@ -1,47 +1,47 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { ReportsService } from './reports.service';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 
+import { ReportsService } from './reports.service';
+import { CreateReportDto } from './dto/create-report.dto';
+import { JwtGuard } from '../auth/guards/jwt.guard';
+import { RecommendationsService } from '../recommendations/recommendations.service';
+
+@UseGuards(JwtGuard)
 @Controller('reports')
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(
+    private readonly reportsService: ReportsService,
+    private readonly recommendationsService: RecommendationsService,
+  ) {}
 
-  // =========================
-  // CREATE REPORT
-  // =========================
   @Post()
-  create(@Body() body: any) {
+  create(@Body() body: CreateReportDto) {
     return this.reportsService.create(body);
   }
+@Post(':id/recommendations/feedback')
+submitFeedback(@Body() body: any) {
+  return this.recommendationsService.submitFeedback(body);
+}
 
-  // =========================
-  // GET ALL REPORTS
-  // =========================
   @Get()
   findAll() {
     return this.reportsService.findAll();
   }
 
-  // =========================
-  // INTELLIGENCE (MUST BE BEFORE :id)
-  // =========================
-  @Get('intelligence')
-  getIntelligence() {
-    return this.reportsService.getIntelligence();
-  }
-
-  // =========================
-  // FEEDBACK
-  // =========================
-  @Post('feedback')
-  storeFeedback(@Body() body: any) {
-    return this.reportsService.storeFeedback(body);
-  }
-
-  // =========================
-  // GET ONE REPORT (ALWAYS LAST)
-  // =========================
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reportsService.findOne(id);
+  }
+
+  @Get(':id/recommendations')
+  async getRecommendations(@Param('id') id: string) {
+    const report = await this.reportsService.findOne(id);
+    return this.recommendationsService.generate(report.findings);
   }
 }

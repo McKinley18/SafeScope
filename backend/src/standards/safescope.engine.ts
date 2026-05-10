@@ -1,106 +1,103 @@
-import { Standard } from './standard.entity';
-import { Feedback } from './feedback.entity';
+import { Injectable } from '@nestjs/common';
 
-function tokenize(text: string): string[] {
-  return (text || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .split(/\s+/)
-    .filter(Boolean);
-}
+type MatchResult = {
+  citation: string;
+  title: string;
+  confidence: number;
+  matchedTerms: string[];
+};
 
-// 🔥 decay function (recent = strong, old = weak)
-function getDecayWeight(date: Date): number {
-  const now = new Date().getTime();
-  const diffDays = (now - new Date(date).getTime()) / (1000 * 60 * 60 * 24);
+@Injectable()
+export class SafeScopeEngine {
+  /* 🔥 CORE MATCH FUNCTION */
+  match(text: string): MatchResult[] {
+    if (!text) return [];
 
-  // exponential decay
-  return Math.exp(-diffDays / 30); // 30-day half-life
-}
+    const normalized = text.toLowerCase();
 
-function scoreMatch(
-  hazardTokens: string[],
-  contextTokens: string[],
-  standard: Standard,
-  feedback: Feedback[]
-) {
-  const text = `${standard.title} ${standard.text}`.toLowerCase();
+    const matches: MatchResult[] = [];
 
-  let score = 0;
-  const reasons: string[] = [];
-
-  // base matching
-  for (const token of hazardTokens) {
-    if (text.includes(token)) {
-      score += 3;
-      reasons.push(token);
+    /* =========================
+       FALL / EDGE HAZARDS (MSHA)
+    ========================== */
+    if (this.contains(normalized, ['unguarded', 'edge', 'open side', 'platform'])) {
+      matches.push({
+        citation: '56.11012',
+        title: 'Protection for openings around travelways',
+        confidence: this.score(normalized, ['unguarded', 'edge', 'platform']),
+        matchedTerms: this.getMatchedTerms(normalized, ['unguarded', 'edge', 'platform']),
+      });
     }
+
+    /* =========================
+       FALL PROTECTION (OSHA)
+    ========================== */
+    if (this.contains(normalized, ['fall', 'height', 'unguarded edge'])) {
+      matches.push({
+        citation: '1926.501',
+        title: 'Duty to have fall protection',
+        confidence: this.score(normalized, ['fall', 'height', 'edge']),
+        matchedTerms: this.getMatchedTerms(normalized, ['fall', 'height', 'edge']),
+      });
+    }
+
+    /* =========================
+       ELECTRICAL HAZARDS
+    ========================== */
+    if (this.contains(normalized, ['electrical', 'exposed wire', 'live wire', 'shock'])) {
+      matches.push({
+        citation: '1910.303',
+        title: 'Electrical general requirements',
+        confidence: this.score(normalized, ['electrical', 'wire', 'shock']),
+        matchedTerms: this.getMatchedTerms(normalized, ['electrical', 'wire', 'shock']),
+      });
+    }
+
+    /* =========================
+       PPE (GENERAL)
+    ========================== */
+    if (this.contains(normalized, ['no ppe', 'missing ppe', 'no helmet', 'no gloves'])) {
+      matches.push({
+        citation: '1910.132',
+        title: 'Personal Protective Equipment',
+        confidence: this.score(normalized, ['ppe', 'helmet', 'gloves']),
+        matchedTerms: this.getMatchedTerms(normalized, ['ppe', 'helmet', 'gloves']),
+      });
+    }
+
+    /* =========================
+       HOUSEKEEPING / TRIP HAZARDS
+    ========================== */
+    if (this.contains(normalized, ['debris', 'clutter', 'trip', 'slip'])) {
+      matches.push({
+        citation: '1910.22',
+        title: 'Walking-working surfaces',
+        confidence: this.score(normalized, ['debris', 'trip', 'slip']),
+        matchedTerms: this.getMatchedTerms(normalized, ['debris', 'trip', 'slip']),
+      });
+    }
+
+    /* 🔥 SORT BY CONFIDENCE */
+    return matches.sort((a, b) => b.confidence - a.confidence);
   }
 
-  for (const token of contextTokens) {
-    if (text.includes(token)) {
-      score += 2;
-      reasons.push(token);
-    }
+  /* 🔥 HELPERS */
+
+  private contains(text: string, keywords: string[]): boolean {
+    return keywords.some((k) => text.includes(k));
   }
 
-  // baseline boosts
-  if (text.includes('fall')) score += 2;
-  if (text.includes('guard')) score += 2;
-
-  // 🔥 FEEDBACK WITH DECAY
-  const related = feedback.filter(
-    (f) => f.citation === standard.citation
-  );
-
-  for (const f of related) {
-    const weight = getDecayWeight(f.createdAt);
-
-    if (f.action === 'accept') score += 5 * weight;
-    if (f.action === 'reject') score -= 5 * weight;
-
-    if (
-      f.action === 'change' &&
-      f.replacementCitation === standard.citation
-    ) {
-      score += 6 * weight;
-    }
+  private getMatchedTerms(text: string, keywords: string[]): string[] {
+    return keywords.filter((k) => text.includes(k));
   }
 
-  return {
-    score,
-    reasons: Array.from(new Set(reasons)),
-  };
-}
+  private score(text: string, keywords: string[]): number {
+    const matched = keywords.filter((k) => text.includes(k)).length;
+    const total = keywords.length;
 
-export function analyzeHazardV3(
-  hazard: string,
-  context: string,
-  standards: Standard[],
-  feedback: Feedback[],
-  limit = 5
-) {
-  const hazardTokens = tokenize(hazard);
-  const contextTokens = tokenize(context);
+    const base = matched / total;
 
-  return standards
-    .map((std) => {
-      const { score, reasons } = scoreMatch(
-        hazardTokens,
-        contextTokens,
-        std,
-        feedback
-      );
-
-      return {
-        citation: std.citation,
-        title: std.title,
-        score,
-        confidence: Math.min(score / 10, 1),
-        reasons,
-      };
-    })
-    .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+    // 🔥 scale confidence (0.5–0.95)
+    return Math.min(0.5 + base * 0.45, 0.95);
+  }
 }

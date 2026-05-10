@@ -1,21 +1,30 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
-@Entity()
-export class Feedback {
+@Entity('standard_feedback')
+export class StandardFeedback {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  hazard: string;
+  standardId: string;
 
   @Column()
   citation: string;
 
   @Column()
-  action: string; // accept | reject | change
+  action: 'accepted' | 'rejected' | 'changed' | 'flagged';
 
   @Column({ nullable: true })
-  replacementCitation: string;
+  replacementCitation?: string;
+
+  @Column({ nullable: true })
+  text?: string;
+
+  @Column({ nullable: true })
+  reportId?: string;
+
+  @Column({ nullable: true })
+  notes?: string;
 
   @CreateDateColumn()
   createdAt: Date;

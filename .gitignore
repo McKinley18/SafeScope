@@ -1,6 +1,11 @@
-node_modules
-dist
+node_modules/
+dist/
+.next/
 .env
+.env.local
 .DS_Store
-npm-debug.log
-coverage
+*.log
+.vscode/
+.idea/
+.expo/
+.cache/

@@ -1,126 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class StandardsService {
-  private feedback: any[] = [];
+  private standards = [
+    {
+      citation: '30 CFR 56.11001',
+      description: 'Safe access must be provided and maintained',
+      keywords: ['fall', 'ladder', 'walkway', 'platform'],
+    },
+    {
+      citation: '30 CFR 56.12016',
+      description: 'Electrical equipment must be de-energized before work',
+      keywords: ['electrical', 'wiring', 'energized', 'shock'],
+    },
+    {
+      citation: '30 CFR 56.15005',
+      description: 'Safety belts and lines must be worn where there is a danger of falling',
+      keywords: ['fall', 'height', 'edge'],
+    },
+  ];
 
-  // =========================
-  // 🎯 STANDARD MATCHING ENGINE (V3)
-  // =========================
-  matchStandards(hazard: string, type: string) {
-    if (!hazard) return [];
+  match(text: string) {
+    const input = text.toLowerCase();
 
-    const h = hazard.toLowerCase();
+    const matches = this.standards.map((s) => {
+      const hits = s.keywords.filter(k => input.includes(k));
 
-    // =========================
-    // 🔥 FALL PROTECTION (MSHA)
-    // =========================
-    if (h.includes('unguarded') && h.includes('edge')) {
-      return [
-        {
-          citation: '56.11012',
-          title: 'Protection for openings around travelways.',
-          score: 100,
-          confidence: 0.95,
-          type: 'primary',
-          category: 'Fall Protection',
-          reasons: ['hazard_mapping'],
-        },
-        {
-          citation: '56.15005',
-          title: 'Safety belts and lines.',
-          score: 80,
-          confidence: 0.8,
-          type: 'secondary',
-          category: 'Fall Protection',
-          reasons: ['hazard_mapping'],
-        },
-      ];
-    }
+      return {
+        citation: s.citation,
+        description: s.description,
+        confidence: hits.length / s.keywords.length,
+      };
+    });
 
-    // =========================
-    // 🔥 GENERAL FALL HAZARD
-    // =========================
-    if (h.includes('fall')) {
-      return [
-        {
-          citation: type === 'MSHA' ? '56.15005' : '1926.501',
-          title:
-            type === 'MSHA'
-              ? 'Safety belts and lines.'
-              : 'Duty to have fall protection.',
-          score: 90,
-          confidence: 0.85,
-          type: 'primary',
-          category: 'Fall Protection',
-          reasons: ['keyword_match'],
-        },
-      ];
-    }
-
-    // =========================
-    // 🔥 ELECTRICAL
-    // =========================
-    if (h.includes('electrical')) {
-      return [
-        {
-          citation: '1910.303',
-          title: 'General electrical requirements.',
-          score: 85,
-          confidence: 0.8,
-          type: 'primary',
-          category: 'Electrical',
-          reasons: ['keyword_match'],
-        },
-      ];
-    }
-
-    // =========================
-    // 🔥 MOBILE EQUIPMENT
-    // =========================
-    if (h.includes('mobile') || h.includes('equipment')) {
-      return [
-        {
-          citation: '56.14100',
-          title: 'Safety defects; examination, correction and records.',
-          score: 80,
-          confidence: 0.75,
-          type: 'primary',
-          category: 'Mobile Equipment',
-          reasons: ['keyword_match'],
-        },
-      ];
-    }
-
-    // =========================
-    // ⚠️ NO MATCH FALLBACK
-    // =========================
-    return [];
-  }
-
-  // =========================
-  // 🔁 FEEDBACK LOOP
-  // =========================
-  storeFeedback(body: any) {
-    const record = {
-      id: uuidv4(),
-      hazard: body.hazard,
-      citation: body.citation,
-      action: body.action,
-      replacementCitation: body.replacementCitation || null,
-      createdAt: new Date(),
-    };
-
-    this.feedback.push(record);
-
-    return record;
-  }
-
-  // =========================
-  // 📊 OPTIONAL: VIEW FEEDBACK
-  // =========================
-  getFeedback() {
-    return this.feedback;
+    return matches
+      .filter(m => m.confidence > 0)
+      .sort((a, b) => b.confidence - a.confidence);
   }
 }

@@ -58,6 +58,12 @@ export class CorrectiveAction {
 
   // Now adding the new fields
   @Column({ nullable: true })
+  category: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  originalSuggestion: any;
+
+  @Column({ nullable: true })
   organizationId: string;
 
   @Column({ nullable: true })

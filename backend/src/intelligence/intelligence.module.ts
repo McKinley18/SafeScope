@@ -1,8 +1,16 @@
-import { Module } from '@nestjs/common';
-import { IntelligenceService } from './intelligence.service';
+import { Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { HazardFixService } from './hazard-fix.service';
+import { FixFeedbackService } from './fix-feedback.service';
+import { FixFeedback } from './fix-feedback.entity';
+import { CorrectiveActionsModule } from '../corrective-actions/corrective-actions.module';
 
 @Module({
-  providers: [IntelligenceService],
-  exports: [IntelligenceService],
+  imports: [
+    TypeOrmModule.forFeature([FixFeedback]),
+    forwardRef(() => CorrectiveActionsModule),
+  ],
+  providers: [HazardFixService, FixFeedbackService],
+  exports: [HazardFixService, FixFeedbackService],
 })
 export class IntelligenceModule {}

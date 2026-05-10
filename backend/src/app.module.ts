@@ -1,37 +1,62 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { ReportsModule } from './reports/reports.module';
-import { TaskModule } from './tasks/task.module';
 import { AuthModule } from './auth/auth.module';
+import { ReportsModule } from './reports/reports.module';
 import { StandardsModule } from './standards/standards.module';
+import { OrganizationsModule } from './organizations/organizations.module';
+import { SitesModule } from './sites/sites.module';
+import { HealthModule } from './health/health.module';
+import { RegulatoryModule } from './regulatory/regulatory.module';
+import { ActionEngineModule } from './action-engine/action-engine.module';
+import { IntelligenceModule } from './intelligence/intelligence.module';
+import { GovernanceModule } from './governance/governance.module';
+import { OutcomesModule } from './outcomes/outcomes.module';
+import { TransparencyModule } from './transparency/transparency.module';
 
 @Module({
   imports: [
+    // 🔷 ENVIRONMENT CONFIGURATION: IT standard for secret management
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
     }),
 
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USER || 'mckinley',
-      password: process.env.DB_PASS || '',
-      database: process.env.DB_NAME || 'sentinel_dev',
-
-      autoLoadEntities: true,
-
-      synchronize: true, // OK for dev ONLY
-
-      logging: false,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_NAME'),
+        autoLoadEntities: true,
+        // 🔷 DANGER: Keep true for dev, but IT departments require false for production
+        synchronize: configService.get<string>('NODE_ENV') === 'development',
+      }),
     }),
 
-    ReportsModule,
-    TaskModule,
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
+
     AuthModule,
-    StandardsModule, // 🔥 REQUIRED
+    ReportsModule,
+    StandardsModule,
+    OrganizationsModule,
+    SitesModule,
+    HealthModule,
+    RegulatoryModule,
+    ActionEngineModule,
+    IntelligenceModule,
+    GovernanceModule,
+    OutcomesModule,
+    TransparencyModule,
   ],
 })
 export class AppModule {}

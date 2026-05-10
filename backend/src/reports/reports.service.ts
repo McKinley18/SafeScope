@@ -1,11 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { Report } from './entities/report.entity';
 import { Finding } from './entities/finding.entity';
 import { StandardsService } from '../standards/standards.service';
-import { IntelligenceService } from '../intelligence/intelligence.service';
-import { AlertsService } from '../alerts/alerts.service';
+import { ActionEngineService } from '../action-engine/action-engine.service';
 
 @Injectable()
 export class ReportsService {
@@ -16,153 +16,86 @@ export class ReportsService {
     @InjectRepository(Finding)
     private findingRepo: Repository<Finding>,
 
-    private standardsService: StandardsService,
-    private intelligenceService: IntelligenceService,
-    private alertsService: AlertsService
+    private standards: StandardsService,
+
+    @Inject(forwardRef(() => ActionEngineService))
+    private actionEngine: ActionEngineService,
   ) {}
 
-  // =========================
-  // CREATE REPORT (SAFE + DB)
-  // =========================
   async create(body: any) {
-    // 🔍 DEBUG LOG (keep for now)
-    console.log('Incoming BODY:', body);
-
-    // =========================
-    // 🚨 VALIDATION (PREVENT DB CRASH)
-    // =========================
-    if (!body) {
-      throw new BadRequestException('Request body is missing');
-    }
-
-    const { company, site, inspector, type, findings } = body;
-
-    if (!company || !site || !inspector || !type) {
-      throw new BadRequestException(
-        'Missing required fields: company, site, inspector, type'
-      );
-    }
-
-    if (!Array.isArray(findings) || findings.length === 0) {
-      throw new BadRequestException('At least one finding is required');
-    }
-
-    // =========================
-    // 🧱 BUILD ENTITY
-    // =========================
     const report = this.reportRepo.create({
-      company,
-      site,
-      inspector,
-      type,
-      confidential: !!body.confidential,
-      findings: findings.map((f: any) => {
-        if (!f.hazard || f.severity == null || f.likelihood == null) {
-          throw new BadRequestException(
-            'Each finding must include hazard, severity, and likelihood'
-          );
-        }
-
-        return {
-          hazard: f.hazard,
-          severity: Number(f.severity),
-          likelihood: Number(f.likelihood),
-          standards: this.standardsService.matchStandards(
-            f.hazard,
-            type
-          ),
-        };
-      }),
+      company: body.company,
+      inspector: body.inspector,
     });
 
-    // =========================
-    // 💾 SAVE TO DB
-    // =========================
-    const saved = await this.reportRepo.save(report);
+    const savedReport = await this.reportRepo.save(report);
 
-    // =========================
-    // 📊 BUILD INTELLIGENCE
-    // =========================
-    const allReports = await this.reportRepo.find({
-      relations: ['findings'],
-    });
+    const findings = [];
+    const allActions = [];
 
-    const intel = this.intelligenceService.buildIntelligence(allReports);
-    const alerts = this.alertsService.generateAlerts(intel);
+    for (const f of body.findings || []) {
+      // 1. RUN STANDARDS ENGINE
+      const matches = this.standards.match(f.hazardCategory || '');
+
+      const finding = this.findingRepo.create({
+        hazardCategory: f.hazardCategory,
+        hazard: f.hazard,
+        severity: f.severity,
+        report: savedReport,
+      });
+
+      const savedFinding = await this.findingRepo.save(finding);
+
+      // 2. RUN ACTION ENGINE (Deterministic operational execution)
+      const actions = await this.actionEngine.generateActionsFromReport({
+        id: savedReport.id,
+        category: f.hazardCategory,
+        description: f.hazard || f.hazardCategory, // 🔷 Pass hazard description
+        riskScore: f.riskScore || 50, // Default for now
+        riskLevel: f.riskLevel || "MODERATE",
+        confidence: 0.90, // AI confidence baseline
+        patterns: f.patterns || [],
+        location: body.site || "Facility Floor",
+        override: f.criticalOverride || false,
+      });
+
+      allActions.push(...actions);
+
+      findings.push({
+        ...savedFinding,
+        standards: matches,
+      });
+    }
 
     return {
-      ...saved,
-      summary: this.buildSummary(saved),
-      alerts,
+      ...savedReport,
+      findings,
+      generatedActions: allActions,
     };
   }
 
-  // =========================
-  // GET ALL REPORTS
-  // =========================
   async findAll() {
-    return this.reportRepo.find({ relations: ['findings'] });
+    return this.reportRepo.find({
+      relations: ['findings'],
+    });
   }
 
-  // =========================
-  // GET ONE REPORT
-  // =========================
   async findOne(id: string) {
-    return this.reportRepo.findOne({
+    const report = await this.reportRepo.findOne({
       where: { id },
       relations: ['findings'],
     });
-  }
 
-  // =========================
-  // INTELLIGENCE (DB)
-  // =========================
-  async getIntelligence() {
-    const reports = await this.reportRepo.find({
-      relations: ['findings'],
-    });
+    if (!report) return null;
 
-    const intel = this.intelligenceService.buildIntelligence(reports);
-    const alerts = this.alertsService.generateAlerts(intel);
+    const findings = report.findings.map((f) => ({
+      ...f,
+      standards: this.standards.match(f.hazardCategory || ''),
+    }));
 
     return {
-      ...intel,
-      alerts,
-    };
-  }
-
-  // =========================
-  // FEEDBACK LOOP
-  // =========================
-  storeFeedback(body: any) {
-    return this.standardsService.storeFeedback(body);
-  }
-
-  // =========================
-  // SUMMARY BUILDER
-  // =========================
-  private buildSummary(report: any) {
-    let criticalRisk = 0;
-    let highRisk = 0;
-
-    for (const f of report.findings || []) {
-      const risk = f.severity * f.likelihood;
-
-      if (risk >= 16) criticalRisk++;
-      else if (risk >= 9) highRisk++;
-    }
-
-    return {
-      totalFindings: report.findings.length,
-      criticalRisk,
-      highRisk,
-      topFindings: report.findings.map((f: any) => ({
-        hazard: f.hazard,
-        priority:
-          f.severity * f.likelihood >= 16
-            ? 'Critical'
-            : 'Moderate',
-      })),
+      ...report,
+      findings,
     };
   }
 }

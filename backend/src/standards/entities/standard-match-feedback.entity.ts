@@ -19,6 +19,12 @@ export class StandardMatchFeedback {
   @Column({ name: 'citation' })
   citation: string;
 
+  @Column({ name: 'query_text', nullable: true })
+  queryText: string;
+
+  @Column({ name: 'hazard_category', nullable: true })
+  hazardCategory: string;
+
   @Column()
   action: 'accepted' | 'rejected' | 'changed' | 'flagged';
 

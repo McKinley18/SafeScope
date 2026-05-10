@@ -1,175 +1,89 @@
-import {
-  Injectable,
-  BadRequestException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { RegisterDto } from './dto/register.dto';
+import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
+import { Repository } from 'typeorm';
+import { User } from '../users/user.entity';
 import { JwtService } from '@nestjs/jwt';
-import { randomBytes } from 'crypto';
-import { User } from './user.entity';
+import { OrganizationsService } from '../organizations/organizations.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private usersRepo: Repository<User>,
+    private userRepo: Repository<User>,
     private jwtService: JwtService,
+    private orgService: OrganizationsService,
   ) {}
 
-  // =========================
-  // 🔐 PASSWORD POLICY
-  // =========================
-  validatePassword(password: string) {
-    if (!password || password.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters');
-    }
-    if (!/[A-Z]/.test(password)) {
-      throw new BadRequestException('Must include uppercase letter');
-    }
-    if (!/[a-z]/.test(password)) {
-      throw new BadRequestException('Must include lowercase letter');
-    }
-    if (!/[0-9]/.test(password)) {
-      throw new BadRequestException('Must include number');
-    }
-    if (!/[^A-Za-z0-9]/.test(password)) {
-      throw new BadRequestException('Must include special character');
-    }
-  }
+  async register(dto: RegisterDto & { inviteToken?: string }) {
+    const { email, password, name, type, inviteToken } = dto;
 
-  // =========================
-  // 🧾 REGISTER
-  // =========================
-  async register(email: string, password: string) {
-    if (!email || !password) {
-      throw new BadRequestException('Email and password required');
+    const existing = await this.userRepo.findOne({ where: { email } });
+    if (existing) throw new BadRequestException('Email already exists');
+
+    let organizationId = null;
+    let role = 'Auditor';
+    let finalType = type;
+
+    // 🔷 HANDSHAKE: IF INVITE TOKEN PROVIDED
+    if (inviteToken) {
+      const invite = await this.orgService.useInvitation(inviteToken);
+      organizationId = invite.organizationId;
+      role = invite.role;
+      finalType = 'company'; // Locked to company tier
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const existing = await this.usersRepo.findOne({
-      where: { email: normalizedEmail },
+    const user = this.userRepo.create({
+      name,
+      email,
+      password: hashedPassword,
+      type: finalType,
+      role,
+      organizationId
     });
 
-    if (existing) {
-      throw new BadRequestException('User already exists');
-    }
-
-    this.validatePassword(password);
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    const user = this.usersRepo.create({
-      email: normalizedEmail,
-      password: hashed,
-    });
-
-    await this.usersRepo.save(user);
-
-    return { message: 'User created' };
-  }
-
-  // =========================
-  // 🔑 LOGIN
-  // =========================
-  async login(email: string, password: string) {
-    if (!email || !password) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const normalizedEmail = email.toLowerCase().trim();
-
-    const user = await this.usersRepo.findOne({
-      where: { email: normalizedEmail },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-
-    if (!match) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const token = this.jwtService.sign({
-      sub: user.id,
-      email: user.email,
-    });
+    await this.userRepo.save(user);
 
     return {
-      access_token: token,
-      user: {
-        id: user.id,
-        email: user.email,
-      },
+      message: 'User created successfully',
+      userId: user.id,
+      organizationId
     };
   }
 
-  // =========================
-  // 🔁 REQUEST PASSWORD RESET
-  // =========================
-  async requestPasswordReset(email: string) {
-    if (!email) {
-      return { message: 'If email exists, reset sent' };
-    }
-
-    const normalizedEmail = email.toLowerCase().trim();
-
-    const user = await this.usersRepo.findOne({
-      where: { email: normalizedEmail },
-    });
-
-    // 🔒 Prevent user enumeration
-    if (!user) {
-      return { message: 'If email exists, reset sent' };
-    }
-
-    const token = randomBytes(32).toString('hex');
-
-    user.resetToken = token;
-    user.resetTokenExpiry = new Date(Date.now() + 1000 * 60 * 15); // 15 min
-
-    await this.usersRepo.save(user);
-
-    // ⚠️ Replace with email service later
-    console.log(
-      `RESET LINK: http://localhost:3000/reset-password?token=${token}`,
-    );
-
-    return { message: 'If email exists, reset sent' };
+  async verifyInvite(token: string) {
+    return await this.orgService.verifyInvitation(token);
   }
 
-  // =========================
-  // 🔁 RESET PASSWORD
-  // =========================
-  async resetPassword(token: string, newPassword: string) {
-    if (!token || !newPassword) {
-      throw new BadRequestException('Token and new password required');
-    }
-
-    const user = await this.usersRepo.findOne({
-      where: {
-        resetToken: token,
-        resetTokenExpiry: MoreThan(new Date()),
-      },
-    });
+  async login(email: string, password: string) {
+    const user = await this.userRepo.findOne({ where: { email } });
 
     if (!user) {
-      throw new BadRequestException('Invalid or expired token');
+      throw new BadRequestException('Invalid credentials');
     }
 
-    this.validatePassword(newPassword);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    user.password = await bcrypt.hash(newPassword, 10);
-    user.resetToken = null;
-    user.resetTokenExpiry = null;
+    if (!isMatch) {
+      throw new BadRequestException('Invalid credentials');
+    }
 
-    await this.usersRepo.save(user);
+    const token = this.jwtService.sign({
+      userId: user.id,
+      email: user.email,
+      type: user.type,
+      role: user.role,
+      subscriptionStatus: user.subscriptionStatus,
+      deletedAt: user.deletedAt,
+      organizationId: user.organizationId
+    });
 
-    return { message: 'Password reset successful' };
+    return {
+      message: 'Login successful',
+      token,
+    };
   }
 }

@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AlertsService } from './alerts.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Alert } from './alert.entity';
+import { AlertsController } from './alerts.controller';
 
 @Module({
-  providers: [AlertsService],
-  exports: [AlertsService],
+  imports: [TypeOrmModule.forFeature([Alert])],
+  exports: [TypeOrmModule], // ✅ REQUIRED
 })
 export class AlertsModule {}
+
+
+
 

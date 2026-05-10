@@ -1,6 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-
-export type UserRole = 'Worker' | 'Supervisor' | 'Manager' | 'Admin';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Organization } from '../organizations/entities/organization.entity';
 
 @Entity()
 export class User {
@@ -13,9 +12,27 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
-  @Column({ default: 'Worker' })
-  role: UserRole;
+  @Column()
+  type: string; // 'individual', 'pro', 'company'
+
+  @Column({ default: 'Auditor' })
+  role: string; // 'Owner', 'Auditor', 'Viewer'
+
+  @Column({ default: 'active' })
+  subscriptionStatus: string; // 'active', 'past_due', 'canceled', 'trial'
+
+  @Column({ nullable: true })
+  nextBillingDate: Date;
+
+  @Column({ nullable: true })
+  deletedAt: Date;
+
+  @ManyToOne(() => Organization, { nullable: true })
+  organization: Organization;
+
+  @Column({ nullable: true })
+  organizationId: string;
 }

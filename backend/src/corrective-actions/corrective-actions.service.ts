@@ -6,6 +6,8 @@ import { CorrectiveAction } from './entities/corrective-action.entity';
 import { CreateCorrectiveActionDto, CloseCorrectiveActionDto } from './dto/corrective-action.dto';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { FixFeedbackService } from '../intelligence/fix-feedback.service';
+import { OutcomeService } from '../outcomes/outcome.service';
 
 @Injectable()
 export class CorrectiveActionsService {
@@ -14,27 +16,16 @@ export class CorrectiveActionsService {
     private actionRepo: Repository<CorrectiveAction>,
     private auditService: AuditService,
     private notificationsService: NotificationsService,
+    private fixFeedbackService: FixFeedbackService,
+    private outcomeService: OutcomeService,
   ) {}
 
   private getAuthContext(authHeader?: string) {
     const token = authHeader?.replace('Bearer ', '');
     if (!token) throw new UnauthorizedException('Missing authorization token');
-
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret && process.env.NODE_ENV === 'production') {
-      throw new UnauthorizedException('JWT secret is not configured.');
-    }
-
-    const signingSecret = secret || 'local_dev_secret_only';
-
+    const secret = process.env.JWT_SECRET || 'local_dev_secret_only';
     try {
-      return jwt.verify(token, signingSecret) as {
-        sub: string;
-        email: string;
-        tenantId: string;
-        role: string;
-      };
+      return jwt.verify(token, secret) as any;
     } catch {
       throw new UnauthorizedException('Invalid authorization token');
     }
@@ -78,13 +69,10 @@ export class CorrectiveActionsService {
   async create(authHeader: string, dto: CreateCorrectiveActionDto) {
     const auth = this.getAuthContext(authHeader);
     const count = await this.actionRepo.count();
-    const displayId = `ACT-${String(count + 2001).padStart(4, '0')}`;
-
     const action = this.actionRepo.create({
       ...dto,
       tenantId: auth.tenantId,
-      ownerUserId: auth.sub,
-      displayId,
+      displayId: `ACT-${String(count + 2001).padStart(4, '0')}`,
     });
     const saved = await this.actionRepo.save(action);
     await this.auditService.log({
@@ -95,19 +83,6 @@ export class CorrectiveActionsService {
       actionCode: 'ACTION_CREATED',
       afterJson: saved,
     });
-
-    if (saved.assignedToUserId) {
-      await this.notificationsService.create({
-        tenantId: auth.tenantId,
-        userId: saved.assignedToUserId,
-        type: 'assigned_action',
-        title: 'New corrective action assigned',
-        message: saved.title || 'A corrective action has been assigned to you.',
-        entityType: 'CORRECTIVE_ACTION',
-        entityId: saved.id,
-      });
-    }
-
     return saved;
   }
 
@@ -131,6 +106,40 @@ export class CorrectiveActionsService {
     }
 
     const updated = await this.actionRepo.save(action);
+
+    // 🔷 OIL: Record Outcome
+    if (updated.statusCode === 'closed') {
+        const outcome = await this.outcomeService.recordOutcome({
+            actionId: updated.id,
+            category: updated.category || 'unknown',
+            originalRecommendation: updated.originalSuggestion,
+            userActionTaken: { title: updated.title, description: updated.description, closureNotes: updated.closureNotes },
+            verificationStatus: 'VERIFIED_STRONG',
+            verificationMethod: 'SUPERVISOR_SIGNOFF',
+            location: updated.siteId || 'Facility Floor'
+        });
+
+        // 🔷 ESCALATION: Auto-escalate if recurrence detected
+        if (outcome.recurrenceDetected) {
+            updated.priorityCode = 'urgent';
+            await this.actionRepo.save(updated);
+        }
+
+        // 🔷 FEEDBACK LOOP: Record successful remediation (only if no recurrence)
+        if (updated.category && !outcome.recurrenceDetected) {
+            await this.fixFeedbackService.recordFeedback({
+                reportId: updated.reportId,
+                category: updated.category,
+                originalSuggestion: updated.originalSuggestion,
+                userAction: {
+                    title: updated.title,
+                    description: updated.description,
+                    closureNotes: updated.closureNotes
+                },
+                approved: true
+            });
+        }
+    }
 
     await this.auditService.log({
       tenantId: auth.tenantId,
@@ -215,6 +224,38 @@ export class CorrectiveActionsService {
     action.closureNotes = dto.closureNotes;
     action.verifiedAt = new Date();
     const updated = await this.actionRepo.save(action);
+
+    // 🔷 OIL: Record Outcome
+    const outcome = await this.outcomeService.recordOutcome({
+        actionId: updated.id,
+        category: updated.category || 'unknown',
+        originalRecommendation: updated.originalSuggestion,
+        userActionTaken: { title: updated.title, description: updated.description, closureNotes: updated.closureNotes },
+        verificationStatus: 'VERIFIED_STRONG',
+        verificationMethod: 'SUPERVISOR_SIGNOFF',
+        location: updated.siteId || 'Facility Floor'
+    });
+
+    // 🔷 ESCALATION: Auto-escalate if recurrence detected
+    if (outcome.recurrenceDetected) {
+        updated.priorityCode = 'urgent';
+        await this.actionRepo.save(updated);
+    }
+
+    // 🔷 FEEDBACK LOOP: Record successful remediation (only if no recurrence)
+    if (updated.category && !outcome.recurrenceDetected) {
+        await this.fixFeedbackService.recordFeedback({
+            reportId: updated.reportId,
+            category: updated.category,
+            originalSuggestion: updated.originalSuggestion,
+            userAction: {
+                title: updated.title,
+                description: updated.description,
+                closureNotes: updated.closureNotes
+            },
+            approved: true
+        });
+    }
 
     await this.auditService.log({
       entityType: 'CORRECTIVE_ACTION',

@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-
-import { Standard } from './standard.entity';
-import { Feedback } from './feedback.entity';
 import { StandardsService } from './standards.service';
+import { StandardsController } from './standards.controller';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Standard, Feedback]),
-  ],
+  controllers: [StandardsController],
   providers: [StandardsService],
-  exports: [StandardsService],
+  exports: [StandardsService], // ✅ CRITICAL
 })
 export class StandardsModule {}

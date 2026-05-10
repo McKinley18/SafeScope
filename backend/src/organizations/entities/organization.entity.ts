@@ -9,6 +9,9 @@ export class Organization {
   @Column()
   name: string;
 
+  @Column({ nullable: true })
+  logoPath: string;
+
   @OneToMany(() => Site, site => site.organization)
   sites: Site[];
 

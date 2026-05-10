@@ -22,7 +22,7 @@ export default function HomePage() {
         }}
       >
         <a href="/login">Login</a>
-        <a href="/signup">Create Account</a>
+        <a href="/create-account">Create Account</a>
         <a href="/command-center">Command Center</a>
         <a href="/inspection">Inspection</a>
         <a href="/report">Reports</a>
