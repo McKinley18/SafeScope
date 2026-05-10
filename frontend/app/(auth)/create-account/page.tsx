@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutContainer } from '../../components/LayoutContainer';
+import { LayoutContainer } from '@/components/LayoutContainer';
 
 const plans: any = {
   individual: { name: 'Basic', price: '$0', term: 'Free Forever' },

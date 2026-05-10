@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutContainer } from '../components/LayoutContainer';
+import { LayoutContainer } from '@/components/LayoutContainer';
 import ConditionalLoginLink from '../components/ConditionalLoginLink';
 
 export default function AboutPage() {

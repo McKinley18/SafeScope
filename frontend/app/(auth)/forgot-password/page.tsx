@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { LayoutContainer } from '../../components/LayoutContainer';
+import { LayoutContainer } from '@/components/LayoutContainer';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');

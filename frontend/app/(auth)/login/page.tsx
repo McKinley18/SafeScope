@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutContainer } from '../../components/LayoutContainer';
+import { LayoutContainer } from '@/components/LayoutContainer';
 
 export default function LoginPage() {
   const router = useRouter();
