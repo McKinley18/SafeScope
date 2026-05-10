@@ -11,9 +11,11 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "skipLibCheck": true,
-    "strictPropertyInitialization": false
+    "moduleResolution": "node",
+    "useDefineForClassFields": false
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": ["src/**/*"]
 }

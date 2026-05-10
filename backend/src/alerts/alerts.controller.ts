@@ -21,8 +21,8 @@ export class AlertsController {
 
     if (!alert) return { error: 'Not found' };
 
-    alert.acknowledged = true;
-    alert.acknowledgedAt = new Date().toISOString();
+    alert.status = true;
+    alert.statusAt = new Date().toISOString();
 
     return this.repo.save(alert);
   }

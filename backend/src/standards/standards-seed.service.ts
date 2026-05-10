@@ -62,7 +62,7 @@ export class StandardsSeedService {
 
       await this.correctiveTemplateRepo.save(
         this.correctiveTemplateRepo.create({
-          hazardCategoryCode: standard.keywords?.[0] || 'general',
+          categoryCode: standard.keywords?.[0] || 'general',
           standardId: standard.id,
           title: `Corrective action for ${standard.citation}`,
           recommendedAction: `Correct the condition related to ${standard.title} and document verification.`,
