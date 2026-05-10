@@ -22,7 +22,7 @@ export class UploadController {
       }),
     }),
   )
-  uploadLogo(@UploadedFile() file: Express.Multer.File) {
+  uploadLogo(@UploadedFile() file: any) {
     return {
       path: `/uploads/logos/${file.filename}`,
     };
