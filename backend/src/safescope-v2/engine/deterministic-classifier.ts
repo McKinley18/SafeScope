@@ -119,13 +119,69 @@ export class DeterministicClassifier {
 
     const ambiguityWarnings: string[] = [];
 
-    if (second && second.score > 0 && best.score - second.score <= 1) {
+    if (second && second.score > 0 && best.score - second.score <= 2) {
       ambiguityWarnings.push(
         `Close match between ${best.classification} and ${second.classification}.`,
       );
     }
 
+    const reviewSignals: Array<{ family: string; terms: string[] }> = [
+      { family: 'Electrical', terms: ['electrical', 'wire', 'cord', 'panel', 'cable'] },
+      { family: 'Housekeeping', terms: ['walkway', 'spill', 'trip', 'slip', 'blocked'] },
+      { family: 'PPE', terms: ['hard hat', 'helmet', 'ppe', 'gloves', 'glasses'] },
+      { family: 'Powered Mobile Equipment', terms: ['forklift', 'mobile equipment', 'vehicle', 'pedestrian'] },
+      { family: 'Fall', terms: ['edge', 'guardrail', 'mezzanine', 'fall'] },
+      { family: 'Machine', terms: ['guard', 'conveyor', 'moving'] },
+    ];
+
+    const signalFamilies = reviewSignals
+      .filter((signal) =>
+        signal.terms.some((term) => normalizedInput.includes(term)),
+      )
+      .map((signal) => signal.family);
+
+    const uniqueSignalFamilies = unique(signalFamilies);
+
+    const competingSignals = uniqueSignalFamilies.filter(
+      (family) => family !== best.classification,
+    );
+
+    if (uniqueSignalFamilies.length > 1) {
+      ambiguityWarnings.push(
+        `Multiple hazard domains detected: ${uniqueSignalFamilies.join(', ')}.`,
+      );
+    } else if (competingSignals.length > 0) {
+      ambiguityWarnings.push(
+        `Multiple hazard domains detected: ${[best.classification, ...competingSignals].join(', ')}.`,
+      );
+    }
+
     const { confidence, confidenceBand } = confidenceFromScore(best.score);
+
+    if (ambiguityWarnings.length === 0 && confidenceBand !== 'low') {
+      const domainTerms = [
+        { family: 'Electrical', terms: ['electrical', 'wire', 'cord', 'panel', 'cable'] },
+        { family: 'Housekeeping', terms: ['walkway', 'spill', 'trip', 'slip', 'blocked'] },
+        { family: 'PPE', terms: ['hard hat', 'helmet', 'ppe', 'gloves', 'glasses'] },
+        { family: 'Powered Mobile Equipment', terms: ['forklift', 'mobile equipment', 'vehicle', 'pedestrian'] },
+        { family: 'Fall', terms: ['edge', 'guardrail', 'mezzanine', 'fall'] },
+        { family: 'Machine', terms: ['guard', 'conveyor', 'moving'] },
+      ];
+
+      const detectedDomains = unique(
+        domainTerms
+          .filter((domain) =>
+            domain.terms.some((term) => normalizedInput.includes(term)),
+          )
+          .map((domain) => domain.family),
+      );
+
+      if (detectedDomains.length > 1) {
+        ambiguityWarnings.push(
+          `Multiple hazard domains detected: ${detectedDomains.join(', ')}.`,
+        );
+      }
+    }
 
     return {
       classification: best.classification,
