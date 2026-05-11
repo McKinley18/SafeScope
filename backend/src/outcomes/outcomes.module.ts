@@ -6,7 +6,7 @@ import { CorrectiveAction } from '../corrective-actions/entities/corrective-acti
 import { IntelligenceModule } from '../intelligence/intelligence.module';
 
 @Module({
-  imports: [
+  imports: [IntelligenceModule, 
     TypeOrmModule.forFeature([Outcome, CorrectiveAction]),
     IntelligenceModule
   ],

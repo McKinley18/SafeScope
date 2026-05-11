@@ -1,14 +1,26 @@
 import { Injectable } from '@nestjs/common';
 
+export type SafeScopeStandard = {
+  citation: string;
+  title: string;
+  recommendedActions: string[];
+  hazardTags: string[];
+  keywordTriggers: string[];
+  equipmentTags?: string[];
+  environmentTags?: string[];
+  severityWeight?: number[];
+  domain?: string;
+};
+
 @Injectable()
 export class StandardsService {
-  private standards = [];
+  private standards: SafeScopeStandard[] = [];
 
-  findAll() {
+  findAll(): SafeScopeStandard[] {
     return this.standards;
   }
 
-  load(seed) {
+  load(seed: SafeScopeStandard[]): void {
     this.standards = seed;
   }
 }

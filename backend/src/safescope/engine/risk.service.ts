@@ -8,7 +8,7 @@ export class RiskService {
   };
 
   getWeight(level: string): number {
-    return this.matrix[level]?.weight || 1;
+    return this.matrix[level as keyof typeof this.matrix]?.weight || 1;
   }
 
   isSevere(level: string): boolean {

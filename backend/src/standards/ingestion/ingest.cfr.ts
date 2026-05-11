@@ -1,7 +1,18 @@
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Standard } from '../standard.entity';
 import * as fs from 'fs';
 import * as path from 'path';
+
+type IngestRecord = {
+  citation: string;
+  agency: string;
+  title?: string;
+  text?: string;
+  part?: string | null;
+  category?: string | null;
+  isActive?: boolean;
+  [key: string]: unknown;
+};
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -19,16 +30,29 @@ function loadJSON(file: string) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
-async function upsert(repo, record) {
+function mapToStandardPayload(record: IngestRecord): Partial<Standard> {
+  return {
+    citation: record.citation,
+    agency: record.agency,
+    title: record.title ?? record.citation,
+    text: record.text ?? '',
+    part: record.part ?? undefined,
+    subpart: undefined,
+    category: record.category ?? undefined,
+    isActive: record.isActive ?? true,
+  };
+}
+
+async function upsert(repo: Repository<Standard>, record: IngestRecord) {
   const existing = await repo.findOne({
     where: { citation: record.citation, agency: record.agency },
   });
 
   if (existing) {
-    await repo.update(existing.id, record);
+    await repo.update(existing.id, mapToStandardPayload(record));
     console.log(`🔄 Updated ${record.citation}`);
   } else {
-    await repo.save(record);
+    await repo.save(repo.create(mapToStandardPayload(record)));
     console.log(`✔ Inserted ${record.citation}`);
   }
 }

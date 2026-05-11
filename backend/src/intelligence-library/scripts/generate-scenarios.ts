@@ -1,17 +1,54 @@
-const fs = require('fs');
+import * as fs from 'fs';
 
-const families = ["Guarding", "Electrical", "Access", "PPE", "Fall Protection", "Mobile Equipment", "Housekeeping", "Dust/Silica"];
-const templates = ["{kw} missing", "{kw} broken", "need to report {kw}", "check {kw} standard", "found {kw} issue"];
-const descriptors = ["", "immediately", "near plant", "crusher area", "urgent", "needs review"];
+type Scenario = {
+  family: string;
+  input: string;
+};
 
-const scenarios = [];
-families.forEach(f => {
-  templates.forEach(t => {
-     descriptors.forEach(d => {
-         scenarios.push({ family: f, input: t.replace('{kw}', f.split('/')[0]) + ' ' + d });
-     });
+const families: string[] = [
+  'Guarding',
+  'Electrical',
+  'Access',
+  'PPE',
+  'Fall Protection',
+  'Mobile Equipment',
+  'Housekeeping',
+  'Dust/Silica',
+];
+
+const templates: string[] = [
+  '{kw} missing',
+  '{kw} broken',
+  'need to report {kw}',
+  'check {kw} standard',
+  'found {kw} issue',
+];
+
+const descriptors: string[] = [
+  '',
+  'immediately',
+  'near plant',
+  'crusher area',
+  'urgent',
+  'needs review',
+];
+
+const scenarios: Scenario[] = [];
+
+families.forEach((family: string) => {
+  templates.forEach((template: string) => {
+    descriptors.forEach((descriptor: string) => {
+      scenarios.push({
+        family,
+        input: `${template.replace('{kw}', family.split('/')[0])} ${descriptor}`.trim(),
+      });
+    });
   });
 });
 
-fs.writeFileSync('backend/src/intelligence-library/data/50k-scenarios.json', JSON.stringify(scenarios, null, 2));
-console.log('Generated ' + scenarios.length + ' scenarios.');
+fs.writeFileSync(
+  'backend/src/intelligence-library/data/50k-scenarios.json',
+  JSON.stringify(scenarios, null, 2),
+);
+
+console.log(`Generated ${scenarios.length} scenarios.`);

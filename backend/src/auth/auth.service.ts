@@ -37,12 +37,11 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = this.userRepo.create({
-      name,
       email,
       password: hashedPassword,
       type: finalType,
       role,
-      organizationId
+      organizationId: organizationId || "default-org"
     });
 
     await this.userRepo.save(user);

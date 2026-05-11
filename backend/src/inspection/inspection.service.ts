@@ -4,6 +4,14 @@ import { Repository } from 'typeorm';
 
 import { Inspection } from './inspection.entity';
 
+type CreateInspectionInput = {
+  title: string;
+  hazards: Array<{
+    hazard: string;
+    severity: string | number;
+  }>;
+};
+
 @Injectable()
 export class InspectionService {
   constructor(
@@ -11,14 +19,15 @@ export class InspectionService {
     private repo: Repository<Inspection>,
   ) {}
 
-  async create(data: any) {
+  async create(data: CreateInspectionInput) {
     const inspection = this.repo.create({
       title: data.title,
-      hazards: data.hazards.map((h) => ({
-        description: h.hazard,
-        severity: h.severity,
-      })),
     });
+
+    inspection.hazards = data.hazards.map((h: CreateInspectionInput["hazards"][number]) => ({
+      description: h.hazard,
+      severity: String(h.severity),
+    })) as unknown as Inspection["hazards"];
 
     return this.repo.save(inspection);
   }

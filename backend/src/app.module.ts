@@ -1,3 +1,4 @@
+import { SafescopeV2Module } from './safescope-v2/safescope-v2.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -17,7 +18,7 @@ import { OutcomesModule } from './outcomes/outcomes.module';
 import { TransparencyModule } from './transparency/transparency.module';
 
 @Module({
-  imports: [
+  imports: [SafescopeV2Module, 
     // 🔷 ENVIRONMENT CONFIGURATION: IT standard for secret management
     ConfigModule.forRoot({
       isGlobal: true,
@@ -25,7 +26,7 @@ import { TransparencyModule } from './transparency/transparency.module';
     }),
 
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [SafescopeV2Module, ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',

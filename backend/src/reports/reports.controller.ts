@@ -1,4 +1,5 @@
 import {
+  NotFoundException,
   Controller,
   Post,
   Body,
@@ -42,6 +43,11 @@ submitFeedback(@Body() body: any) {
   @Get(':id/recommendations')
   async getRecommendations(@Param('id') id: string) {
     const report = await this.reportsService.findOne(id);
+
+    if (!report) {
+      throw new NotFoundException("Report not found");
+    }
+
     return this.recommendationsService.generate(report.findings);
   }
 }

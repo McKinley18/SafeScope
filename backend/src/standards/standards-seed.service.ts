@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Standard } from './entities/standard.entity';
-import { standardSeeds } from './seeds/standards.seed';
+import { standards } from './seed/standards.seed';
 import { CorrectiveActionTemplate } from './entities/corrective-action-template.entity';
+import { StandardMapper } from './standard.mapper';
 
 @Injectable()
 export class StandardsSeedService {
@@ -18,7 +19,7 @@ export class StandardsSeedService {
     let created = 0;
     let updated = 0;
 
-    for (const item of standardSeeds) {
+    for (const item of standards) {
       if (!item || !item.citation) {
         console.warn('Skipping invalid standard seed row:', item);
         continue;
@@ -29,19 +30,19 @@ export class StandardsSeedService {
           where: { citation: item.citation },
         });
 
+      const payload = StandardMapper.toEntity(item);
+
       if (existing) {
         await this.standardRepo.save(
           this.standardRepo.create({
             ...existing,
-            ...item,
+            ...payload,
           }),
         );
         updated += 1;
       } else {
         await this.standardRepo.save(
-          this.standardRepo.create({
-            ...item,
-          } as any),
+          this.standardRepo.create(payload as Standard),
         );
         created += 1;
         }
@@ -51,9 +52,9 @@ export class StandardsSeedService {
       }
     }
 
-    const standards = await this.standardRepo.find();
+    const standardRecords = await this.standardRepo.find();
 
-    for (const standard of standards) {
+    for (const standard of standardRecords) {
       const exists = await this.correctiveTemplateRepo.findOne({
         where: { standardId: standard.id },
       });
@@ -62,7 +63,7 @@ export class StandardsSeedService {
 
       await this.correctiveTemplateRepo.save(
         this.correctiveTemplateRepo.create({
-          categoryCode: standard.keywords?.[0] || 'general',
+          hazardCategoryCode: standard.hazardCodes?.[0] || 'general',
           standardId: standard.id,
           title: `Corrective action for ${standard.citation}`,
           recommendedAction: `Correct the condition related to ${standard.title} and document verification.`,
@@ -74,6 +75,6 @@ export class StandardsSeedService {
       );
     }
 
-    return { ok: true, created, updated, total: standardSeeds.length };
+    return { ok: true, created, updated, total: standardRecords.length };
   }
 }

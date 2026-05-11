@@ -4,7 +4,8 @@ import { dataSource } from './data-source';
 import { ClassificationRule } from '../taxonomy/entities/rule.entity';
 import { Standard } from '../standards/entities/standard.entity';
 import { CorrectiveActionTemplate } from '../standards/entities/corrective-action-template.entity';
-import { standardSeeds } from '../standards/seeds/standards.seed';
+import { standards as standardSeeds } from '../standards/seed/standards.seed';
+import { StandardMapper } from '../standards/standard.mapper';
 
 async function seed() {
   const ds: DataSource = await dataSource.initialize();
@@ -38,16 +39,18 @@ async function seed() {
         where: { citation: item.citation },
       });
 
+      const payload = {
+        ...StandardMapper.toEntity(item),
+        lastSyncedAt: new Date(),
+      };
+
       let savedStandard: Standard;
 
       if (existingStandard) {
-        Object.assign(existingStandard, item, { lastSyncedAt: new Date() });
+        Object.assign(existingStandard, payload);
         savedStandard = await standardRepo.save(existingStandard);
       } else {
-        savedStandard = await standardRepo.save({
-          ...item,
-          lastSyncedAt: new Date(),
-        } as Standard);
+        savedStandard = await standardRepo.save(standardRepo.create(payload));
       }
 
       const existingTemplate = await templateRepo.findOne({
@@ -57,7 +60,7 @@ async function seed() {
       if (!existingTemplate) {
         await templateRepo.save(
           templateRepo.create({
-            hazardCategoryCode: savedStandard.keywords?.[0] || 'general',
+            hazardCategoryCode: 'general',
             standardId: savedStandard.id,
             title: `Corrective action for ${savedStandard.citation}`,
             recommendedAction: `Correct the condition related to ${savedStandard.title} and document verification.`,

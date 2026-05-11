@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Standard } from '../standards/standard.entity';
+import { SafeScopeStandard } from '../standards/standards.service';
 import { ScorerService } from './scorer.service';
 import { KeywordService } from './keyword.service';
 import { BehaviorService } from './behavior.service';
@@ -16,7 +16,7 @@ export class MatcherService {
     private feedbackService: FeedbackService
   ) {}
 
-  async match(input: any, standards: Standard[]) {
+  async match(input: any, standards: SafeScopeStandard[]) {
 
     const keywords = this.keywordService.extract(
       `${input.description || ''} ${input.task || ''} ${input.environment || ''}`

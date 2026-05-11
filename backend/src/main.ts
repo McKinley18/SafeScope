@@ -20,12 +20,12 @@ async function bootstrap() {
 
   // 🔷 CORS: Dynamic origin based on environment
   app.enableCors({
-    origin: configService.get<string>('FRONTEND_URL'),
+    origin: configService.get<string>('FRONTEND_URL') || true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  const PORT = configService.get<number>('PORT') || 3001; 
+  const PORT = configService.get<number>('PORT') || 4000; 
 
   await app.listen(PORT);
 
