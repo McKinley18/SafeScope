@@ -183,6 +183,26 @@ export class DeterministicClassifier {
       }
     }
 
+    const additionalHazards = ranked
+      .filter(
+        (candidate) =>
+          candidate.score > 0 &&
+          candidate.classification !== best.classification,
+      )
+      .slice(0, 4)
+      .map((candidate) => {
+        const calibrated = confidenceFromScore(candidate.score);
+
+        return {
+          classification: candidate.classification,
+          confidence: calibrated.confidence,
+          confidenceBand: calibrated.confidenceBand,
+          evidenceTokens: candidate.evidenceTokens,
+          requiresHumanReview: calibrated.confidenceBand === 'low',
+          explanation: candidate.explanation,
+        };
+      });
+
     return {
       classification: best.classification,
       confidence,
@@ -192,6 +212,7 @@ export class DeterministicClassifier {
       requiresHumanReview:
         confidenceBand === 'low' || ambiguityWarnings.length > 0,
       explanation: best.explanation,
+      additionalHazards,
     };
   }
 }
