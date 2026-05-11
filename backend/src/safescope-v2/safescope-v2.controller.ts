@@ -8,6 +8,6 @@ export class SafescopeV2Controller {
 
   @Post('classify')
   classify(@Body() body: ClassifyDto) {
-    return this.service.classify(body.text);
+    return this.service.classify(body.text, body.scopes);
   }
 }

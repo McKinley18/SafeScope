@@ -8,7 +8,7 @@ export class SafescopeV2Service {
   private classifier = new DeterministicClassifier();
   private bridge = new StandardsBridgeService();
 
-  classify(text: string) {
+  classify(text: string, scopes?: string[]) {
     const result = this.classifier.classify(text);
     const risk = evaluateRisk({
       text,
@@ -24,7 +24,7 @@ export class SafescopeV2Service {
       ambiguityWarnings: result.ambiguityWarnings,
       requiresHumanReview: result.requiresHumanReview,
       explanation: result.explanation,
-      suggestedStandards: this.bridge.getSuggestedStandards(result.classification),
+      ...this.bridge.getSuggestedStandards(result.classification, scopes),
       risk,
     };
   }
