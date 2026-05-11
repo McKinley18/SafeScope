@@ -7,11 +7,20 @@ export interface ActionInput {
   category: string;
   description?: string; // Enhanced for best-match lookup
   riskScore: number;
-  riskLevel: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+  riskLevel: "LOW" | "MODERATE" | "HIGH" | "CRITICAL" | "Low" | "Moderate" | "High" | "Critical";
   confidence: number;
   patterns: { type: string, count: number }[];
   location: string;
   override: boolean;
+  safeScope?: {
+    classification?: string;
+    riskBand?: "Low" | "Moderate" | "High" | "Critical";
+    requiresShutdown?: boolean;
+    imminentDanger?: boolean;
+    fatalityPotential?: "low" | "medium" | "high";
+    reasoning?: string[];
+    standards?: { citation: string; rationale?: string }[];
+  };
 }
 
 export interface GeneratedAction {
@@ -43,7 +52,10 @@ export class ActionEngineService {
     machine: "Inspect machine guarding and apply lockout/tagout",
     fall: "Install fall protection or secure elevated surfaces",
     vehicle: "Restrict vehicle access and enforce traffic controls",
-    chemical: "Verify labeling and secure hazardous materials"
+    "powered mobile equipment": "Establish mobile equipment traffic controls",
+    housekeeping: "Restore walking-working surface conditions",
+    chemical: "Verify labeling and secure hazardous materials",
+    "hazard communication": "Correct chemical labeling and hazard communication controls"
   };
 
   async generateActionsFromReport(report: ActionInput): Promise<GeneratedAction[]> {
@@ -51,13 +63,15 @@ export class ActionEngineService {
 
     // 1. Determine Priority
     let priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
-    if (report.override) {
+    const normalizedRiskLevel = String(report.safeScope?.riskBand || report.riskLevel || "").toUpperCase();
+
+    if (report.override || report.safeScope?.requiresShutdown || report.safeScope?.imminentDanger) {
       priority = "CRITICAL";
-    } else if (report.riskScore >= 80) {
+    } else if (normalizedRiskLevel === "CRITICAL" || report.riskScore >= 80) {
       priority = "CRITICAL";
-    } else if (report.riskScore >= 60) {
+    } else if (normalizedRiskLevel === "HIGH" || report.riskScore >= 60) {
       priority = "HIGH";
-    } else if (report.riskScore >= 40) {
+    } else if (normalizedRiskLevel === "MODERATE" || report.riskScore >= 40) {
       priority = "MEDIUM";
     }
 
@@ -69,10 +83,13 @@ export class ActionEngineService {
     else now.setDate(now.getDate() + 14);
 
     // 3. Map Title
-    const title = this.actionMap[report.category.toLowerCase()] || "Perform general safety audit";
+    const actionCategory = (report.safeScope?.classification || report.category || "unknown").toLowerCase();
+    const title = this.actionMap[actionCategory] || "Perform general safety audit";
 
     // 🔷 4. INTELLIGENCE LOOKUP: Find Best Match for Fixes
-    const reference = this.hazardFixService.findBestMatch(report.description || report.category);
+    const reference = this.hazardFixService.findBestMatch(
+      report.description || report.safeScope?.classification || report.category
+    );
 
     // 🔷 5. FEEDBACK LOOP: Integrate Learned Fixes
     const learnedFixes = await this.fixFeedbackService.findLearnedFix(report.category);
@@ -91,7 +108,19 @@ export class ActionEngineService {
       const patternStrings = report.patterns.map(p => `${p.count} occurrences of ${p.type} hazards`);
       description = `${patternStrings.join(" and ")} detected in ${report.location}. Immediate investigation required.`;
     } else {
-      description = `Observed ${report.category} hazard requires corrective action based on AI classification in ${report.location}.`;
+      description = `Observed ${report.safeScope?.classification || report.category} hazard requires corrective action based on SafeScope intelligence in ${report.location}.`;
+    }
+
+    if (report.safeScope?.requiresShutdown) {
+      description += " Immediate shutdown or isolation is recommended until effective controls are verified.";
+    }
+
+    if (report.safeScope?.imminentDanger) {
+      description += " Imminent-danger indicators were detected and require immediate competent-person review.";
+    }
+
+    if (report.safeScope?.reasoning?.length) {
+      description += " SafeScope reasoning: " + report.safeScope.reasoning.join("; ");
     }
 
     if (finalFixes.length > 0) {
@@ -101,7 +130,7 @@ export class ActionEngineService {
     // 7. Role Assignment
     let assignedRole = "General Staff";
     if (priority === "CRITICAL") assignedRole = "Safety Manager";
-    else if (priority === "HIGH") assignedRole = "Supervisor";
+    else if (priority === "HIGH") assignedRole = "Operations Supervisor";
     else if (priority === "MEDIUM") assignedRole = "Team Lead";
 
     actions.push({
@@ -112,7 +141,9 @@ export class ActionEngineService {
       assignedRole,
       source: "AI_ENGINE",
       reportId: report.id,
-      referenceStandards: reference ? reference.standards : [],
+      referenceStandards: report.safeScope?.standards?.length
+        ? report.safeScope.standards.map((standard) => standard.citation)
+        : reference ? reference.standards : [],
       suggestedFixes: finalFixes,
       category: report.category,
       originalSuggestion: reference ? { hazard: reference.hazard, fixes: reference.fixes } : null

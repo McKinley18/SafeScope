@@ -6,22 +6,48 @@ export type RiskInput = {
   environment?: keyof typeof RISK_MATRIX.environmentMultiplier;
 };
 
+export type RiskBand = 'Low' | 'Moderate' | 'High' | 'Critical';
+
 export type RiskResult = {
+  // Backward-compatible fields
   riskScore: number;
-  riskBand: 'Low' | 'Moderate' | 'High' | 'Critical';
+  riskBand: RiskBand;
   imminentDanger: boolean;
   fatalityPotential: 'low' | 'medium' | 'high';
   requiresShutdown: boolean;
   reasoning: string[];
+
+  // New structured risk model
+  operationalRisk: {
+    severity: number;
+    likelihood: number;
+    matrixScore: number;
+    matrixBand: RiskBand;
+  };
+
+  aiRisk: {
+    escalationScore: number;
+    escalationBand: RiskBand;
+    imminentDanger: boolean;
+    fatalityPotential: 'low' | 'medium' | 'high';
+    requiresShutdown: boolean;
+    escalationReasons: string[];
+  };
 };
 
 const normalize = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim();
 
+function bandFromMatrixScore(score: number): RiskBand {
+  if (score >= 17) return 'Critical';
+  if (score >= 10) return 'High';
+  if (score >= 5) return 'Moderate';
+  return 'Low';
+}
+
 export function evaluateRisk(input: RiskInput): RiskResult {
   const text = normalize(input.text || '');
   const classification = input.classification || 'Review Required';
-  const environment = input.environment || 'warehouse';
 
   const imminentDanger = RISK_MATRIX.imminentDangerTriggers.some((trigger) =>
     text.includes(trigger),
@@ -71,31 +97,45 @@ export function evaluateRisk(input: RiskInput): RiskResult {
     reasoning.push('Walking-working surface condition creates slip/trip exposure.');
   }
 
-  const environmentMultiplier =
-    RISK_MATRIX.environmentMultiplier[environment] ||
-    RISK_MATRIX.environmentMultiplier.warehouse;
+  const matrixScore = severity * likelihood;
+  const matrixBand = bandFromMatrixScore(matrixScore);
 
-  const rawScore = severity * likelihood * environmentMultiplier;
-  const riskScore = Math.round(rawScore);
+  let escalationScore = matrixScore;
+  if (imminentDanger) escalationScore += 5;
+  if (fatalityPotential === 'high') escalationScore += 3;
+  if (classification === 'Powered Mobile Equipment' && text.includes('pedestrian')) escalationScore += 3;
+  if (classification === 'Fall' && (text.includes('open edge') || text.includes('guardrail'))) escalationScore += 3;
 
-  const riskBand =
-    riskScore >= 24
-      ? 'Critical'
-      : riskScore >= 16
-        ? 'High'
-        : riskScore >= 8
-          ? 'Moderate'
-          : 'Low';
+  escalationScore = Math.min(25, escalationScore);
+  const escalationBand = bandFromMatrixScore(escalationScore);
 
   const requiresShutdown =
-    imminentDanger || riskBand === 'Critical' || (riskBand === 'High' && fatalityPotential === 'high');
+    imminentDanger ||
+    escalationBand === 'Critical' ||
+    (escalationBand === 'High' && fatalityPotential === 'high');
 
   return {
-    riskScore,
-    riskBand,
+    riskScore: escalationScore,
+    riskBand: escalationBand,
     imminentDanger,
     fatalityPotential,
     requiresShutdown,
     reasoning,
+
+    operationalRisk: {
+      severity,
+      likelihood,
+      matrixScore,
+      matrixBand,
+    },
+
+    aiRisk: {
+      escalationScore,
+      escalationBand,
+      imminentDanger,
+      fatalityPotential,
+      requiresShutdown,
+      escalationReasons: reasoning,
+    },
   };
 }
