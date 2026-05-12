@@ -41,6 +41,7 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
     "@types/multer": "^2.1.0",
     "@types/node": "^20.0.0",
     "@types/puppeteer": "^5.4.7",

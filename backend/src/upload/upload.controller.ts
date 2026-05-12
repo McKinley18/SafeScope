@@ -15,7 +15,7 @@ export class UploadController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: './uploads/logos',
-        filename: (req, file, cb) => {
+        filename: (req: Express.Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
           const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
           cb(null, `logo-${unique}${extname(file.originalname)}`);
         },
