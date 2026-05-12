@@ -3,24 +3,9 @@
     "name": "Sentinel Safety",
     "slug": "sentinel-safety",
     "version": "1.0.0",
-    "icon": "./assets/images/icon.png",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0f172a"
-    },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#0f172a"
-      }
-    },
-    "plugins": [
-      "expo-web-browser",
-      "@react-native-community/datetimepicker"
-    ]
+    "orientation": "portrait",
+    "platforms": ["ios", "android", "web"],
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"]
   }
 }

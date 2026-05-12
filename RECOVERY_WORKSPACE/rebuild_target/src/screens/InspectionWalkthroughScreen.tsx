@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import {
   Image,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -48,6 +50,8 @@ const likelihoodScale = [
 
 export default function InspectionWalkthroughScreen() {
   const router = useRouter();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const annotationLandscape = windowWidth > windowHeight;
   const [currentStep, setCurrentStep] = useState(1);
 
   const [hazardCategory, setHazardCategory] = useState("");
@@ -81,6 +85,25 @@ export default function InspectionWalkthroughScreen() {
       `Regulatory scope: ${agencyMode.toUpperCase()}`,
     ].join("\n");
   };
+
+  const buildEvidenceTexts = () => {
+    const evidenceTextItems = [
+      evidenceNotes,
+      location ? `Location context: ${location}` : "",
+      photos.length ? `${photos.length} photo(s) attached` : "",
+      ...photos.map((photo, index) => {
+        const annotationCount = photo.annotations?.length || 0;
+        return annotationCount
+          ? `Photo ${index + 1}: ${annotationCount} annotation(s) added`
+          : `Photo ${index + 1}: evidence photo attached`;
+      }),
+    ];
+
+    return evidenceTextItems
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
 
   const resetCurrentFinding = () => {
     setCurrentStep(1);
@@ -193,7 +216,11 @@ export default function InspectionWalkthroughScreen() {
     try {
       setSafeScopeStatus("Running SafeScope match...");
       const selectedScopes = agencyMode === "all" ? undefined : [agencyMode];
-      const result = await runSafeScopeV2Classify(buildSafeScopeText(), selectedScopes);
+      const result = await runSafeScopeV2Classify(
+        buildSafeScopeText(),
+        selectedScopes,
+        buildEvidenceTexts()
+      );
       setSafeScopeResult(result);
 
       setMatches(
@@ -403,20 +430,19 @@ export default function InspectionWalkthroughScreen() {
                       </Pressable>
                     </View>
 
-                    {annotatingPhotoIndex === index && (
-                      <View style={annotationExpanded ? styles.annotationExpandedPanel : styles.annotationInlinePanel}>
+                    {annotatingPhotoIndex === index && !annotationExpanded && (
+                      <View style={styles.annotationInlinePanel}>
                         <Pressable
                           style={styles.expandAnnotationButton}
-                          onPress={() => setAnnotationExpanded(!annotationExpanded)}
+                          onPress={() => setAnnotationExpanded(true)}
                         >
-                          <Text style={styles.expandAnnotationButtonText}>
-                            {annotationExpanded ? "Collapse" : "Expand"}
-                          </Text>
+                          <Text style={styles.expandAnnotationButtonText}>Expand</Text>
                         </Pressable>
 
                         <AnnotationEditor
                           photoUri={photo.originalUri}
                           annotations={photo.annotations || []}
+                          expanded={false}
                           onSave={(annotations) => {
                             const next = [...photos];
                             next[index] = { ...photo, annotations };
@@ -430,6 +456,48 @@ export default function InspectionWalkthroughScreen() {
                           }}
                         />
                       </View>
+                    )}
+
+                    {annotatingPhotoIndex === index && annotationExpanded && (
+                      <Modal visible transparent animationType="fade" supportedOrientations={["portrait", "landscape"]}>
+                        <View style={styles.fullscreenAnnotationBackdrop}>
+                          <View
+                            style={[
+                              styles.fullscreenAnnotationPanel,
+                              annotationLandscape && styles.fullscreenAnnotationPanelLandscape,
+                            ]}
+                          >
+                            <View style={styles.fullscreenAnnotationHeader}>
+                              <Text style={styles.fullscreenAnnotationTitle}>Photo Annotation</Text>
+
+                              <Pressable
+                                style={styles.collapseAnnotationButton}
+                                onPress={() => setAnnotationExpanded(false)}
+                              >
+                                <Text style={styles.collapseAnnotationButtonText}>Collapse</Text>
+                              </Pressable>
+                            </View>
+
+                            <AnnotationEditor
+                              photoUri={photo.originalUri}
+                              annotations={photo.annotations || []}
+                              expanded
+                              landscape={annotationLandscape}
+                              onSave={(annotations) => {
+                                const next = [...photos];
+                                next[index] = { ...photo, annotations };
+                                setPhotos(next);
+                                setAnnotatingPhotoIndex(null);
+                                setAnnotationExpanded(false);
+                              }}
+                              onCancel={() => {
+                                setAnnotatingPhotoIndex(null);
+                                setAnnotationExpanded(false);
+                              }}
+                            />
+                          </View>
+                        </View>
+                      </Modal>
                     )}
                   </View>
                 ))}
@@ -527,6 +595,43 @@ export default function InspectionWalkthroughScreen() {
                 {(safeScopeResult.risk.aiRisk?.escalationReasons || safeScopeResult.risk.reasoning)?.map((reason, index) => (
                   <Text key={index} style={styles.riskReasoning}>• {reason}</Text>
                 ))}
+              </View>
+            )}
+
+            {safeScopeResult?.expandedContext && (
+              <View style={styles.contextPanel}>
+                <Text style={styles.contextTitle}>SafeScope Inferred Context</Text>
+
+                <Text style={styles.contextMeta}>
+                  Confidence: {safeScopeResult.expandedContext.contextConfidence?.band || "unknown"}
+                  {safeScopeResult.expandedContext.contextConfidence?.score !== undefined
+                    ? ` (${Math.round(safeScopeResult.expandedContext.contextConfidence.score * 100)}%)`
+                    : ""}
+                </Text>
+
+                {!!safeScopeResult.expandedContext.exposureType?.length && (
+                  <Text style={styles.contextText}>
+                    Exposure: {safeScopeResult.expandedContext.exposureType.join(", ")}
+                  </Text>
+                )}
+
+                {!!safeScopeResult.expandedContext.probableConsequences?.length && (
+                  <Text style={styles.contextText}>
+                    Consequences: {safeScopeResult.expandedContext.probableConsequences.join(", ")}
+                  </Text>
+                )}
+
+                {!!safeScopeResult.expandedContext.controlFailures?.length && (
+                  <Text style={styles.contextText}>
+                    Control Gaps: {safeScopeResult.expandedContext.controlFailures.join(", ")}
+                  </Text>
+                )}
+
+                {!!safeScopeResult.expandedContext.contextConfidence?.missingSignals?.length && (
+                  <Text style={styles.contextMuted}>
+                    Missing context: {safeScopeResult.expandedContext.contextConfidence.missingSignals.join(", ")}
+                  </Text>
+                )}
               </View>
             )}
 
@@ -661,11 +766,94 @@ export default function InspectionWalkthroughScreen() {
           <>
             <Text style={styles.sectionTitle}>Corrective Actions</Text>
 
-            <Text style={styles.label}>Recommended Corrective Action</Text>
+            {safeScopeResult?.generatedActions?.length ? (
+              <View style={styles.generatedActionsPanel}>
+                <Text style={styles.generatedActionsTitle}>
+                  SafeScope Recommended Actions
+                </Text>
+
+                {safeScopeResult.generatedActions.map((action, index) => (
+                  <View
+                    key={`${action.title}-${index}`}
+                    style={[
+                      styles.generatedActionCard,
+                      action.priority === "CRITICAL" && styles.generatedActionCritical,
+                      action.priority === "HIGH" && styles.generatedActionHigh,
+                    ]}
+                  >
+                    <View style={styles.generatedActionHeader}>
+                      <Text style={styles.generatedActionName}>{action.title}</Text>
+                      <View style={styles.priorityBadge}>
+                        <Text style={styles.priorityBadgeText}>{action.priority}</Text>
+                      </View>
+                    </View>
+
+                    {action.requiresShutdown && (
+                      <Text style={styles.shutdownWarning}>
+                        Immediate shutdown / isolation recommended.
+                      </Text>
+                    )}
+
+                    {!!action.referenceStandards?.length && (
+                      <Text style={styles.generatedActionMeta}>
+                        Standards: {action.referenceStandards.join(", ")}
+                      </Text>
+                    )}
+
+                    {!!action.suggestedFixes?.length && (
+                      <View style={styles.fixList}>
+                        {action.suggestedFixes.map((fix, fixIndex) => (
+                          <Text key={fixIndex} style={styles.fixItem}>• {fix}</Text>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                ))}
+
+                {safeScopeResult.additionalHazards?.some((hazard) => hazard.generatedActions?.length) && (
+                  <>
+                    <Text style={styles.generatedActionsTitle}>
+                      Additional Hazard Actions
+                    </Text>
+
+                    {safeScopeResult.additionalHazards.map((hazard, hazardIndex) =>
+                      hazard.generatedActions?.map((action, actionIndex) => (
+                        <View
+                          key={`${hazard.classification}-${action.title}-${actionIndex}`}
+                          style={[
+                            styles.generatedActionCard,
+                            action.priority === "CRITICAL" && styles.generatedActionCritical,
+                            action.priority === "HIGH" && styles.generatedActionHigh,
+                          ]}
+                        >
+                          <Text style={styles.generatedActionHazard}>
+                            {hazard.classification}
+                          </Text>
+
+                          <View style={styles.generatedActionHeader}>
+                            <Text style={styles.generatedActionName}>{action.title}</Text>
+                            <View style={styles.priorityBadge}>
+                              <Text style={styles.priorityBadgeText}>{action.priority}</Text>
+                            </View>
+                          </View>
+
+                        </View>
+                      ))
+                    )}
+                  </>
+                )}
+              </View>
+            ) : (
+              <Text style={styles.infoBox}>
+                Run SafeScope in Step 3 to generate recommended corrective actions.
+              </Text>
+            )}
+
+            <Text style={styles.label}>Inspector Notes / Manual Corrective Action</Text>
             <TextInput
               style={styles.textarea}
               multiline
-              placeholder="Describe what needs to be repaired, replaced, guarded, trained, or removed."
+              placeholder="Add or edit what needs to be repaired, replaced, guarded, trained, or removed."
               placeholderTextColor="#94A3B8"
             />
 
@@ -1443,6 +1631,44 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
 
+
+  fullscreenAnnotationBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.92)",
+    padding: 10,
+    justifyContent: "center",
+  },
+  fullscreenAnnotationPanel: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 10,
+    maxHeight: "96%",
+  },
+  fullscreenAnnotationPanelLandscape: {
+    maxHeight: "98%",
+  },
+  fullscreenAnnotationHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  fullscreenAnnotationTitle: {
+    color: "#0F172A",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  collapseAnnotationButton: {
+    backgroundColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  collapseAnnotationButtonText: {
+    color: "#0F172A",
+    fontSize: 12,
+    fontWeight: "900",
+  },
   annotationInlinePanel: {
     marginTop: 10,
   },
@@ -1537,5 +1763,124 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     marginTop: 3,
+  },
+
+  generatedActionsPanel: {
+    marginTop: 12,
+    marginBottom: 14,
+    gap: 12,
+  },
+  generatedActionsTitle: {
+    color: "#0F172A",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  generatedActionCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    padding: 14,
+  },
+  generatedActionCritical: {
+    borderColor: "#DC2626",
+    backgroundColor: "#FEF2F2",
+  },
+  generatedActionHigh: {
+    borderColor: "#F97316",
+    backgroundColor: "#FFF7ED",
+  },
+  generatedActionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 8,
+  },
+  generatedActionName: {
+    flex: 1,
+    color: "#0F172A",
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  generatedActionHazard: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "900",
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  priorityBadge: {
+    backgroundColor: "#0F172A",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  priorityBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+  generatedActionDescription: {
+    color: "#334155",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  generatedActionMeta: {
+    color: "#475569",
+    fontSize: 11,
+    fontWeight: "700",
+    marginTop: 6,
+  },
+  shutdownWarning: {
+    color: "#B91C1C",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 8,
+  },
+  fixList: {
+    marginTop: 8,
+    gap: 4,
+  },
+  fixItem: {
+    color: "#1E293B",
+    fontSize: 11,
+    lineHeight: 16,
+  },
+
+  contextPanel: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#BFDBFE",
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  contextTitle: {
+    color: "#1E3A8A",
+    fontSize: 13,
+    fontWeight: "900",
+    marginBottom: 5,
+  },
+  contextMeta: {
+    color: "#1D4ED8",
+    fontSize: 12,
+    fontWeight: "900",
+    marginBottom: 5,
+    textTransform: "capitalize",
+  },
+  contextText: {
+    color: "#1E40AF",
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 3,
+  },
+  contextMuted: {
+    color: "#64748B",
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 6,
+    fontStyle: "italic",
   },
 });

@@ -5,6 +5,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Svg, { Circle, Line, Polygon, Rect } from "react-native-svg";
@@ -26,6 +27,8 @@ type Props = {
   annotations: AnnotationShape[];
   onSave: (annotations: AnnotationShape[]) => void;
   onCancel: () => void;
+  expanded?: boolean;
+  landscape?: boolean;
 };
 
 type DragMode = "move" | "resize" | "arrowStart" | "arrowEnd" | null;
@@ -76,7 +79,13 @@ export default function AnnotationEditor({
   annotations,
   onSave,
   onCancel,
+  expanded = false,
+  landscape = false,
 }: Props) {
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const expandedCanvasHeight = landscape
+    ? Math.max(260, windowHeight - 170)
+    : Math.max(360, windowHeight - 260);
   const [localAnnotations, setLocalAnnotations] = useState<AnnotationShape[]>(
     (annotations || []).map(normalizeShape)
   );
@@ -323,7 +332,7 @@ export default function AnnotationEditor({
   };
 
   return (
-    <View style={styles.editorBox}>
+    <View style={[styles.editorBox, expanded && styles.editorBoxExpanded]}>
       <Text style={styles.editorTitle}>Photo Annotation</Text>
 
       <View style={styles.topToolbar}>
@@ -397,7 +406,13 @@ export default function AnnotationEditor({
       </Text>
 
       <View
-        style={styles.canvas}
+        style={[
+          styles.canvas,
+          expanded && {
+            height: expandedCanvasHeight,
+            aspectRatio: undefined,
+          },
+        ]}
         onLayout={(event) => {
           const { width, height } = event.nativeEvent.layout;
           setCanvasSize({
@@ -542,6 +557,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     marginTop: 12,
+  },
+
+  editorBoxExpanded: {
+    borderWidth: 0,
+    padding: 8,
+    marginTop: 0,
   },
   editorTitle: {
     color: "#0F172A",

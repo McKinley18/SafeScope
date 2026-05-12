@@ -91,6 +91,36 @@ export type SafeScopeV2RiskResult = {
   };
 };
 
+
+
+export type SafeScopeV2ExpandedContext = {
+  environment: string;
+  exposureType: string[];
+  inferredActivities: string[];
+  probableConsequences: string[];
+  controlFailures: string[];
+  operationalState: string[];
+  humanFactors: string[];
+  reasoning: string[];
+  contextConfidence?: {
+    score: number;
+    band: "low" | "medium" | "high";
+    missingSignals: string[];
+  };
+};
+
+export type SafeScopeV2GeneratedAction = {
+  title: string;
+  description: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  assignedRole: string;
+  dueDate: string;
+  requiresShutdown?: boolean;
+  referenceStandards?: string[];
+  suggestedFixes?: string[];
+  sourceHazard: string;
+};
+
 export type SafeScopeV2AdditionalHazard = {
   classification: string;
   confidence: number;
@@ -101,6 +131,8 @@ export type SafeScopeV2AdditionalHazard = {
   suggestedStandards: SafeScopeV2SuggestedStandard[];
   excludedStandards?: SafeScopeV2ExcludedStandard[];
   risk?: SafeScopeV2RiskResult;
+  expandedContext?: SafeScopeV2ExpandedContext;
+  generatedActions?: SafeScopeV2GeneratedAction[];
 };
 
 export type SafeScopeV2Result = {
@@ -114,19 +146,22 @@ export type SafeScopeV2Result = {
   suggestedStandards: SafeScopeV2SuggestedStandard[];
   excludedStandards?: SafeScopeV2ExcludedStandard[];
   risk?: SafeScopeV2RiskResult;
+  expandedContext?: SafeScopeV2ExpandedContext;
+  generatedActions?: SafeScopeV2GeneratedAction[];
   additionalHazards?: SafeScopeV2AdditionalHazard[];
 };
 
 export async function runSafeScopeV2Classify(
   text: string,
-  scopes?: string[]
+  scopes?: string[],
+  evidenceTexts?: string[]
 ): Promise<SafeScopeV2Result> {
   const response = await fetch(`${API_BASE_URL}/safescope-v2/classify`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text, scopes }),
+    body: JSON.stringify({ text, scopes, evidenceTexts }),
   });
 
   if (!response.ok) {

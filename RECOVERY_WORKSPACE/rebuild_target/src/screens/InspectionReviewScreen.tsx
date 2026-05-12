@@ -106,6 +106,52 @@ export default function InspectionReviewScreen() {
                   </View>
                 ) : null}
 
+                {finding.safeScopeResult.generatedActions?.length ? (
+                  <View style={styles.generatedActionsBox}>
+                    <Text style={styles.generatedActionsTitle}>Corrective Actions</Text>
+                    {finding.safeScopeResult.generatedActions.map((action: any, actionIndex: number) => (
+                      <View key={`${action.title}-${actionIndex}`} style={styles.generatedActionCard}>
+                        <View style={styles.generatedActionHeader}>
+                          <Text style={styles.generatedActionName}>{action.title}</Text>
+                          <View style={styles.priorityBadge}>
+                            <Text style={styles.priorityBadgeText}>{action.priority}</Text>
+                          </View>
+                        </View>
+
+
+                        {action.requiresShutdown && (
+                          <Text style={styles.dangerText}>Immediate shutdown / isolation recommended.</Text>
+                        )}
+
+                        {!!action.referenceStandards?.length && (
+                          <Text style={styles.metaText}>Standards: {action.referenceStandards.join(", ")}</Text>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+
+                {finding.safeScopeResult.additionalHazards?.some((hazard: any) => hazard.generatedActions?.length) ? (
+                  <View style={styles.generatedActionsBox}>
+                    <Text style={styles.generatedActionsTitle}>Additional Hazard Corrective Actions</Text>
+                    {finding.safeScopeResult.additionalHazards.map((hazard: any, hazardIndex: number) =>
+                      hazard.generatedActions?.map((action: any, actionIndex: number) => (
+                        <View key={`${hazard.classification}-${action.title}-${actionIndex}`} style={styles.generatedActionCard}>
+                          <Text style={styles.additionalHazardName}>{hazard.classification}</Text>
+
+                          <View style={styles.generatedActionHeader}>
+                            <Text style={styles.generatedActionName}>{action.title}</Text>
+                            <View style={styles.priorityBadge}>
+                              <Text style={styles.priorityBadgeText}>{action.priority}</Text>
+                            </View>
+                          </View>
+
+                              </View>
+                      ))
+                    )}
+                  </View>
+                ) : null}
+
                 {finding.safeScopeResult.suggestedStandards?.map((standard: any) => (
                   <View key={standard.citation} style={styles.standardCard}>
                     <Text style={styles.standardCitation}>{standard.citation}</Text>
@@ -312,6 +358,53 @@ const styles = StyleSheet.create({
   additionalHazardName: {
     color: "#0F172A",
     fontSize: 13,
+    fontWeight: "900",
+  },
+
+  generatedActionsBox: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    padding: 10,
+    marginTop: 10,
+  },
+  generatedActionsTitle: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "900",
+    marginBottom: 8,
+  },
+  generatedActionCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    padding: 10,
+    marginBottom: 8,
+  },
+  generatedActionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 6,
+  },
+  generatedActionName: {
+    flex: 1,
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  priorityBadge: {
+    backgroundColor: "#0F172A",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  priorityBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
     fontWeight: "900",
   },
 });

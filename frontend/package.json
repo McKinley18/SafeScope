@@ -2,25 +2,30 @@
   "name": "sentinel-frontend",
   "version": "0.1.0",
   "private": true,
+  "main": "expo-router/entry",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "diagnose": "node scripts/run-diagnostics.js"
+    "start": "expo start",
+    "web": "expo start --web",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "build": "next build"
   },
   "dependencies": {
+    "expo": "^55.0.0",
+    "expo-router": "^3.5.0",
+    "expo-status-bar": "~55.0.6",
     "idb": "^8.0.3",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
-    "next": "14.2.5",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "recharts": "^3.8.1",
-    "typeorm": "^0.3.29"
+    "next": "^15.5.18",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-native": "0.85.3",
+    "react-native-web": "^0.21.0",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/react": "^18.2.21",
+    "@types/react": "~19.2.10",
     "typescript": "^5.3.3"
   }
 }
