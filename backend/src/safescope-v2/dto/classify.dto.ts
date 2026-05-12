@@ -9,4 +9,9 @@ export class ClassifyDto {
   @IsArray()
   @IsString({ each: true })
   scopes?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  evidenceTexts?: string[];
 }

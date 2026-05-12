@@ -4,6 +4,7 @@ import { DeterministicClassifier } from './engine/deterministic-classifier';
 import { evaluateRisk } from './risk/risk-engine';
 import { ActionEngineService } from '../action-engine/action-engine.service';
 import { ContextExpansionService } from './context/context-expansion.service';
+import { EvidenceFusionService } from './evidence/evidence-fusion.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -13,6 +14,7 @@ export class SafescopeV2Service {
   constructor(
     private readonly actionEngine: ActionEngineService,
     private readonly contextExpansion: ContextExpansionService,
+    private readonly evidenceFusion: EvidenceFusionService,
   ) {}
 
   private async buildActionPreview(
@@ -60,8 +62,15 @@ export class SafescopeV2Service {
     }));
   }
 
-  async classify(text: string, scopes?: string[]) {
-    const result = this.classifier.classify(text);
+  async classify(text: string, scopes?: string[], evidenceTexts?: string[]) {
+    const evidenceFusion = this.evidenceFusion.synthesize([
+      text,
+      ...(evidenceTexts || []),
+    ]);
+
+    const fusedText = evidenceFusion.combinedNarrative || text;
+
+    const result = this.classifier.classify(fusedText);
 
     const primaryCandidate = {
       classification: result.classification,
@@ -71,7 +80,7 @@ export class SafescopeV2Service {
       requiresHumanReview: result.requiresHumanReview,
       explanation: result.explanation,
       risk: evaluateRisk({
-        text,
+        text: fusedText,
         classification: result.classification,
         environment: 'warehouse',
       }),
@@ -80,7 +89,7 @@ export class SafescopeV2Service {
     const additionalCandidates = (result.additionalHazards || []).map((hazard) => ({
       ...hazard,
       risk: evaluateRisk({
-        text,
+        text: fusedText,
         classification: hazard.classification,
         environment: 'warehouse',
       }),
@@ -112,8 +121,9 @@ export class SafescopeV2Service {
     })[0];
 
     const expandedContext = this.contextExpansion.expand(
-      text,
+      fusedText,
       promotedPrimary.classification,
+      evidenceFusion.inferredThemes,
     );
 
     const primaryStandardsResult = this.bridge.getSuggestedStandards(
@@ -123,7 +133,7 @@ export class SafescopeV2Service {
 
     const generatedActions = await this.buildActionPreview(
       promotedPrimary.classification,
-      text,
+      fusedText,
       promotedPrimary.risk,
       primaryStandardsResult.suggestedStandards,
       expandedContext,
@@ -139,13 +149,14 @@ export class SafescopeV2Service {
           );
 
           const hazardExpandedContext = this.contextExpansion.expand(
-            text,
+            fusedText,
             hazard.classification,
+            evidenceFusion.inferredThemes,
           );
 
           const hazardActions = await this.buildActionPreview(
             hazard.classification,
-            text,
+            fusedText,
             hazard.risk,
             standardsResult.suggestedStandards,
             hazardExpandedContext,
@@ -177,6 +188,7 @@ export class SafescopeV2Service {
       explanation: promotedPrimary.explanation,
       ...primaryStandardsResult,
       risk: promotedPrimary.risk,
+      evidenceFusion,
       expandedContext,
       generatedActions,
       additionalHazards,

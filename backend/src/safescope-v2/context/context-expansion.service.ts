@@ -19,8 +19,9 @@ export type ExpandedContext = {
 
 @Injectable()
 export class ContextExpansionService {
-  expand(text: string, classification?: string): ExpandedContext {
+  expand(text: string, classification?: string, evidenceThemes: string[] = []): ExpandedContext {
     const normalized = text.toLowerCase();
+    const themes = evidenceThemes.map((theme) => theme.toLowerCase());
 
     const exposureType = new Set<string>();
     const inferredActivities = new Set<string>();
@@ -144,6 +145,47 @@ export class ContextExpansionService {
       humanFactors.add('workspace obstruction');
 
       reasoning.push('Obstructed access condition inferred.');
+    }
+
+    /*
+     * EVIDENCE FUSION ENHANCEMENT
+     */
+
+    if (themes.includes('pedestrian mobile-equipment interaction')) {
+      exposureType.add('pedestrian struck-by exposure');
+      inferredActivities.add('mobile equipment movement near pedestrians');
+      probableConsequences.add('struck-by injury');
+      controlFailures.add('traffic segregation failure');
+      operationalState.add('active mobile equipment exposure');
+      reasoning.push('Evidence fusion identified pedestrian and mobile equipment interaction.');
+    }
+
+    if (themes.includes('visibility restriction')) {
+      controlFailures.add('line-of-sight restriction');
+      humanFactors.add('reduced hazard visibility');
+      reasoning.push('Evidence fusion identified a visibility restriction.');
+    }
+
+    if (themes.includes('electrical exposure along travel path')) {
+      exposureType.add('pedestrian electrical contact exposure');
+      probableConsequences.add('electrocution');
+      controlFailures.add('hazard present along travel path');
+      reasoning.push('Evidence fusion identified electrical exposure along a travel path.');
+    }
+
+    if (themes.includes('walking-working surface contamination')) {
+      exposureType.add('walking-working surface exposure');
+      probableConsequences.add('slip or trip injury');
+      controlFailures.add('contaminated travel surface');
+      reasoning.push('Evidence fusion identified walking-working surface contamination.');
+    }
+
+    if (themes.includes('mobile equipment near fall exposure')) {
+      exposureType.add('equipment interaction near fall exposure');
+      probableConsequences.add('fall from elevation');
+      probableConsequences.add('struck-by injury');
+      controlFailures.add('mobile equipment operating near unprotected edge');
+      reasoning.push('Evidence fusion identified mobile equipment near fall exposure.');
     }
 
     /*
