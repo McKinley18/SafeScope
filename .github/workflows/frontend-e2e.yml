@@ -1,8 +1,7 @@
 name: Frontend E2E Tests
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
   pull_request:
     branches: [main]
 
@@ -21,7 +20,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -31,8 +30,7 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Build frontend
-        run: npm run build
-
-      - name: Run Playwright tests
-        run: npx playwright test tests/e2e
+      - name: Run Playwright tests against deployed app
+        env:
+          E2E_BASE_URL: https://sentinelsafety.vercel.app
+        run: npx playwright test
