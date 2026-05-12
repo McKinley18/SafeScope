@@ -40,6 +40,8 @@ export default function InspectionPage() {
   const [severity, setSeverity] = useState<number | null>(null);
   const [likelihood, setLikelihood] = useState<number | null>(null);
   const [findings, setFindings] = useState<any[]>([]);
+  const [editingFindingIndex, setEditingFindingIndex] = useState<number | null>(null);
+  const [currentFindingSaved, setCurrentFindingSaved] = useState(false);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
 
@@ -65,23 +67,92 @@ export default function InspectionPage() {
     }
   }
 
-  function saveFinding() {
-    if (!description && !hazardCategory && !location && !evidenceNotes) return;
+  function buildCurrentFinding() {
+    return {
+      id: editingFindingIndex !== null ? findings[editingFindingIndex]?.id : Date.now(),
+      hazardCategory,
+      description,
+      location,
+      evidenceNotes,
+      safeScopeResult,
+      severity,
+      likelihood,
+      riskScore,
+    };
+  }
 
-    setFindings((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        hazardCategory,
-        description,
-        location,
-        evidenceNotes,
-        safeScopeResult,
-        severity,
-        likelihood,
-        riskScore,
-      },
-    ]);
+  function hasCurrentFindingData() {
+    return !!(description || hazardCategory || location || evidenceNotes || safeScopeResult || severity || likelihood);
+  }
+
+  function resetCurrentFinding() {
+    setCurrentStep(1);
+    setHazardCategory("");
+    setDescription("");
+    setLocation("");
+    setEvidenceNotes("");
+    setAgencyMode("all");
+    setSafeScopeStatus("");
+    setSafeScopeResult(null);
+    setSeverity(null);
+    setLikelihood(null);
+    setEditingFindingIndex(null);
+    setCurrentFindingSaved(false);
+  }
+
+  function saveFinding() {
+    if (!hasCurrentFindingData()) return;
+
+    const current = buildCurrentFinding();
+
+    if (editingFindingIndex !== null) {
+      setFindings((prev) =>
+        prev.map((finding, index) =>
+          index === editingFindingIndex ? current : finding
+        )
+      );
+    } else if (!currentFindingSaved) {
+      setFindings((prev) => [...prev, current]);
+    }
+
+    setCurrentFindingSaved(true);
+  }
+
+  function addNewFinding() {
+    if (!currentFindingSaved && hasCurrentFindingData()) {
+      const current = buildCurrentFinding();
+      setFindings((prev) => [...prev, current]);
+    }
+
+    resetCurrentFinding();
+  }
+
+  function editFinding(index: number) {
+    const finding = findings[index];
+    if (!finding) return;
+
+    setHazardCategory(finding.hazardCategory || "");
+    setDescription(finding.description || "");
+    setLocation(finding.location || "");
+    setEvidenceNotes(finding.evidenceNotes || "");
+    setSafeScopeResult(finding.safeScopeResult || null);
+    setSeverity(finding.severity || null);
+    setLikelihood(finding.likelihood || null);
+    setEditingFindingIndex(index);
+    setCurrentFindingSaved(true);
+    setCurrentStep(1);
+  }
+
+  function deleteFinding(index: number) {
+    setFindings((prev) => prev.filter((_, i) => i !== index));
+    if (editingFindingIndex === index) {
+      resetCurrentFinding();
+    }
+  }
+
+  function generateReport() {
+    saveFinding();
+    setCurrentStep(6);
   }
 
   return (
@@ -369,12 +440,21 @@ export default function InspectionPage() {
               </p>
             </div>
 
-            <button
-              onClick={saveFinding}
-              className="mt-4 rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white"
-            >
-              Save Current Finding
-            </button>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                onClick={saveFinding}
+                className="rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white"
+              >
+                {editingFindingIndex !== null ? "Update Finding" : "Save Current Finding"}
+              </button>
+
+              <button
+                onClick={addNewFinding}
+                className="rounded-xl bg-slate-200 px-5 py-3 text-sm font-black text-slate-700"
+              >
+                Add New Finding
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -403,9 +483,28 @@ export default function InspectionPage() {
               <div key={finding.id} className="rounded-xl border border-slate-200 p-3">
                 <div className="font-black">Finding {index + 1}: {finding.hazardCategory || "Uncategorized"}</div>
                 <p className="mt-1 text-sm text-slate-600">{finding.description || "No description provided."}</p>
+                {!!finding.location && (
+                  <p className="mt-1 text-xs font-bold text-slate-500">Location: {finding.location}</p>
+                )}
                 <p className="mt-1 text-xs font-black text-slate-500">
                   SafeScope: {finding.safeScopeResult?.classification || "Not run"} • Risk: {finding.safeScopeResult?.risk?.riskBand || finding.riskScore || "Not rated"}
                 </p>
+
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => editFinding(index)}
+                    className="rounded-lg bg-[#E8F4FF] px-3 py-2 text-xs font-black text-[#1D72B8]"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteFinding(index)}
+                    className="rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -421,7 +520,13 @@ export default function InspectionPage() {
         </button>
 
         <button
-          onClick={() => setCurrentStep((s) => Math.min(6, s + 1))}
+          onClick={() => {
+            if (currentStep === 6) {
+              generateReport();
+              return;
+            }
+            setCurrentStep((s) => Math.min(6, s + 1));
+          }}
           className="rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
         >
           {currentStep === 6 ? "Generate Report" : "Next"}
