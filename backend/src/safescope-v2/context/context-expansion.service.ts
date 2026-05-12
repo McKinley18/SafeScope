@@ -9,6 +9,12 @@ export type ExpandedContext = {
   operationalState: string[];
   humanFactors: string[];
   reasoning: string[];
+
+  contextConfidence: {
+    score: number;
+    band: 'low' | 'medium' | 'high';
+    missingSignals: string[];
+  };
 };
 
 @Injectable()
@@ -154,6 +160,47 @@ export class ContextExpansionService {
       probableConsequences.add('caught-between injury');
     }
 
+    const detectedSignals = [
+      exposureType.size,
+      inferredActivities.size,
+      probableConsequences.size,
+      controlFailures.size,
+      operationalState.size,
+      humanFactors.size,
+    ].filter(Boolean).length;
+
+    const possibleSignals = 6;
+
+    const score = Number(
+      Math.min(detectedSignals / possibleSignals, 1).toFixed(2),
+    );
+
+    let band: 'low' | 'medium' | 'high' = 'low';
+
+    if (score >= 0.75) {
+      band = 'high';
+    } else if (score >= 0.4) {
+      band = 'medium';
+    }
+
+    const missingSignals: string[] = [];
+
+    if (!inferredActivities.size) {
+      missingSignals.push('work activity');
+    }
+
+    if (!operationalState.size) {
+      missingSignals.push('operational state');
+    }
+
+    if (!humanFactors.size) {
+      missingSignals.push('human factors');
+    }
+
+    if (!controlFailures.size) {
+      missingSignals.push('control failure indicators');
+    }
+
     return {
       environment,
       exposureType: [...exposureType],
@@ -163,6 +210,12 @@ export class ContextExpansionService {
       operationalState: [...operationalState],
       humanFactors: [...humanFactors],
       reasoning,
+
+      contextConfidence: {
+        score,
+        band,
+        missingSignals,
+      },
     };
   }
 }

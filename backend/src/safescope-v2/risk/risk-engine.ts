@@ -109,10 +109,25 @@ export function evaluateRisk(input: RiskInput): RiskResult {
   escalationScore = Math.min(25, escalationScore);
   const escalationBand = bandFromMatrixScore(escalationScore);
 
+  const activeExposure =
+    text.includes('live') ||
+    text.includes('energized') ||
+    text.includes('exposed') ||
+    text.includes('hanging') ||
+    text.includes('open edge') ||
+    text.includes('unguarded') ||
+    text.includes('missing guard') ||
+    text.includes('pedestrian') ||
+    text.includes('traffic');
+
   const requiresShutdown =
     imminentDanger ||
     escalationBand === 'Critical' ||
-    (escalationBand === 'High' && fatalityPotential === 'high');
+    (
+      escalationBand === 'High' &&
+      fatalityPotential === 'high' &&
+      activeExposure
+    );
 
   return {
     riskScore: escalationScore,
