@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify } from "@/lib/safescope";
 
 const steps = [
@@ -29,6 +30,7 @@ const likelihoodScale = [
 ];
 
 export default function InspectionPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [hazardCategory, setHazardCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -151,8 +153,20 @@ export default function InspectionPage() {
   }
 
   function generateReport() {
-    saveFinding();
-    setCurrentStep(6);
+    const finalizedFindings = [...findings];
+
+    if (!currentFindingSaved && hasCurrentFindingData()) {
+      finalizedFindings.push(buildCurrentFinding());
+    }
+
+    const report = {
+      id: `report-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      findings: finalizedFindings,
+    };
+
+    window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
+    router.push("/reports");
   }
 
   return (
