@@ -28,17 +28,23 @@ import { TransparencyModule } from './transparency/transparency.module';
     TypeOrmModule.forRootAsync({
       imports: [SafescopeV2Module, ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
-        autoLoadEntities: true,
-        // 🔷 DANGER: Keep true for dev, but IT departments require false for production
-        synchronize: configService.get<string>('NODE_ENV') === 'development',
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+
+        return {
+          type: 'postgres',
+          url: databaseUrl || undefined,
+          host: databaseUrl ? undefined : configService.get<string>('DB_HOST'),
+          port: databaseUrl ? undefined : configService.get<number>('DB_PORT'),
+          username: databaseUrl ? undefined : configService.get<string>('DB_USERNAME'),
+          password: databaseUrl ? undefined : configService.get<string>('DB_PASSWORD'),
+          database: databaseUrl ? undefined : configService.get<string>('DB_NAME'),
+          ssl: isProduction ? { rejectUnauthorized: false } : false,
+          autoLoadEntities: true,
+          synchronize: !isProduction && configService.get<string>('NODE_ENV') === 'development',
+        };
+      },
     }),
 
     ThrottlerModule.forRoot([{
