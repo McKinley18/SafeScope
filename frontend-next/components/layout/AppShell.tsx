@@ -1,69 +1,83 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { ReactNode } from "react";
 
-const navItems = [
-  { href: "/", label: "Dashboard" },
-  { href: "/inspection", label: "Inspections" },
-  { href: "/reports", label: "Reports" },
-  { href: "/analytics", label: "Analytics" },
-];
+type Props = {
+  children: ReactNode;
+};
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
-
+export default function AppShell({ children }: Props) {
   return (
-    <div className="min-h-screen bg-[#F4F7FB] text-slate-900">
-      <Link
-        href="/"
-        className="flex w-full items-center justify-center bg-[#102A43] px-4 py-2"
-      >
-        <div className="text-center">
-          <div className="text-3xl font-black tracking-tight text-white">
-            Sentinel Safety
-          </div>
-          <div className="text-sm font-bold text-[#BFE3FF]">
-            See Risk. Prevent Harm.
+    <div className="min-h-screen bg-[#F4F7FB] flex flex-col">
+      {/* HEADER */}
+      <div className="w-full bg-[#102A43] flex items-center justify-center py-1">
+        <Link href="/">
+          <img
+            src="/images/sentinel_transparent.png"
+            alt="Sentinel Safety"
+            className="w-[300px] h-[82px] object-contain cursor-pointer"
+          />
+        </Link>
+      </div>
+
+      {/* NAV */}
+      <div className="w-full bg-white border-b border-slate-200 px-5 py-3 flex items-center gap-5">
+        <Link href="/" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
+          Dashboard
+        </Link>
+
+        <Link href="/inspection" className="text-[13px] font-black text-[#1D72B8] underline">
+          Inspections
+        </Link>
+
+        <Link href="/reports" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
+          Reports
+        </Link>
+
+        <Link href="/analytics" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
+          Analytics
+        </Link>
+
+        <Link href="/actions" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
+          Actions
+        </Link>
+
+        <div className="ml-auto">
+          <div className="w-[34px] h-[34px] rounded-full bg-[#BFE3FF] flex items-center justify-center text-[13px] font-black text-slate-900">
+            CM
           </div>
         </div>
-      </Link>
+      </div>
 
-      <nav className="flex items-center gap-4 border-b border-slate-200 bg-white px-4 py-3">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={
-              isActive(item.href)
-                ? "text-sm font-black text-[#1D72B8] underline decoration-[#1D72B8]"
-                : "text-sm font-black text-[#52616F] hover:text-[#1D72B8]"
-            }
-          >
-            {item.label}
+      {/* PAGE */}
+      <main className="flex-1 p-[18px]">
+        {children}
+      </main>
+
+      {/* FOOTER */}
+      <footer className="bg-[#102A43] px-[18px] pt-4 pb-4">
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <Link href="/about" className="text-white text-[13px] font-extrabold">
+            About
           </Link>
-        ))}
 
-        <div className="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#BFE3FF] text-sm font-black text-slate-900">
-          CM
+          <span className="text-slate-400">|</span>
+
+          <Link href="/legal" className="text-white text-[13px] font-extrabold">
+            Legal
+          </Link>
+
+          <span className="text-slate-400">|</span>
+
+          <Link href="/safescope" className="text-white text-[13px] font-extrabold">
+            SafeScope
+          </Link>
         </div>
-      </nav>
 
-      <main className="mx-auto w-full max-w-6xl px-5 py-5">{children}</main>
+        <div className="h-px bg-slate-500 opacity-50 mb-3" />
 
-      <footer className="mt-8 border-t border-slate-200 bg-white px-4 py-6 text-center">
-        <div className="flex justify-center gap-3 text-sm font-bold text-[#52616F]">
-          <Link href="/about">About</Link>
-          <span>|</span>
-          <Link href="/legal">Legal</Link>
-          <span>|</span>
-          <Link href="/safescope">SafeScope</Link>
-        </div>
-        <div className="mx-auto my-4 h-px max-w-xl bg-slate-200" />
-        <p className="text-xs font-semibold text-slate-500">
+        <p className="text-center text-slate-300 text-xs font-semibold">
           © 2026 Sentinel Safety. All rights reserved.
         </p>
       </footer>

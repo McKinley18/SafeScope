@@ -4,33 +4,48 @@ import { useState } from "react";
 import { runSafeScopeV2Classify } from "@/lib/safescope";
 
 const steps = [
-  "Identify Hazards",
-  "Evidence",
-  "Regulation",
-  "Risk Assessment",
-  "Corrective Actions",
-  "Finalize",
+  { title: "Step 1: Identify Hazards", desc: "Document the hazard observed." },
+  { title: "Step 2: Take Photos", desc: "Capture or attach evidence." },
+  { title: "Step 3: Regulation", desc: "Review likely standards." },
+  { title: "Step 4: Risk Assessment", desc: "Rate severity and likelihood." },
+  { title: "Step 5: Corrective Actions", desc: "Define the fix." },
+  { title: "Step 6: Finalize", desc: "Review and generate the report." },
+];
+
+const severityScale = [
+  { score: 1, label: "Minor", desc: "First aid or low-impact condition." },
+  { score: 2, label: "Moderate", desc: "Medical treatment or limited damage possible." },
+  { score: 3, label: "Serious", desc: "Lost time injury or significant equipment damage possible." },
+  { score: 4, label: "Major", desc: "Permanent injury, major damage, or regulatory exposure." },
+  { score: 5, label: "Critical", desc: "Fatality, catastrophic injury, or imminent danger." },
+];
+
+const likelihoodScale = [
+  { score: 1, label: "Rare", desc: "Not expected under normal conditions." },
+  { score: 2, label: "Unlikely", desc: "Could happen, but not often." },
+  { score: 3, label: "Possible", desc: "Could reasonably happen during work." },
+  { score: 4, label: "Likely", desc: "Expected to happen if not corrected." },
+  { score: 5, label: "Frequent", desc: "Happening now or repeatedly likely." },
 ];
 
 export default function InspectionPage() {
-  const [step, setStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1);
   const [hazardCategory, setHazardCategory] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [evidenceNotes, setEvidenceNotes] = useState("");
   const [agencyMode, setAgencyMode] = useState("all");
-  const [severity, setSeverity] = useState<number | null>(null);
-  const [likelihood, setLikelihood] = useState<number | null>(null);
   const [safeScopeStatus, setSafeScopeStatus] = useState("");
   const [safeScopeResult, setSafeScopeResult] = useState<any>(null);
+  const [severity, setSeverity] = useState<number | null>(null);
+  const [likelihood, setLikelihood] = useState<number | null>(null);
+  const [findings, setFindings] = useState<any[]>([]);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
 
-  async function runSafeScope() {
-    setSafeScopeStatus("Running SafeScope...");
-    setSafeScopeResult(null);
-
+  async function handleRunSafeScope() {
     try {
+      setSafeScopeStatus("Running SafeScope match...");
       const result = await runSafeScopeV2Classify({
         text: [
           `Hazard category: ${hazardCategory || "Unspecified"}`,
@@ -44,102 +59,145 @@ export default function InspectionPage() {
       });
 
       setSafeScopeResult(result);
-      setSafeScopeStatus(`SafeScope: ${result.classification} (${result.confidenceBand})`);
+      setSafeScopeStatus(`SafeScope v2: ${result.classification} (${result.confidenceBand} confidence)`);
     } catch (error) {
-      setSafeScopeStatus(error instanceof Error ? error.message : "SafeScope failed.");
+      setSafeScopeStatus(error instanceof Error ? error.message : "SafeScope request failed.");
     }
   }
 
+  function saveFinding() {
+    if (!description && !hazardCategory && !location && !evidenceNotes) return;
+
+    setFindings((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        hazardCategory,
+        description,
+        location,
+        evidenceNotes,
+        safeScopeResult,
+        severity,
+        likelihood,
+        riskScore,
+      },
+    ]);
+  }
+
   return (
-    <section className="space-y-5">
-      <div>
-        <h1 className="text-3xl font-black text-slate-900">Inspection Walkthrough</h1>
+    <>
+      <div className="mb-4 flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm">
+        <button
+          onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}
+          className="text-sm font-black text-[#1D72B8]"
+        >
+          ← Back
+        </button>
+
+        <div className="text-sm font-black text-slate-600">
+          Step {currentStep} of {steps.length}
+        </div>
+      </div>
+
+      <div className="mb-5">
+        <h1 className="text-3xl font-black text-slate-900">
+          {steps[currentStep - 1].title}
+        </h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">
-          Build a defensible finding with evidence, standards, risk, and corrective actions.
+          {steps[currentStep - 1].desc}
         </p>
       </div>
 
-      <div className="grid gap-2 md:grid-cols-6">
-        {steps.map((label, index) => {
-          const number = index + 1;
+      <div className="mb-5 flex gap-2">
+        {steps.map((_, index) => {
+          const stepNumber = index + 1;
+          const active = currentStep === stepNumber;
+          const complete = currentStep > stepNumber;
+
           return (
-            <button
-              key={label}
-              onClick={() => setStep(number)}
-              className={`rounded-xl border px-3 py-3 text-left text-xs font-black ${
-                step === number
-                  ? "border-[#1D72B8] bg-[#E8F4FF] text-[#1D72B8]"
-                  : "border-slate-200 bg-white text-slate-500"
-              }`}
-            >
-              Step {number}
-              <div className="mt-1 text-[11px]">{label}</div>
-            </button>
+            <div key={stepNumber} className="h-2 flex-1 rounded-full bg-slate-200">
+              <div
+                className={`h-2 rounded-full ${
+                  active || complete ? "bg-[#1D72B8]" : "bg-slate-200"
+                }`}
+              />
+            </div>
           );
         })}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        {step === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-black">Step 1: Identify Hazards</h2>
+      <div className="rounded-2xl bg-white p-5 shadow-sm">
+        {currentStep === 1 && (
+          <>
+            <h2 className="mb-4 text-xl font-black text-slate-900">Hazard Identification</h2>
 
-            <label className="block text-sm font-black">Hazard Category</label>
+            <label className="mb-2 block text-sm font-black text-slate-700">Hazard Category</label>
             <input
-              className="w-full rounded-xl border border-slate-300 p-3"
-              placeholder="Example: Electrical, Fall, Machine, Housekeeping"
+              className="mb-4 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
+              placeholder="Example: Electrical, fall protection, guarding"
               value={hazardCategory}
               onChange={(e) => setHazardCategory(e.target.value)}
             />
 
-            <label className="block text-sm font-black">Observed Condition</label>
+            <label className="mb-2 block text-sm font-black text-slate-700">Description</label>
             <textarea
-              className="w-full rounded-xl border border-slate-300 p-3"
-              rows={5}
-              placeholder="Example: live wire hanging near walkway"
+              className="mb-4 min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
+              placeholder="Describe the hazard, where it was found, who may be exposed, and what condition exists."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
 
-            <label className="block text-sm font-black">Location</label>
+            <label className="mb-2 block text-sm font-black text-slate-700">Location</label>
             <input
-              className="w-full rounded-xl border border-slate-300 p-3"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
               placeholder="Example: Conveyor 3, north catwalk"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
-          </div>
+          </>
         )}
 
-        {step === 2 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-black">Step 2: Evidence</h2>
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+        {currentStep === 2 && (
+          <>
+            <h2 className="mb-4 text-xl font-black text-slate-900">Evidence Capture</h2>
+
+            <div className="mb-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center">
               <div className="text-4xl">📷</div>
-              <p className="mt-2 font-black">Evidence Photos</p>
-              <p className="text-sm text-slate-500">Photo upload and annotation will be restored next.</p>
+              <div className="mt-2 text-lg font-black text-slate-900">Evidence Photos</div>
+              <p className="mt-1 text-sm font-semibold text-slate-500">
+                Take photos in the field or upload existing evidence images.
+              </p>
+
+              <div className="mt-5 flex justify-center gap-3">
+                <button className="rounded-xl bg-[#1D72B8] px-4 py-3 text-sm font-black text-white">
+                  Take Photo
+                </button>
+                <button className="rounded-xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-700">
+                  Upload Photo
+                </button>
+              </div>
             </div>
 
-            <label className="block text-sm font-black">Evidence Notes</label>
+            <label className="mb-2 block text-sm font-black text-slate-700">Evidence Notes</label>
             <textarea
-              className="w-full rounded-xl border border-slate-300 p-3"
-              rows={4}
-              placeholder="Describe photos, exposure, workers nearby, equipment state, or missing controls."
+              className="min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
+              placeholder="Describe photos, documents, or evidence needed."
               value={evidenceNotes}
               onChange={(e) => setEvidenceNotes(e.target.value)}
             />
-          </div>
+          </>
         )}
 
-        {step === 3 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-black">Step 3: SafeScope Regulation Mapping</h2>
+        {currentStep === 3 && (
+          <>
+            <h2 className="mb-4 text-xl font-black text-slate-900">SafeScope Regulation Mapping</h2>
 
-            <div className="rounded-xl bg-blue-50 p-4 text-sm font-semibold text-slate-700">
-              SafeScope uses the hazard description, location, evidence notes, and selected regulatory scope to suggest standards.
+            <div className="mb-4 rounded-xl bg-[#E8F4FF] p-4 text-sm font-semibold text-slate-700">
+              SafeScope uses the hazard category, description, location, evidence notes, and selected agency mode to suggest likely standards. Suggestions must be reviewed by a qualified safety professional.
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <label className="mb-2 block text-sm font-black text-slate-700">Applicable Regulations</label>
+            <div className="mb-4 flex flex-wrap gap-2">
               {[
                 ["all", "All"],
                 ["msha", "MSHA"],
@@ -161,97 +219,124 @@ export default function InspectionPage() {
             </div>
 
             <button
-              onClick={runSafeScope}
-              className="rounded-xl bg-[#1D72B8] px-5 py-3 font-black text-white"
+              onClick={handleRunSafeScope}
+              className="mb-3 rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
             >
               Run SafeScope Match
             </button>
 
-            {safeScopeStatus && <p className="font-bold text-slate-700">{safeScopeStatus}</p>}
+            {safeScopeStatus && <p className="mb-4 text-sm font-black text-slate-600">{safeScopeStatus}</p>}
 
-            {safeScopeResult && (
-              <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <h3 className="text-lg font-black">SafeScope Result</h3>
-                <p><strong>Classification:</strong> {safeScopeResult.classification}</p>
-                <p><strong>Confidence:</strong> {Math.round((safeScopeResult.confidence || 0) * 100)}%</p>
-                <p><strong>Risk:</strong> {safeScopeResult.risk?.riskBand} ({safeScopeResult.risk?.riskScore})</p>
+            {safeScopeResult?.risk && (
+              <div className="mb-4 rounded-2xl bg-slate-50 p-4">
+                <h3 className="mb-3 text-lg font-black text-slate-900">SafeScope Risk Intelligence</h3>
 
-                {safeScopeResult.risk?.requiresShutdown && (
-                  <div className="rounded-xl bg-red-100 p-3 font-black text-red-800">
-                    Shutdown / immediate control recommended.
-                  </div>
-                )}
-
-                <div>
-                  <h4 className="font-black">Suggested Standards</h4>
-                  <div className="mt-2 space-y-2">
-                    {safeScopeResult.suggestedStandards?.map((standard: any) => (
-                      <div key={standard.citation} className="rounded-xl bg-white p-3">
-                        <strong>{standard.citation}</strong>: {standard.rationale}
-                      </div>
-                    ))}
-                  </div>
+                <div className="mb-3 rounded-xl bg-white p-3">
+                  <div className="text-sm font-black text-slate-900">Operational Matrix</div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Severity {safeScopeResult.risk.operationalRisk?.severity} × Likelihood {safeScopeResult.risk.operationalRisk?.likelihood}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Score: {safeScopeResult.risk.operationalRisk?.matrixScore} • {safeScopeResult.risk.operationalRisk?.matrixBand}
+                  </p>
                 </div>
+
+                <div className="mb-3 rounded-xl bg-white p-3">
+                  <div className="text-sm font-black text-slate-900">AI Escalation</div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Score: {safeScopeResult.risk.aiRisk?.escalationScore ?? safeScopeResult.risk.riskScore} • {safeScopeResult.risk.aiRisk?.escalationBand ?? safeScopeResult.risk.riskBand}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Fatality Potential: {safeScopeResult.risk.aiRisk?.fatalityPotential ?? safeScopeResult.risk.fatalityPotential}
+                  </p>
+                </div>
+
+                {safeScopeResult.risk.requiresShutdown && (
+                  <p className="rounded-xl bg-red-100 p-3 text-sm font-black text-red-700">
+                    Shutdown / immediate control recommended.
+                  </p>
+                )}
               </div>
             )}
-          </div>
+
+            {safeScopeResult?.suggestedStandards?.map((standard: any) => (
+              <div key={standard.citation} className="mb-3 rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="font-black text-[#1D72B8]">{standard.citation}</div>
+                <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
+              </div>
+            ))}
+          </>
         )}
 
-        {step === 4 && (
-          <div className="space-y-5">
-            <h2 className="text-xl font-black">Step 4: Risk Assessment</h2>
+        {currentStep === 4 && (
+          <>
+            <h2 className="mb-2 text-xl font-black text-slate-900">Risk Assessment</h2>
+            <p className="mb-4 text-sm font-semibold text-slate-500">
+              Select 1–5 for severity and likelihood. Higher numbers mean greater risk.
+            </p>
 
-            <div>
-              <p className="mb-2 font-black">Severity</p>
-              <div className="grid gap-2 md:grid-cols-5">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setSeverity(n)}
-                    className={`rounded-xl border p-4 font-black ${
-                      severity === n ? "border-[#1D72B8] bg-[#E8F4FF]" : "border-slate-200 bg-white"
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
+            <h3 className="mb-2 font-black text-slate-800">Severity: How bad could the outcome be?</h3>
+            {severityScale.map((item) => (
+              <button
+                key={item.score}
+                onClick={() => setSeverity(item.score)}
+                className={`mb-2 flex w-full items-center gap-3 rounded-xl border p-3 text-left ${
+                  severity === item.score
+                    ? "border-[#1D72B8] bg-[#E8F4FF]"
+                    : "border-slate-200 bg-white"
+                }`}
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 font-black">
+                  {item.score}
+                </span>
+                <span>
+                  <span className="block font-black">{item.label}</span>
+                  <span className="text-sm text-slate-500">{item.desc}</span>
+                </span>
+              </button>
+            ))}
+
+            <h3 className="mb-2 mt-5 font-black text-slate-800">Likelihood: How likely is it to happen?</h3>
+            {likelihoodScale.map((item) => (
+              <button
+                key={item.score}
+                onClick={() => setLikelihood(item.score)}
+                className={`mb-2 flex w-full items-center gap-3 rounded-xl border p-3 text-left ${
+                  likelihood === item.score
+                    ? "border-[#1D72B8] bg-[#E8F4FF]"
+                    : "border-slate-200 bg-white"
+                }`}
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 font-black">
+                  {item.score}
+                </span>
+                <span>
+                  <span className="block font-black">{item.label}</span>
+                  <span className="text-sm text-slate-500">{item.desc}</span>
+                </span>
+              </button>
+            ))}
+
+            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+              <div className="text-sm font-black text-slate-500">Calculated Risk Score</div>
+              <div className="mt-1 text-3xl font-black text-slate-900">
+                {riskScore ? `${riskScore} / 25` : "Select severity and likelihood"}
               </div>
             </div>
-
-            <div>
-              <p className="mb-2 font-black">Likelihood</p>
-              <div className="grid gap-2 md:grid-cols-5">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setLikelihood(n)}
-                    className={`rounded-xl border p-4 font-black ${
-                      likelihood === n ? "border-[#1D72B8] bg-[#E8F4FF]" : "border-slate-200 bg-white"
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-slate-50 p-5">
-              <p className="text-sm font-black text-slate-500">Calculated Risk Score</p>
-              <p className="mt-1 text-3xl font-black">{riskScore ? `${riskScore} / 25` : "Select severity and likelihood"}</p>
-            </div>
-          </div>
+          </>
         )}
 
-        {step === 5 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-black">Step 5: Corrective Actions</h2>
+        {currentStep === 5 && (
+          <>
+            <h2 className="mb-4 text-xl font-black text-slate-900">Corrective Actions</h2>
 
             {safeScopeResult?.generatedActions?.length ? (
               <div className="space-y-3">
+                <h3 className="font-black text-slate-900">SafeScope Recommended Actions</h3>
                 {safeScopeResult.generatedActions.map((action: any, index: number) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="font-black">{action.title}</h3>
+                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <h4 className="font-black text-slate-900">{action.title}</h4>
                       <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">
                         {action.priority}
                       </span>
@@ -267,40 +352,81 @@ export default function InspectionPage() {
               </div>
             ) : (
               <div className="rounded-xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
-                Run SafeScope in Step 3 to generate situation-specific corrective actions.
+                Run SafeScope in Step 3 to generate recommended corrective actions.
               </div>
             )}
-          </div>
+          </>
         )}
 
-        {step === 6 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-black">Step 6: Finalize</h2>
-            <div className="rounded-2xl bg-slate-50 p-5">
-              <p className="font-black">Inspection Report Preview</p>
+        {currentStep === 6 && (
+          <>
+            <h2 className="mb-4 text-xl font-black text-slate-900">Finalize Inspection</h2>
+
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="font-black text-slate-900">Inspection Summary</p>
               <p className="mt-2 text-sm text-slate-600">
-                This will compile hazard details, evidence, standards, risk, and corrective actions into a final report.
+                Review saved findings and generate the final inspection report.
               </p>
             </div>
+
+            <button
+              onClick={saveFinding}
+              className="mt-4 rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white"
+            >
+              Save Current Finding
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="mt-5 rounded-2xl bg-white p-5 shadow-sm">
+        <h2 className="mb-2 text-lg font-black text-slate-900">
+          {currentStep === 6 ? "Saved Findings" : "Current Entry"}
+        </h2>
+
+        {currentStep !== 6 ? (
+          <>
+            <p className="text-sm font-semibold text-slate-600">
+              {description || hazardCategory || location
+                ? `${hazardCategory || "Uncategorized"} • ${description || "No description yet"}`
+                : "Start entering finding details to build the current entry."}
+            </p>
+            <p className="mt-2 text-xs font-black text-slate-500">
+              Photos: 0 • Risk: {safeScopeResult?.risk?.riskBand || riskScore || "Not rated"} • Standards: {safeScopeResult?.suggestedStandards?.length || 0}
+            </p>
+          </>
+        ) : findings.length === 0 ? (
+          <p className="text-sm font-semibold text-slate-500">No saved findings yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {findings.map((finding, index) => (
+              <div key={finding.id} className="rounded-xl border border-slate-200 p-3">
+                <div className="font-black">Finding {index + 1}: {finding.hazardCategory || "Uncategorized"}</div>
+                <p className="mt-1 text-sm text-slate-600">{finding.description || "No description provided."}</p>
+                <p className="mt-1 text-xs font-black text-slate-500">
+                  SafeScope: {finding.safeScopeResult?.classification || "Not run"} • Risk: {finding.safeScopeResult?.risk?.riskBand || finding.riskScore || "Not rated"}
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      <div className="flex justify-between">
+      <div className="mt-5 flex justify-between">
         <button
-          onClick={() => setStep(Math.max(1, step - 1))}
-          className="rounded-xl bg-white px-5 py-3 font-black text-slate-700 shadow-sm"
+          onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}
+          className="rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-700 shadow-sm"
         >
           Back
         </button>
 
         <button
-          onClick={() => setStep(Math.min(6, step + 1))}
-          className="rounded-xl bg-[#102A43] px-5 py-3 font-black text-white"
+          onClick={() => setCurrentStep((s) => Math.min(6, s + 1))}
+          className="rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
         >
-          {step === 6 ? "Generate Report" : "Next"}
+          {currentStep === 6 ? "Generate Report" : "Next"}
         </button>
       </div>
-    </section>
+    </>
   );
 }
