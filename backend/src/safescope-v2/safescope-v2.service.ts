@@ -2,14 +2,58 @@ import { StandardsBridgeService } from './standards-bridge.service';
 import { Injectable } from '@nestjs/common';
 import { DeterministicClassifier } from './engine/deterministic-classifier';
 import { evaluateRisk } from './risk/risk-engine';
+import { ActionEngineService } from '../action-engine/action-engine.service';
 
 @Injectable()
 export class SafescopeV2Service {
   private classifier = new DeterministicClassifier();
   private bridge = new StandardsBridgeService();
 
-  classify(text: string, scopes?: string[]) {
+  constructor(private readonly actionEngine: ActionEngineService) {}
+
+  private async buildActionPreview(
+    classification: string,
+    text: string,
+    risk: any,
+    standards: any[],
+  ) {
+    const generated = await this.actionEngine.generateActionsFromReport({
+      id: `preview-${Date.now()}`,
+      category: classification,
+      description: text,
+      riskScore: risk?.operationalRisk?.matrixScore || risk?.riskScore || 10,
+      riskLevel: (risk?.riskBand || 'MODERATE').toUpperCase(),
+      confidence: 0.9,
+      patterns: [],
+      location: 'Inspection Area',
+      override: risk?.requiresShutdown || false,
+      safeScope: {
+        classification,
+        riskBand: risk?.riskBand,
+        requiresShutdown: risk?.requiresShutdown,
+        imminentDanger: risk?.imminentDanger,
+        fatalityPotential: risk?.fatalityPotential,
+        reasoning: risk?.reasoning || [],
+        standards,
+      },
+    });
+
+    return generated.map((action) => ({
+      title: action.title,
+      description: action.description,
+      priority: action.priority,
+      assignedRole: action.assignedRole,
+      dueDate: action.dueDate,
+      requiresShutdown: risk?.requiresShutdown || false,
+      referenceStandards: standards.map((standard) => standard.citation),
+      suggestedFixes: action.suggestedFixes || [],
+      sourceHazard: classification,
+    }));
+  }
+
+  async classify(text: string, scopes?: string[]) {
     const result = this.classifier.classify(text);
+
     const primaryCandidate = {
       classification: result.classification,
       confidence: result.confidence,
@@ -58,16 +102,47 @@ export class SafescopeV2Service {
       return (b.confidence || 0) - (a.confidence || 0);
     })[0];
 
-    const additionalHazards = allCandidates
-      .filter((hazard) => hazard.classification !== promotedPrimary.classification)
-      .map((hazard) => ({
-        ...hazard,
-        ...this.bridge.getSuggestedStandards(hazard.classification, scopes),
-      }));
+    const primaryStandardsResult = this.bridge.getSuggestedStandards(
+      promotedPrimary.classification,
+      scopes,
+    );
+
+    const generatedActions = await this.buildActionPreview(
+      promotedPrimary.classification,
+      text,
+      promotedPrimary.risk,
+      primaryStandardsResult.suggestedStandards,
+    );
+
+    const additionalHazards = await Promise.all(
+      allCandidates
+        .filter((hazard) => hazard.classification !== promotedPrimary.classification)
+        .map(async (hazard) => {
+          const standardsResult = this.bridge.getSuggestedStandards(
+            hazard.classification,
+            scopes,
+          );
+
+          const hazardActions = await this.buildActionPreview(
+            hazard.classification,
+            text,
+            hazard.risk,
+            standardsResult.suggestedStandards,
+          );
+
+          return {
+            ...hazard,
+            ...standardsResult,
+            generatedActions: hazardActions,
+          };
+        }),
+    );
 
     const promotionWarning =
       promotedPrimary.classification !== result.classification
-        ? [`Primary hazard promoted from ${result.classification} to ${promotedPrimary.classification} based on operational risk.`]
+        ? [
+            `Primary hazard promoted from ${result.classification} to ${promotedPrimary.classification} based on operational risk.`,
+          ]
         : [];
 
     return {
@@ -76,11 +151,11 @@ export class SafescopeV2Service {
       confidenceBand: promotedPrimary.confidenceBand,
       evidenceTokens: promotedPrimary.evidenceTokens,
       ambiguityWarnings: [...result.ambiguityWarnings, ...promotionWarning],
-      requiresHumanReview:
-        result.requiresHumanReview || promotionWarning.length > 0,
+      requiresHumanReview: result.requiresHumanReview || promotionWarning.length > 0,
       explanation: promotedPrimary.explanation,
-      ...this.bridge.getSuggestedStandards(promotedPrimary.classification, scopes),
+      ...primaryStandardsResult,
       risk: promotedPrimary.risk,
+      generatedActions,
       additionalHazards,
     };
   }
