@@ -1,65 +1,83 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ShieldCheck, AlertTriangle, ClipboardCheck, Activity } from "lucide-react";
 
-export default function Home() {
+const stats = [
+  { label: "Open Findings", value: "0", icon: AlertTriangle },
+  { label: "Corrective Actions", value: "0", icon: ClipboardCheck },
+  { label: "Critical Risks", value: "0", icon: Activity },
+];
+
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <section className="space-y-8">
+      <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-blue-400">
+              Sentinel Safety Command Center
+            </p>
+            <h1 className="mt-4 text-4xl font-black text-white">
+              See Risk. Prevent Harm.
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
+              Run inspections, classify hazards with SafeScope, generate corrective actions,
+              and build defensible safety reports from one clean workspace.
+            </p>
+          </div>
+
+          <div className="hidden rounded-2xl bg-blue-600 p-5 shadow-xl md:block">
+            <ShieldCheck size={42} />
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/inspection"
+            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white hover:bg-blue-500"
+          >
+            Start Inspection
+          </Link>
+          <Link
+            href="/reports"
+            className="rounded-xl border border-slate-700 px-5 py-3 text-sm font-black text-slate-200 hover:bg-slate-800"
+          >
+            View Reports
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {stats.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-slate-400">{item.label}</p>
+                <Icon className="text-blue-400" size={20} />
+              </div>
+              <p className="mt-4 text-4xl font-black text-white">{item.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-xl font-black text-white">SafeScope Intelligence</h2>
+          <p className="mt-3 text-slate-400">
+            The clean frontend is now ready to reconnect the classification, standards,
+            risk, evidence fusion, and corrective action engines.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-xl font-black text-white">Next Build Target</h2>
+          <p className="mt-3 text-slate-400">
+            Rebuild the inspection workflow into a polished step-by-step experience without
+            bringing back the broken mixed Expo/Next structure.
+          </p>
         </div>
-      </main>
-    </div>
+      </div>
+    </section>
   );
 }
