@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HazardFixService } from '../intelligence/hazard-fix.service';
 import { FixFeedbackService } from '../intelligence/fix-feedback.service';
+import { buildContextualControls } from './contextual-control.engine';
 
 export interface ActionInput {
   id: string;
@@ -20,6 +21,7 @@ export interface ActionInput {
     fatalityPotential?: "low" | "medium" | "high";
     reasoning?: string[];
     standards?: { citation: string; rationale?: string }[];
+    expandedContext?: any;
   };
 }
 
@@ -102,6 +104,22 @@ export class ActionEngineService {
         finalFixes = [...new Set([...learnedFixes, ...libraryFixes])].slice(0, 8);
     }
 
+    const contextualControls = buildContextualControls({
+      classification: report.safeScope?.classification || report.category,
+      text: report.description || report.category,
+      requiresShutdown: report.safeScope?.requiresShutdown,
+      imminentDanger: report.safeScope?.imminentDanger,
+    });
+
+    const contextualFixes = [
+      ...contextualControls.immediateControls,
+      ...contextualControls.permanentControls,
+      ...contextualControls.verificationSteps,
+      ...contextualControls.restartCriteria,
+    ];
+
+    finalFixes = [...new Set([...contextualFixes, ...finalFixes])].slice(0, 10);
+
     // 6. Enhance Description
     let description = "";
     if (report.patterns && report.patterns.length > 0) {
@@ -121,6 +139,10 @@ export class ActionEngineService {
 
     if (report.safeScope?.reasoning?.length) {
       description += " SafeScope reasoning: " + report.safeScope.reasoning.join("; ");
+    }
+
+    if (contextualControls.competentPersonReview) {
+      description += " Competent-person or qualified-person review is recommended before closure.";
     }
 
     if (finalFixes.length > 0) {
@@ -145,8 +167,11 @@ export class ActionEngineService {
         ? report.safeScope.standards.map((standard) => standard.citation)
         : reference ? reference.standards : [],
       suggestedFixes: finalFixes,
+      originalSuggestion: {
+        ...(reference ? { hazard: reference.hazard, fixes: reference.fixes } : {}),
+        contextualControls,
+      } as any,
       category: report.category,
-      originalSuggestion: reference ? { hazard: reference.hazard, fixes: reference.fixes } : null
     });
 
     return actions;

@@ -3,19 +3,24 @@ import { Injectable } from '@nestjs/common';
 import { DeterministicClassifier } from './engine/deterministic-classifier';
 import { evaluateRisk } from './risk/risk-engine';
 import { ActionEngineService } from '../action-engine/action-engine.service';
+import { ContextExpansionService } from './context/context-expansion.service';
 
 @Injectable()
 export class SafescopeV2Service {
   private classifier = new DeterministicClassifier();
   private bridge = new StandardsBridgeService();
 
-  constructor(private readonly actionEngine: ActionEngineService) {}
+  constructor(
+    private readonly actionEngine: ActionEngineService,
+    private readonly contextExpansion: ContextExpansionService,
+  ) {}
 
   private async buildActionPreview(
     classification: string,
     text: string,
     risk: any,
     standards: any[],
+    expandedContext?: any,
   ) {
     const generated = await this.actionEngine.generateActionsFromReport({
       id: `preview-${Date.now()}`,
@@ -33,8 +38,12 @@ export class SafescopeV2Service {
         requiresShutdown: risk?.requiresShutdown,
         imminentDanger: risk?.imminentDanger,
         fatalityPotential: risk?.fatalityPotential,
-        reasoning: risk?.reasoning || [],
+        reasoning: [
+          ...(risk?.reasoning || []),
+          ...(expandedContext?.reasoning || []),
+        ],
         standards,
+        expandedContext,
       },
     });
 
@@ -102,6 +111,11 @@ export class SafescopeV2Service {
       return (b.confidence || 0) - (a.confidence || 0);
     })[0];
 
+    const expandedContext = this.contextExpansion.expand(
+      text,
+      promotedPrimary.classification,
+    );
+
     const primaryStandardsResult = this.bridge.getSuggestedStandards(
       promotedPrimary.classification,
       scopes,
@@ -112,6 +126,7 @@ export class SafescopeV2Service {
       text,
       promotedPrimary.risk,
       primaryStandardsResult.suggestedStandards,
+      expandedContext,
     );
 
     const additionalHazards = await Promise.all(
@@ -123,16 +138,23 @@ export class SafescopeV2Service {
             scopes,
           );
 
+          const hazardExpandedContext = this.contextExpansion.expand(
+            text,
+            hazard.classification,
+          );
+
           const hazardActions = await this.buildActionPreview(
             hazard.classification,
             text,
             hazard.risk,
             standardsResult.suggestedStandards,
+            hazardExpandedContext,
           );
 
           return {
             ...hazard,
             ...standardsResult,
+            expandedContext: hazardExpandedContext,
             generatedActions: hazardActions,
           };
         }),
@@ -155,6 +177,7 @@ export class SafescopeV2Service {
       explanation: promotedPrimary.explanation,
       ...primaryStandardsResult,
       risk: promotedPrimary.risk,
+      expandedContext,
       generatedActions,
       additionalHazards,
     };
