@@ -8,7 +8,9 @@
     "web": "expo start --web",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "build": "next build"
+    "build": "next build",
+    "start:e2e": "next start -p 3000",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "expo": "^55.0.0",
@@ -25,6 +27,7 @@
     "recharts": "^3.8.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/react": "~19.2.10",
     "typescript": "^5.3.3"
   }
