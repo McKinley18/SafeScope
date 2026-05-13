@@ -31,6 +31,10 @@ export default function AppShell({ children }: Props) {
           Inspections
         </Link>
 
+        <Link href="/command-center" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
+          Command Center
+        </Link>
+
         <Link href="/reports" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
           Reports
         </Link>
