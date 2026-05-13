@@ -2,7 +2,7 @@ export default function CommandCenterPage() {
   return (
     <section className="space-y-5">
       <div>
-        <h1 className="text-3xl font-black text-slate-900">Command Center</h1>
+        <h1 className="text-3xl font-black text-slate-900">Dashboard</h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">
           Operational safety intelligence, risk visibility, and action status.
         </p>

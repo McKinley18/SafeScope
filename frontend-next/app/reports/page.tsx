@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
+import { localExporter } from "@/lib/localExporter";
 
 type Report = {
   id: string;
@@ -53,6 +55,7 @@ function riskClasses(risk: string) {
 }
 
 export default function ReportsPage() {
+  const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
   const [editingReportId, setEditingReportId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -99,9 +102,8 @@ export default function ReportsPage() {
   }
 
   function startEdit(report: Report) {
-    setEditingReportId(report.id);
-    setEditTitle(report.title || "Inspection Report");
-    setEditLocation(report.location || "");
+    window.localStorage.setItem("sentinel_edit_report", JSON.stringify(report));
+    router.push("/inspection-review");
   }
 
   function saveEdit(reportId: string) {
@@ -137,39 +139,63 @@ export default function ReportsPage() {
     }
   }
 
-  function exportReport(report: Report) {
-    const risk = getRiskLabel(report);
+  async function exportReport(report: Report) {
+    const coverPage = JSON.parse(
+      window.localStorage.getItem("sentinel_cover_page") || "{}"
+    );
 
-    const text = [
-      "Sentinel Safety Inspection Report",
-      "=================================",
-      "",
-      `Report ID: ${report.id}`,
-      `Title: ${report.title || "Inspection Report"}`,
-      `Location: ${report.location || "Field Inspection"}`,
-      `Created: ${new Date(report.createdAt).toLocaleString()}`,
-      `Risk: ${risk}`,
-      `Findings: ${report.findings?.length || 0}`,
-      "",
-      ...(report.findings || []).flatMap((finding, index) => [
-        `Finding ${index + 1}: ${finding.hazardCategory || "Uncategorized"}`,
-        `Description: ${finding.description || "No description provided."}`,
-        `Location: ${finding.location || "Not specified"}`,
-        `Risk: ${finding.safeScopeResult?.risk?.riskBand || finding.riskScore || "Not rated"}`,
-        `SafeScope: ${finding.safeScopeResult?.classification || "Not run"}`,
-        "",
-      ]),
-    ].join("\\n");
+    const normalizedFindings = (report.findings || []).map((finding: any) => ({
+      category:
+        finding.hazardCategory ||
+        finding.category ||
+        finding.safeScopeResult?.classification ||
+        "Uncategorized",
+      description:
+        finding.description ||
+        finding.hazard ||
+        finding.observedCondition ||
+        "No description provided.",
+      location: finding.location || report.location || "Field Inspection",
+      severity: Number(finding.severity || finding.severityScore || 1),
+      likelihood: Number(finding.likelihood || finding.likelihoodScore || 1),
+      standards:
+        finding.standards ||
+        finding.safeScopeResult?.suggestedStandards ||
+        finding.safeScopeResult?.standards ||
+        [],
+      correctiveActions:
+        finding.correctiveActions ||
+        finding.safeScopeResult?.generatedActions ||
+        [],
+      photos: finding.photos || [],
+      safeScopeResult: finding.safeScopeResult || null,
+    }));
 
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-
-    anchor.href = url;
-    anchor.download = `${report.id}.txt`;
-    anchor.click();
-
-    URL.revokeObjectURL(url);
+    await localExporter.generatePDF({
+      adminInfo: {
+        company:
+          coverPage.organizationName ||
+          coverPage.company ||
+          (report as any).company ||
+          "Organization Name",
+        site:
+          coverPage.siteLocation ||
+          coverPage.site ||
+          report.location ||
+          "Field Inspection",
+        inspector:
+          coverPage.leadInspector ||
+          coverPage.inspector ||
+          (report as any).inspector ||
+          "Inspector",
+        date:
+          coverPage.inspectionDate ||
+          new Date(report.createdAt).toLocaleDateString(),
+        isConfidential:
+          Boolean(coverPage.isConfidential || (report as any).confidential),
+      },
+      findings: normalizedFindings,
+    });
   }
 
   return (
