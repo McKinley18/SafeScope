@@ -43,7 +43,7 @@ export default function InspectionCoverPage() {
           href="/inspection"
           className="mt-5 inline-block rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white"
         >
-          Begin Walkthrough
+          Start Inspection
         </Link>
       </div>
     </section>

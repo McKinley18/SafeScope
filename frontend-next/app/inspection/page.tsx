@@ -203,7 +203,13 @@ export default function InspectionPage() {
     <>
       <div className="mb-4 flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm">
         <button
-          onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}
+          onClick={() => {
+            if (currentStep === 1) {
+              router.push("/inspection-cover");
+              return;
+            }
+            setCurrentStep((s) => Math.max(1, s - 1));
+          }}
           className="text-sm font-black text-[#1D72B8]"
         >
           ← Back
@@ -667,7 +673,13 @@ export default function InspectionPage() {
 
       <div className="mt-5 flex justify-between">
         <button
-          onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}
+          onClick={() => {
+            if (currentStep === 1) {
+              router.push("/inspection-cover");
+              return;
+            }
+            setCurrentStep((s) => Math.max(1, s - 1));
+          }}
           className="rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-700 shadow-sm"
         >
           Back
