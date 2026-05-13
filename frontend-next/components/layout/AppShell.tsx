@@ -23,16 +23,13 @@ export default function AppShell({ children }: Props) {
 
       {/* NAV */}
       <div className="w-full bg-white border-b border-slate-200 px-5 py-3 flex items-center gap-5">
-        <Link href="/" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
-          Dashboard
-        </Link>
 
-        <Link href="/inspection" className="text-[13px] font-black text-[#1D72B8] underline">
+        <Link href="/inspections" className="text-[13px] font-black text-[#1D72B8] underline">
           Inspections
         </Link>
 
         <Link href="/command-center" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">
-          Command Center
+          Dashboard
         </Link>
 
         <Link href="/reports" className="text-[13px] font-black text-slate-600 hover:text-[#1D72B8]">

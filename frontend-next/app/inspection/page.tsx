@@ -196,7 +196,7 @@ export default function InspectionPage() {
     };
 
     window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
-    router.push("/reports");
+    router.push("/inspection-review");
   }
 
   return (
