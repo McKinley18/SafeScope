@@ -16,6 +16,7 @@ import { IntelligenceModule } from './intelligence/intelligence.module';
 import { GovernanceModule } from './governance/governance.module';
 import { OutcomesModule } from './outcomes/outcomes.module';
 import { TransparencyModule } from './transparency/transparency.module';
+import { PdfModule } from './pdf/pdf.module';
 
 @Module({
   imports: [SafescopeV2Module, 
@@ -64,6 +65,7 @@ import { TransparencyModule } from './transparency/transparency.module';
     GovernanceModule,
     OutcomesModule,
     TransparencyModule,
+    PdfModule,
   ],
 })
 export class AppModule {}

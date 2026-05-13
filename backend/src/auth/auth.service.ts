@@ -34,14 +34,23 @@ export class AuthService {
       finalType = 'company'; // Locked to company tier
     }
 
+    if (!organizationId) {
+      const org = await this.orgService.create({
+        name: `${name || email.split('@')[0]}'s Organization`,
+      } as any);
+
+      organizationId = org.id;
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = this.userRepo.create({
       email,
+      name: name || email.split('@')[0],
       password: hashedPassword,
       type: finalType,
       role,
-      organizationId: organizationId || "default-org"
+      organizationId,
     });
 
     await this.userRepo.save(user);
@@ -58,7 +67,11 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const user = await this.userRepo.findOne({ where: { email } });
+    const user = await this.userRepo
+      .createQueryBuilder("user")
+      .addSelect("user.password")
+      .where("user.email = :email", { email })
+      .getOne();
 
     if (!user) {
       throw new BadRequestException('Invalid credentials');

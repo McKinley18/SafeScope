@@ -14,6 +14,16 @@ export class OrganizationsService {
     private inviteRepo: Repository<Invitation>,
   ) {}
 
+  async create(data: { name: string; logoPath?: string }): Promise<Organization> {
+    const org = new Organization();
+    org.name = data.name;
+    if (data.logoPath) {
+      org.logoPath = data.logoPath;
+    }
+
+    return await this.orgRepo.save(org);
+  }
+
   async findOne(id: string) {
     const org = await this.orgRepo.findOne({ where: { id } });
     if (!org) throw new NotFoundException('Organization not found');
