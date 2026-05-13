@@ -18,3 +18,32 @@ export async function runSafeScopeV2Classify(payload: {
 
   return response.json();
 }
+
+export async function sendSafeScopeFeedback(payload: {
+  text: string;
+  category: string;
+  mode: string;
+  citation: string;
+  action: "accepted" | "rejected" | "flagged";
+  notes?: string;
+}) {
+  const existing =
+    typeof window !== "undefined"
+      ? JSON.parse(window.localStorage.getItem("sentinel_safescope_feedback") || "[]")
+      : [];
+
+  const record = {
+    id: `feedback-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    ...payload,
+  };
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(
+      "sentinel_safescope_feedback",
+      JSON.stringify([record, ...existing])
+    );
+  }
+
+  return record;
+}

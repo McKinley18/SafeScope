@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { runSafeScopeV2Classify } from "@/lib/safescope";
+import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
 
@@ -44,6 +44,7 @@ export default function InspectionPage() {
   const [agencyMode, setAgencyMode] = useState("all");
   const [safeScopeStatus, setSafeScopeStatus] = useState("");
   const [safeScopeResult, setSafeScopeResult] = useState<any>(null);
+  const [feedbackNotes, setFeedbackNotes] = useState("");
   const [severity, setSeverity] = useState<number | null>(null);
   const [likelihood, setLikelihood] = useState<number | null>(null);
   const [findings, setFindings] = useState<any[]>([]);
@@ -79,6 +80,40 @@ export default function InspectionPage() {
     }
   }
 
+  function buildSafeScopeText() {
+    return [
+      `Hazard category: ${hazardCategory || "Unspecified"}`,
+      `Observed condition: ${description || "No description provided"}`,
+      `Location: ${location || "No location provided"}`,
+      `Evidence notes: ${evidenceNotes || "No evidence notes provided"}`,
+      `Regulatory scope: ${agencyMode.toUpperCase()}`,
+    ].join("\n");
+  }
+
+  async function handleFeedback(
+    standard: any,
+    action: "accepted" | "rejected" | "flagged"
+  ) {
+    try {
+      setSafeScopeStatus(`Submitting ${action} feedback...`);
+
+      await sendSafeScopeFeedback({
+        text: buildSafeScopeText(),
+        category: hazardCategory || "General",
+        mode: agencyMode,
+        citation: standard.citation,
+        action,
+        notes: feedbackNotes,
+      });
+
+      setSafeScopeStatus(`Feedback saved: ${action} ${standard.citation}`);
+    } catch (error) {
+      setSafeScopeStatus(
+        error instanceof Error ? error.message : "Feedback request failed."
+      );
+    }
+  }
+
   function buildCurrentFinding() {
     return {
       id: editingFindingIndex !== null ? findings[editingFindingIndex]?.id : Date.now(),
@@ -107,6 +142,7 @@ export default function InspectionPage() {
     setAgencyMode("all");
     setSafeScopeStatus("");
     setSafeScopeResult(null);
+    setFeedbackNotes("");
     setSeverity(null);
     setLikelihood(null);
     setEditingFindingIndex(null);
@@ -189,13 +225,37 @@ export default function InspectionPage() {
       finalizedFindings.push(buildCurrentFinding());
     }
 
+    const coverPage = JSON.parse(
+      window.localStorage.getItem("sentinel_cover_page") || "{}"
+    );
+
     const report = {
       id: `report-${Date.now()}`,
       createdAt: new Date().toISOString(),
+      title: coverPage.organizationName
+        ? `${coverPage.organizationName} Inspection Report`
+        : "Inspection Report",
+      organizationName: coverPage.organizationName || "",
+      siteLocation: coverPage.siteLocation || "",
+      inspectionDate: coverPage.inspectionDate || "",
+      leadInspector: coverPage.leadInspector || "",
+      additionalInspectors: coverPage.additionalInspectors || [],
+      isConfidential: !!coverPage.isConfidential,
       findings: finalizedFindings,
     };
 
+    const existingReports = JSON.parse(
+      window.localStorage.getItem("sentinel_reports") || "[]"
+    );
+
+    const nextReports = [
+      report,
+      ...existingReports.filter((existing: any) => existing.id !== report.id),
+    ];
+
     window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
+    window.localStorage.setItem("sentinel_reports", JSON.stringify(nextReports));
+
     router.push("/inspection-review");
   }
 
@@ -490,12 +550,127 @@ export default function InspectionPage() {
               </div>
             )}
 
-            {safeScopeResult?.suggestedStandards?.map((standard: any) => (
-              <div key={standard.citation} className="mb-3 rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="font-black text-[#1D72B8]">{standard.citation}</div>
-                <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
+            {safeScopeResult?.expandedContext && (
+              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <h3 className="font-black text-slate-900">SafeScope Inferred Context</h3>
+
+                <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
+                  <div>
+                    <p className="font-black text-slate-500">Environment</p>
+                    <p className="font-semibold text-slate-700">
+                      {safeScopeResult.expandedContext.environment || "Not inferred"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="font-black text-slate-500">Confidence</p>
+                    <p className="font-semibold text-slate-700">
+                      {safeScopeResult.expandedContext.contextConfidence?.band || "Unknown"}
+                    </p>
+                  </div>
+                </div>
+
+                {!!safeScopeResult.expandedContext.probableConsequences?.length && (
+                  <div className="mt-3">
+                    <p className="font-black text-slate-500">Probable Consequences</p>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {safeScopeResult.expandedContext.probableConsequences.join(", ")}
+                    </p>
+                  </div>
+                )}
+
+                {!!safeScopeResult.expandedContext.controlFailures?.length && (
+                  <div className="mt-3">
+                    <p className="font-black text-slate-500">Control Failures</p>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {safeScopeResult.expandedContext.controlFailures.join(", ")}
+                    </p>
+                  </div>
+                )}
               </div>
-            ))}
+            )}
+
+            {!!safeScopeResult?.suggestedStandards?.length && (
+              <div className="mb-4">
+                <h3 className="mb-2 font-black text-slate-900">Suggested Standards</h3>
+
+                <label className="mb-2 block text-sm font-black text-slate-700">
+                  Feedback Notes
+                </label>
+                <textarea
+                  value={feedbackNotes}
+                  onChange={(e) => setFeedbackNotes(e.target.value)}
+                  placeholder="Optional notes for accepting, rejecting, or flagging a standard."
+                  className="mb-3 min-h-24 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#1D72B8]"
+                />
+                {safeScopeResult.suggestedStandards.map((standard: any) => (
+                  <div key={standard.citation} className="mb-3 rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="font-black text-[#1D72B8]">{standard.citation}</div>
+                    <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleFeedback(standard, "accepted")}
+                        className="rounded-full bg-[#DCFCE7] px-3 py-2 text-xs font-black text-[#166534]"
+                      >
+                        Accept
+                      </button>
+
+                      <button
+                        onClick={() => handleFeedback(standard, "rejected")}
+                        className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"
+                      >
+                        Reject
+                      </button>
+
+                      <button
+                        onClick={() => handleFeedback(standard, "flagged")}
+                        className="rounded-full bg-[#FEF3C7] px-3 py-2 text-xs font-black text-[#92400E]"
+                      >
+                        Flag
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!!safeScopeResult?.excludedStandards?.length && (
+              <div className="mb-4 rounded-2xl border border-slate-300 bg-slate-50 p-4">
+                <h3 className="font-black text-slate-700">Excluded Standards</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  These standards were considered but excluded based on selected regulatory scope or context.
+                </p>
+
+                <div className="mt-3 space-y-2">
+                  {safeScopeResult.excludedStandards.map((standard: any) => (
+                    <div key={standard.citation} className="rounded-xl bg-white p-3">
+                      <p className="font-black text-slate-700">{standard.citation}</p>
+                      <p className="mt-1 text-sm text-slate-500">{standard.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!!safeScopeResult?.additionalHazards?.length && (
+              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <h3 className="font-black text-slate-900">Additional Hazards Detected</h3>
+
+                <div className="mt-3 space-y-2">
+                  {safeScopeResult.additionalHazards.map((hazard: any, index: number) => (
+                    <div key={index} className="rounded-xl bg-white p-3">
+                      <p className="font-black text-slate-900">
+                        {hazard.name || hazard.hazard || `Additional Hazard ${index + 1}`}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {hazard.reason || hazard.rationale || "Review recommended."}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
 
