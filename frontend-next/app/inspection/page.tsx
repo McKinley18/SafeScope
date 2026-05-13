@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify } from "@/lib/safescope";
+import AnnotationPreview from "@/components/evidence/AnnotationPreview";
+import AnnotationEditor from "@/components/evidence/AnnotationEditor";
 
 const steps = [
   { title: "Step 1: Identify Hazards", desc: "Document the hazard observed." },
@@ -36,6 +38,9 @@ export default function InspectionPage() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [evidenceNotes, setEvidenceNotes] = useState("");
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [annotatingPhotoIndex, setAnnotatingPhotoIndex] = useState<number | null>(null);
+  const [annotationExpanded, setAnnotationExpanded] = useState(false);
   const [agencyMode, setAgencyMode] = useState("all");
   const [safeScopeStatus, setSafeScopeStatus] = useState("");
   const [safeScopeResult, setSafeScopeResult] = useState<any>(null);
@@ -59,7 +64,12 @@ export default function InspectionPage() {
           `Regulatory scope: ${agencyMode.toUpperCase()}`,
         ].join("\n"),
         scopes: agencyMode === "all" ? undefined : [agencyMode],
-        evidenceTexts: [evidenceNotes, location].filter(Boolean),
+        evidenceTexts: [
+          evidenceNotes,
+          location,
+          photos.length ? `${photos.length} evidence photo(s) attached` : "",
+          ...photos.map((photo, index) => `Photo ${index + 1}: ${photo.name || "evidence photo"}`),
+        ].filter(Boolean),
       });
 
       setSafeScopeResult(result);
@@ -93,6 +103,7 @@ export default function InspectionPage() {
     setDescription("");
     setLocation("");
     setEvidenceNotes("");
+    setPhotos([]);
     setAgencyMode("all");
     setSafeScopeStatus("");
     setSafeScopeResult(null);
@@ -137,6 +148,7 @@ export default function InspectionPage() {
     setDescription(finding.description || "");
     setLocation(finding.location || "");
     setEvidenceNotes(finding.evidenceNotes || "");
+    setPhotos(finding.photos || []);
     setSafeScopeResult(finding.safeScopeResult || null);
     setSeverity(finding.severity || null);
     setLikelihood(finding.likelihood || null);
@@ -151,6 +163,24 @@ export default function InspectionPage() {
       resetCurrentFinding();
     }
   }
+
+  function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files || []);
+
+    const nextPhotos = files.map((file) => ({
+      id: `${Date.now()}-${file.name}`,
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }));
+
+    setPhotos((prev) => [...prev, ...nextPhotos]);
+    event.target.value = "";
+  }
+
+  function removePhoto(id: string) {
+    setPhotos((prev) => prev.filter((photo) => photo.id !== id));
+  }
+
 
   function generateReport() {
     const finalizedFindings = [...findings];
@@ -254,14 +284,124 @@ export default function InspectionPage() {
               </p>
 
               <div className="mt-5 flex justify-center gap-3">
-                <button className="rounded-xl bg-[#1D72B8] px-4 py-3 text-sm font-black text-white">
+                <label className="cursor-pointer rounded-xl bg-[#1D72B8] px-4 py-3 text-sm font-black text-white">
                   Take Photo
-                </button>
-                <button className="rounded-xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-700">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                  />
+                </label>
+
+                <label className="cursor-pointer rounded-xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-700">
                   Upload Photo
-                </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                  />
+                </label>
               </div>
             </div>
+
+            {photos.length > 0 && (
+              <div className="mb-4 grid gap-3 md:grid-cols-3">
+                {photos.map((photo, index) => (
+                  <div key={photo.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <AnnotationPreview photoUrl={photo.url} annotations={photo.annotations || []} />
+
+                    <div className="space-y-2 p-3">
+                      <p className="truncate text-xs font-black text-slate-600">{photo.name}</p>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setAnnotatingPhotoIndex(index);
+                            setAnnotationExpanded(false);
+                          }}
+                          className="rounded-lg bg-[#E8F4FF] px-3 py-2 text-xs font-black text-[#1D72B8]"
+                        >
+                          Annotate
+                        </button>
+
+                        <button
+                          onClick={() => removePhoto(photo.id)}
+                          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      {annotatingPhotoIndex === index && !annotationExpanded && (
+                        <div className="mt-3">
+                          <button
+                            onClick={() => setAnnotationExpanded(true)}
+                            className="mb-2 float-right rounded-full bg-[#E0F2FE] px-3 py-2 text-xs font-black text-[#0369A1]"
+                          >
+                            Expand
+                          </button>
+
+                          <div className="clear-both">
+                            <AnnotationEditor
+                              photoUrl={photo.url}
+                              annotations={photo.annotations || []}
+                              onSave={(annotations) => {
+                                const next = [...photos];
+                                next[index] = { ...photo, annotations };
+                                setPhotos(next);
+                                setAnnotatingPhotoIndex(null);
+                                setAnnotationExpanded(false);
+                              }}
+                              onCancel={() => {
+                                setAnnotatingPhotoIndex(null);
+                                setAnnotationExpanded(false);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {annotatingPhotoIndex === index && annotationExpanded && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-3">
+                          <div className="max-h-[96vh] w-full max-w-6xl overflow-auto rounded-2xl bg-white p-3">
+                            <div className="mb-2 flex items-center justify-between">
+                              <h3 className="text-base font-black text-slate-900">Photo Annotation</h3>
+                              <button
+                                onClick={() => setAnnotationExpanded(false)}
+                                className="rounded-full bg-slate-300 px-4 py-2 text-xs font-black text-slate-900"
+                              >
+                                Collapse
+                              </button>
+                            </div>
+
+                            <AnnotationEditor
+                              photoUrl={photo.url}
+                              annotations={photo.annotations || []}
+                              expanded
+                              onSave={(annotations) => {
+                                const next = [...photos];
+                                next[index] = { ...photo, annotations };
+                                setPhotos(next);
+                                setAnnotatingPhotoIndex(null);
+                                setAnnotationExpanded(false);
+                              }}
+                              onCancel={() => {
+                                setAnnotatingPhotoIndex(null);
+                                setAnnotationExpanded(false);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <label className="mb-2 block text-sm font-black text-slate-700">Evidence Notes</label>
             <textarea
@@ -486,7 +626,7 @@ export default function InspectionPage() {
                 : "Start entering finding details to build the current entry."}
             </p>
             <p className="mt-2 text-xs font-black text-slate-500">
-              Photos: 0 • Risk: {safeScopeResult?.risk?.riskBand || riskScore || "Not rated"} • Standards: {safeScopeResult?.suggestedStandards?.length || 0}
+              Photos: {photos.length} • Risk: {safeScopeResult?.risk?.riskBand || riskScore || "Not rated"} • Standards: {safeScopeResult?.suggestedStandards?.length || 0}
             </p>
           </>
         ) : findings.length === 0 ? (
@@ -501,7 +641,7 @@ export default function InspectionPage() {
                   <p className="mt-1 text-xs font-bold text-slate-500">Location: {finding.location}</p>
                 )}
                 <p className="mt-1 text-xs font-black text-slate-500">
-                  SafeScope: {finding.safeScopeResult?.classification || "Not run"} • Risk: {finding.safeScopeResult?.risk?.riskBand || finding.riskScore || "Not rated"}
+                  Photos: {finding.photos?.length || 0} • SafeScope: {finding.safeScopeResult?.classification || "Not run"} • Risk: {finding.safeScopeResult?.risk?.riskBand || finding.riskScore || "Not rated"}
                 </p>
 
                 <div className="mt-3 flex gap-2">
