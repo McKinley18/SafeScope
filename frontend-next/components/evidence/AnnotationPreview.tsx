@@ -1,5 +1,5 @@
 export type AnnotationShape = {
-  type: "rect" | "circle" | "arrow";
+  type: "rect" | "circle" | "arrow" | "draw";
   x: number;
   y: number;
   width?: number;
@@ -24,6 +24,21 @@ export default function AnnotationPreview({
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1 1" preserveAspectRatio="none">
         {annotations.map((shape, index) => {
           const color = shape.color || "#DC2626";
+
+          if (shape.type === "draw") {
+            const points = (shape as any).points || [];
+            return (
+              <polyline
+                key={index}
+                points={points.map((p: any) => `${p.x},${p.y}`).join(" ")}
+                fill="none"
+                stroke={color}
+                strokeWidth="0.01"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            );
+          }
 
           if (shape.type === "rect") {
             return (
