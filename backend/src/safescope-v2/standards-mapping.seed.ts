@@ -21,6 +21,27 @@ export const STANDARDS_MAPPING: Record<string, SafeScopeStandardMapping[]> = {
     },
   ],
 
+  "Machine Guarding": [
+    {
+      citation: '30 CFR 56.14107(a)',
+      agency: 'MSHA',
+      scope: 'msha',
+      rationale: 'Moving machine parts shall be guarded',
+    },
+    {
+      citation: '1910.212(a)(1)',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Machine guarding required for points of operation',
+    },
+    {
+      citation: '1910.219',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Mechanical power-transmission apparatus must be guarded',
+    },
+  ],
+
   Machine: [
     {
       citation: '30 CFR 56.14107(a)',

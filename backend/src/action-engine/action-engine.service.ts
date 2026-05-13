@@ -85,7 +85,16 @@ export class ActionEngineService {
     else now.setDate(now.getDate() + 14);
 
     // 3. Map Title
-    const actionCategory = (report.safeScope?.classification || report.category || "unknown").toLowerCase();
+    const rawActionCategory = (report.safeScope?.classification || report.category || "unknown").toLowerCase();
+
+    const actionCategoryAliases: Record<string, string> = {
+      "machine guarding": "machine",
+      "fall protection": "fall",
+      "mobile equipment / traffic": "powered mobile equipment",
+      "walking/working surfaces": "housekeeping",
+    };
+
+    const actionCategory = actionCategoryAliases[rawActionCategory] || rawActionCategory;
     const title = this.actionMap[actionCategory] || "Perform general safety audit";
 
     // 🔷 4. INTELLIGENCE LOOKUP: Find Best Match for Fixes

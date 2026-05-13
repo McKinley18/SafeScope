@@ -1,6 +1,6 @@
 import { StandardsBridgeService } from './standards-bridge.service';
 import { Injectable } from '@nestjs/common';
-import { DeterministicClassifier } from './engine/deterministic-classifier';
+import { WeightedClassifierService } from './classifier/weighted-classifier.service';
 import { evaluateRisk } from './risk/risk-engine';
 import { ActionEngineService } from '../action-engine/action-engine.service';
 import { ContextExpansionService } from './context/context-expansion.service';
@@ -8,7 +8,7 @@ import { EvidenceFusionService } from './evidence/evidence-fusion.service';
 
 @Injectable()
 export class SafescopeV2Service {
-  private classifier = new DeterministicClassifier();
+  private classifier = new WeightedClassifierService();
   private bridge = new StandardsBridgeService();
 
   constructor(
@@ -26,7 +26,7 @@ export class SafescopeV2Service {
   ) {
     const generated = await this.actionEngine.generateActionsFromReport({
       id: `preview-${Date.now()}`,
-      category: classification,
+      category: classification === 'Machine Guarding' ? 'machine' : classification,
       description: text,
       riskScore: risk?.operationalRisk?.matrixScore || risk?.riskScore || 10,
       riskLevel: (risk?.riskBand || 'MODERATE').toUpperCase(),
@@ -62,7 +62,7 @@ export class SafescopeV2Service {
     }));
   }
 
-  async classify(text: string, scopes?: string[], evidenceTexts?: string[]) {
+  async classify(text: string, scopes?: string[], evidenceTexts?: string[], riskProfileId?: 'simple_4x4' | 'standard_5x5' | 'advanced_6x6') {
     const evidenceFusion = this.evidenceFusion.synthesize([
       text,
       ...(evidenceTexts || []),
@@ -79,10 +79,16 @@ export class SafescopeV2Service {
       evidenceTokens: result.evidenceTokens,
       requiresHumanReview: result.requiresHumanReview,
       explanation: result.explanation,
+      commonConsequences: result.commonConsequences || [],
+      requiredControls: result.requiredControls || [],
+      score: result.score,
+      scoreMargin: result.scoreMargin,
+      excludedHazards: result.excludedHazards || [],
       risk: evaluateRisk({
         text: fusedText,
         classification: result.classification,
         environment: 'warehouse',
+        riskProfileId,
       }),
     };
 
@@ -92,6 +98,7 @@ export class SafescopeV2Service {
         text: fusedText,
         classification: hazard.classification,
         environment: 'warehouse',
+        riskProfileId,
       }),
     }));
 
@@ -108,7 +115,7 @@ export class SafescopeV2Service {
       'Review Required': 0,
     };
 
-    const promotedPrimary = [...allCandidates].sort((a, b) => {
+    const promotedPrimary: any = [...allCandidates].sort((a: any, b: any) => {
       const scoreDelta = (b.risk?.riskScore || 0) - (a.risk?.riskScore || 0);
       if (scoreDelta !== 0) return scoreDelta;
 
@@ -186,6 +193,11 @@ export class SafescopeV2Service {
       ambiguityWarnings: [...result.ambiguityWarnings, ...promotionWarning],
       requiresHumanReview: result.requiresHumanReview || promotionWarning.length > 0,
       explanation: promotedPrimary.explanation,
+      commonConsequences: promotedPrimary.commonConsequences || [],
+      requiredControls: promotedPrimary.requiredControls || [],
+      score: promotedPrimary.score,
+      scoreMargin: promotedPrimary.scoreMargin,
+      excludedHazards: promotedPrimary.excludedHazards || result.excludedHazards || [],
       ...primaryStandardsResult,
       risk: promotedPrimary.risk,
       evidenceFusion,

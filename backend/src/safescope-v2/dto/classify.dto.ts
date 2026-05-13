@@ -14,4 +14,8 @@ export class ClassifyDto {
   @IsArray()
   @IsString({ each: true })
   evidenceTexts?: string[];
+
+  @IsOptional()
+  @IsString()
+  riskProfileId?: "simple_4x4" | "standard_5x5" | "advanced_6x6";
 }

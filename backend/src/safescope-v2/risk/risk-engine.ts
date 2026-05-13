@@ -1,9 +1,13 @@
 import { RISK_MATRIX } from './risk-matrix.seed';
+import { bandFromProfileScore, getRiskProfile, scaleScoreToProfile } from './risk-profiles';
 
 export type RiskInput = {
   text: string;
   classification: string;
   environment?: keyof typeof RISK_MATRIX.environmentMultiplier;
+  riskProfileId?: "simple_4x4" | "standard_5x5" | "advanced_6x6";
+  defaultSeverityScore?: number;
+  defaultLikelihoodScore?: number;
 };
 
 export type RiskBand = 'Low' | 'Moderate' | 'High' | 'Critical';
@@ -19,6 +23,9 @@ export type RiskResult = {
 
   // New structured risk model
   operationalRisk: {
+    profileId: string;
+    profileLabel: string;
+    matrixSize: number;
     severity: number;
     likelihood: number;
     matrixScore: number;
@@ -39,44 +46,47 @@ const normalize = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim();
 
 function bandFromMatrixScore(score: number): RiskBand {
-  if (score >= 17) return 'Critical';
-  if (score >= 10) return 'High';
-  if (score >= 5) return 'Moderate';
-  return 'Low';
+  return bandFromProfileScore(score, getRiskProfile("standard_5x5"));
 }
 
 export function evaluateRisk(input: RiskInput): RiskResult {
   const text = normalize(input.text || '');
   const classification = input.classification || 'Review Required';
+  const profile = getRiskProfile(input.riskProfileId);
 
   const imminentDanger = RISK_MATRIX.imminentDangerTriggers.some((trigger) =>
     text.includes(trigger),
   );
 
-  let severity = RISK_MATRIX.severity.moderate;
-  let likelihood = RISK_MATRIX.likelihood.possible;
+  let severity = input.defaultSeverityScore
+    ? scaleScoreToProfile(input.defaultSeverityScore, profile)
+    : scaleScoreToProfile(RISK_MATRIX.severity.moderate, profile);
+
+  let likelihood = input.defaultLikelihoodScore
+    ? scaleScoreToProfile(input.defaultLikelihoodScore, profile)
+    : scaleScoreToProfile(RISK_MATRIX.likelihood.possible, profile);
   let fatalityPotential: RiskResult['fatalityPotential'] = 'medium';
   const reasoning: string[] = [];
 
   if (
-    ['Electrical', 'Fall', 'Powered Mobile Equipment', 'Machine'].includes(
+    ['Electrical', 'Fall', 'Fall Protection', 'Powered Mobile Equipment', 'Mobile Equipment / Traffic', 'Machine', 'Machine Guarding'].includes(
       classification,
     )
   ) {
-    severity = RISK_MATRIX.severity.major;
+    severity = scaleScoreToProfile(RISK_MATRIX.severity.major, profile);
     fatalityPotential = 'high';
     reasoning.push(`${classification} hazards can create serious or fatal exposure.`);
   }
 
   if (imminentDanger) {
-    severity = RISK_MATRIX.severity.critical;
-    likelihood = RISK_MATRIX.likelihood.likely;
+    severity = scaleScoreToProfile(RISK_MATRIX.severity.critical, profile);
+    likelihood = scaleScoreToProfile(RISK_MATRIX.likelihood.likely, profile);
     fatalityPotential = 'high';
     reasoning.push('Imminent-danger trigger detected in finding text.');
   }
 
   if (text.includes('missing') || text.includes('unguarded') || text.includes('live')) {
-    likelihood = Math.max(likelihood, RISK_MATRIX.likelihood.likely);
+    likelihood = Math.max(likelihood, scaleScoreToProfile(RISK_MATRIX.likelihood.likely, profile));
     reasoning.push('Condition wording indicates active uncontrolled exposure.');
   }
 
@@ -84,7 +94,7 @@ export function evaluateRisk(input: RiskInput): RiskResult {
     classification === 'Powered Mobile Equipment' &&
     (text.includes('pedestrian') || text.includes('traffic'))
   ) {
-    likelihood = Math.max(likelihood, RISK_MATRIX.likelihood.likely);
+    likelihood = Math.max(likelihood, scaleScoreToProfile(RISK_MATRIX.likelihood.likely, profile));
     reasoning.push('Mobile equipment operating near pedestrians increases struck-by exposure.');
   }
 
@@ -92,13 +102,13 @@ export function evaluateRisk(input: RiskInput): RiskResult {
     classification === 'Housekeeping' &&
     (text.includes('spill') || text.includes('walkway') || text.includes('slip'))
   ) {
-    severity = Math.max(severity, RISK_MATRIX.severity.serious);
-    likelihood = Math.max(likelihood, RISK_MATRIX.likelihood.possible);
+    severity = Math.max(severity, scaleScoreToProfile(RISK_MATRIX.severity.serious, profile));
+    likelihood = Math.max(likelihood, scaleScoreToProfile(RISK_MATRIX.likelihood.possible, profile));
     reasoning.push('Walking-working surface condition creates slip/trip exposure.');
   }
 
   const matrixScore = severity * likelihood;
-  const matrixBand = bandFromMatrixScore(matrixScore);
+  const matrixBand = bandFromProfileScore(matrixScore, profile);
 
   let escalationScore = matrixScore;
   if (imminentDanger) escalationScore += 5;
@@ -106,8 +116,8 @@ export function evaluateRisk(input: RiskInput): RiskResult {
   if (classification === 'Powered Mobile Equipment' && text.includes('pedestrian')) escalationScore += 3;
   if (classification === 'Fall' && (text.includes('open edge') || text.includes('guardrail'))) escalationScore += 3;
 
-  escalationScore = Math.min(25, escalationScore);
-  const escalationBand = bandFromMatrixScore(escalationScore);
+  escalationScore = Math.min(profile.maxScore, escalationScore);
+  const escalationBand = bandFromProfileScore(escalationScore, profile);
 
   const activeExposure =
     text.includes('live') ||
@@ -138,6 +148,9 @@ export function evaluateRisk(input: RiskInput): RiskResult {
     reasoning,
 
     operationalRisk: {
+      profileId: profile.id,
+      profileLabel: profile.label,
+      matrixSize: profile.size,
       severity,
       likelihood,
       matrixScore,
