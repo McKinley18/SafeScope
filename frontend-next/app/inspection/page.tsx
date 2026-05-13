@@ -43,8 +43,19 @@ export default function InspectionPage() {
   const [annotationExpanded, setAnnotationExpanded] = useState(false);
   const [agencyMode, setAgencyMode] = useState("all");
   const [riskProfileId, setRiskProfileId] = useState<"simple_4x4" | "standard_5x5" | "advanced_6x6">("standard_5x5");
+
+  useEffect(() => {
+    const savedRiskProfile = window.localStorage.getItem("sentinel_company_risk_profile") as
+      | "simple_4x4"
+      | "standard_5x5"
+      | "advanced_6x6"
+      | null;
+
+    if (savedRiskProfile) setRiskProfileId(savedRiskProfile);
+  }, []);
   const [safeScopeStatus, setSafeScopeStatus] = useState("");
   const [safeScopeResult, setSafeScopeResult] = useState<any>(null);
+  const [selectedStandards, setSelectedStandards] = useState<any[]>([]);
   const [feedbackNotes, setFeedbackNotes] = useState("");
   const [severity, setSeverity] = useState<number | null>(null);
   const [likelihood, setLikelihood] = useState<number | null>(null);
@@ -94,6 +105,7 @@ export default function InspectionPage() {
       });
 
       setSafeScopeResult(result);
+      setSelectedStandards([]);
       setSafeScopeStatus(`SafeScope v2: ${result.classification} (${result.confidenceBand} confidence)`);
     } catch (error) {
       setSafeScopeStatus(error instanceof Error ? error.message : "SafeScope request failed.");
@@ -128,11 +140,26 @@ export default function InspectionPage() {
         riskProfileId,
       });
 
-      setSafeScopeStatus(`Feedback saved: ${action} ${standard.citation}`);
-    } catch (error) {
+      if (action === "accepted") {
+        setSelectedStandards((current) => {
+          const exists = current.some((item) => item.citation === standard.citation);
+          return exists ? current : [...current, standard];
+        });
+      }
+
+      if (action === "rejected" || action === "flagged") {
+        setSelectedStandards((current) =>
+          current.filter((item) => item.citation !== standard.citation)
+        );
+      }
+
       setSafeScopeStatus(
-        error instanceof Error ? error.message : "Feedback request failed."
+        action === "accepted"
+          ? `Standard selected: ${standard.citation}`
+          : `Feedback saved: ${action} ${standard.citation}`
       );
+    } catch (error) {
+      setSafeScopeStatus("Feedback could not be saved. Please make sure you are signed in and the backend is running.");
     }
   }
 
@@ -144,6 +171,7 @@ export default function InspectionPage() {
       location,
       evidenceNotes,
       safeScopeResult,
+      selectedStandards,
       severity,
       likelihood,
       riskScore,
@@ -151,7 +179,7 @@ export default function InspectionPage() {
   }
 
   function hasCurrentFindingData() {
-    return !!(description || hazardCategory || location || evidenceNotes || safeScopeResult || severity || likelihood);
+    return !!(description || hazardCategory || location || evidenceNotes || safeScopeResult || selectedStandards.length || severity || likelihood);
   }
 
   function resetCurrentFinding() {
@@ -208,6 +236,7 @@ export default function InspectionPage() {
     setEvidenceNotes(finding.evidenceNotes || "");
     setPhotos(finding.photos || []);
     setSafeScopeResult(finding.safeScopeResult || null);
+    setSelectedStandards(finding.selectedStandards || []);
     setSeverity(finding.severity || null);
     setLikelihood(finding.likelihood || null);
     setEditingFindingIndex(index);
@@ -531,25 +560,13 @@ export default function InspectionPage() {
               ))}
             </div>
 
-            <label className="mb-2 block text-sm font-black text-slate-700">Risk Matrix</label>
-            <div className="mb-4 flex flex-wrap gap-2">
-              {[
-                ["simple_4x4", "Simple 4x4"],
-                ["standard_5x5", "Standard 5x5"],
-                ["advanced_6x6", "Advanced 6x6"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  onClick={() => setRiskProfileId(value as "simple_4x4" | "standard_5x5" | "advanced_6x6")}
-                  className={`rounded-full px-4 py-2 text-sm font-black ${
-                    riskProfileId === value
-                      ? "bg-[#102A43] text-white"
-                      : "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <label className="mb-2 block text-sm font-black text-slate-700">Company Risk Matrix</label>
+            <div className="mb-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold text-slate-700">
+              {riskProfileId === "simple_4x4"
+                ? "Simple 4x4"
+                : riskProfileId === "advanced_6x6"
+                  ? "Advanced 6x6"
+                  : "Standard 5x5"} is controlled in Company Settings.
             </div>
 
             <button
@@ -731,6 +748,7 @@ export default function InspectionPage() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
+                        type="button"
                         onClick={() => handleFeedback(standard, "accepted")}
                         className="rounded-full bg-[#DCFCE7] px-3 py-2 text-xs font-black text-[#166534]"
                       >
@@ -738,6 +756,7 @@ export default function InspectionPage() {
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => handleFeedback(standard, "rejected")}
                         className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"
                       >
@@ -745,6 +764,7 @@ export default function InspectionPage() {
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => handleFeedback(standard, "flagged")}
                         className="rounded-full bg-[#FEF3C7] px-3 py-2 text-xs font-black text-[#92400E]"
                       >
@@ -928,8 +948,18 @@ export default function InspectionPage() {
                 : "Start entering finding details to build the current entry."}
             </p>
             <p className="mt-2 text-xs font-black text-slate-500">
-              Photos: {photos.length} • Risk: {safeScopeResult?.risk?.riskBand || riskScore || "Not rated"} • Standards: {safeScopeResult?.suggestedStandards?.length || 0}
+              Photos: {photos.length} • Risk: {safeScopeResult?.risk?.riskBand || riskScore || "Not rated"} • Selected Standards: {selectedStandards.length}
             </p>
+
+            {!!selectedStandards.length && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedStandards.map((standard: any) => (
+                  <span key={standard.citation} className="rounded-full bg-[#E8F4FF] px-3 py-1 text-xs font-black text-[#1D72B8]">
+                    {standard.citation}
+                  </span>
+                ))}
+              </div>
+            )}
           </>
         ) : findings.length === 0 ? (
           <p className="text-sm font-semibold text-slate-500">No saved findings yet.</p>
@@ -943,8 +973,18 @@ export default function InspectionPage() {
                   <p className="mt-1 text-xs font-bold text-slate-500">Location: {finding.location}</p>
                 )}
                 <p className="mt-1 text-xs font-black text-slate-500">
-                  Photos: {finding.photos?.length || 0} • SafeScope: {finding.safeScopeResult?.classification || "Not run"} • Risk: {finding.safeScopeResult?.risk?.riskBand || finding.riskScore || "Not rated"}
+                  Photos: {finding.photos?.length || 0} • SafeScope: {finding.safeScopeResult?.classification || "Not run"} • Risk: {finding.safeScopeResult?.risk?.riskBand || finding.riskScore || "Not rated"} • Selected Standards: {finding.selectedStandards?.length || 0}
                 </p>
+
+                {!!finding.selectedStandards?.length && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {finding.selectedStandards.map((standard: any) => (
+                      <span key={standard.citation} className="rounded-full bg-[#E8F4FF] px-3 py-1 text-xs font-black text-[#1D72B8]">
+                        {standard.citation}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-3 flex gap-2">
                   <button

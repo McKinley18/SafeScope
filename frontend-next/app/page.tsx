@@ -1,136 +1,106 @@
 import Link from "next/link";
 
-const lifecycle = [
-  {
-    title: "Inspection Report Builder",
-    text: "Create structured safety reports with hazards, evidence, risk ratings, standards, and corrective actions.",
-  },
+const features = [
   {
     title: "SafeScope Intelligence",
-    text: "Map findings to applicable safety standards and support consistent review decisions.",
+    text: "Classify hazards, infer context, estimate confidence, and map findings to MSHA and OSHA standards using curated logic plus CFR-backed matching.",
   },
   {
-    title: "Executive Analytics",
-    text: "Track mitigation speed, recurring hazards, audit fatigue, risk exposure, and site maturity.",
+    title: "Inspection Report Builder",
+    text: "Capture findings, locations, evidence notes, photos, risk ratings, standards, and corrective actions in a structured workflow.",
+  },
+  {
+    title: "Risk Matrix Flexibility",
+    text: "Support 4x4, 5x5, and 6x6 risk matrices so teams can align scoring with their safety program.",
+  },
+  {
+    title: "Corrective Action Control",
+    text: "Convert findings into accountable corrective actions with priority, due dates, shutdown indicators, and verification language.",
   },
 ];
 
-const plans = [
-  {
-    name: "Starter",
-    price: "$0",
-    desc: "For testing the inspection workflow.",
-    features: ["Basic reports", "Manual risk scoring", "Limited analytics"],
-  },
-  {
-    name: "Sentinel Pro",
-    price: "$49",
-    desc: "For professionals managing active safety programs.",
-    features: ["SafeScope mapping", "Executive analytics", "Corrective action tracking"],
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    desc: "For companies with multiple sites and teams.",
-    features: ["Multi-site governance", "Advanced permissions", "Predictive intelligence"],
-  },
+const trust = [
+  "MSHA and OSHA standards support",
+  "Curated + CFR database matching",
+  "Confidence intelligence and missing-information prompts",
+  "Workspace-scoped learning that does not corrupt regulatory truth",
 ];
 
 export default function MarketingPage() {
   return (
-    <section>
-      <div className="mb-[26px] rounded-[28px] bg-slate-900 p-[26px]">
-        <p className="mb-3 text-xs font-black uppercase tracking-[1px] text-orange-500">
+    <section className="space-y-10">
+      <div className="overflow-hidden rounded-[32px] bg-[#0B1320] p-8 text-white shadow-sm md:p-12">
+        <p className="mb-3 text-xs font-black uppercase tracking-[1px] text-[#5DB7FF]">
           Sentinel Safety
         </p>
-        <h1 className="mb-3 text-[31px] font-black leading-[37px] text-white">
-          Modern safety intelligence for serious operations.
+
+        <h1 className="max-w-4xl text-4xl font-black leading-tight md:text-6xl">
+          Safety intelligence built for serious operations.
         </h1>
-        <p className="text-[15px] leading-[23px] text-slate-300">
-          Build inspection reports, identify risk trends, and turn safety findings into accountable corrective action.
+
+        <p className="mt-5 max-w-3xl text-base font-semibold leading-7 text-slate-300 md:text-lg">
+          Build professional inspection reports, classify hazards with SafeScope, map findings to applicable standards, and turn risk into accountable corrective action.
         </p>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/register" className="rounded-full bg-[#1D72B8] px-6 py-3 text-sm font-black text-white">
+            Create an Account
+          </Link>
+          <Link href="/login" className="rounded-full bg-white px-6 py-3 text-sm font-black text-slate-900">
+            Sign In
+          </Link>
+        </div>
       </div>
 
-      <div className="mb-[30px]">
-        <p className="mb-2 text-[11px] font-black uppercase tracking-[1px] text-orange-500">
-          Platform Workflow
+      <div>
+        <p className="mb-2 text-xs font-black uppercase tracking-[1px] text-[#1D72B8]">
+          Platform
         </p>
-        <h2 className="mb-[18px] text-[23px] font-black leading-[29px] text-slate-900">
-          Built for the full inspection lifecycle
+        <h2 className="mb-5 text-3xl font-black text-slate-900">
+          From inspection to intelligence
         </h2>
 
-        {lifecycle.map((item, index) => (
-          <div key={item.title} className="flex gap-4 border-b border-slate-200 py-4">
-            <p className="w-[46px] text-[30px] font-black text-slate-300">
-              0{index + 1}
-            </p>
-
-            <div className="flex-1">
-              <h3 className="mb-1 text-lg font-black text-slate-900">
-                {item.title}
-              </h3>
-              <p className="text-sm leading-[21px] text-slate-500">
-                {item.text}
-              </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          {features.map((feature) => (
+            <div key={feature.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="text-lg font-black text-slate-900">{feature.title}</h3>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{feature.text}</p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <div className="mb-[30px]">
-        <p className="mb-2 text-[11px] font-black uppercase tracking-[1px] text-orange-500">
-          Plans
+      <div className="rounded-[28px] bg-white p-6 shadow-sm">
+        <p className="mb-2 text-xs font-black uppercase tracking-[1px] text-[#1D72B8]">
+          Trust Layer
         </p>
-        <h2 className="mb-[18px] text-[23px] font-black leading-[29px] text-slate-900">
-          Choose the level of safety intelligence you need
+        <h2 className="text-3xl font-black text-slate-900">
+          Regulation-grounded. Explainable. Auditable.
         </h2>
 
-        {plans.map((plan) => (
-          <div
-            key={plan.name}
-            className={`mb-3.5 rounded-[22px] border border-slate-200 bg-white p-5 ${
-              plan.name === "Sentinel Pro"
-                ? "border-l-[5px] border-l-orange-500 bg-orange-50"
-                : ""
-            }`}
-          >
-            <h3 className="mb-1.5 text-[19px] font-black text-slate-900">
-              {plan.name}
-            </h3>
-            <p className="mb-1.5 text-[32px] font-black text-slate-900">
-              {plan.price}
-            </p>
-            <p className="mb-3 text-sm leading-[21px] text-slate-500">
-              {plan.desc}
-            </p>
-
-            {plan.features.map((feature) => (
-              <p key={feature} className="mb-1.5 text-sm font-bold text-slate-700">
-                • {feature}
-              </p>
-            ))}
-          </div>
-        ))}
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          {trust.map((item) => (
+            <div key={item} className="rounded-xl bg-slate-50 p-4 text-sm font-black text-slate-700">
+              {item}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="rounded-[28px] bg-slate-900 p-6 text-center">
-        <h2 className="mb-2 text-2xl font-black leading-[30px] text-white">
-          Ready to build your safety workspace?
-        </h2>
-        <p className="mb-5 text-sm leading-[21px] text-slate-300">
-          Create an account to start building reports, tracking actions, and using Sentinel Safety intelligence.
+      <div className="rounded-[28px] bg-[#0F172A] p-8 text-center text-white">
+        <h2 className="text-3xl font-black">Start building your safety workspace.</h2>
+        <p className="mx-auto mt-3 max-w-2xl text-sm font-semibold leading-6 text-slate-300">
+          Use Sentinel Safety to document hazards, support better review decisions, and create stronger safety records.
         </p>
 
-        <Link
-          href="/login"
-          className="mx-auto flex h-[52px] w-[220px] items-center justify-center rounded-full bg-orange-500 text-[15px] font-black text-white"
-        >
-          Create Account
-        </Link>
-
-        <Link href="/login" className="mt-4 block text-[13px] font-extrabold text-slate-300">
-          Already have an account? Sign in
-        </Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href="/register" className="rounded-full bg-[#1D72B8] px-6 py-3 text-sm font-black text-white">
+            Create an Account
+          </Link>
+          <Link href="/login" className="rounded-full bg-white px-6 py-3 text-sm font-black text-slate-900">
+            Already have an account?
+          </Link>
+        </div>
       </div>
     </section>
   );
