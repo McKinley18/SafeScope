@@ -10,5 +10,6 @@ import { ApplicableStandardsService } from './applicable-standards.service';
   imports: [TypeOrmModule.forFeature([Standard, CorrectiveActionTemplate, RegulatorySection])],
   controllers: [ApplicableStandardsController],
   providers: [ApplicableStandardsService],
+  exports: [ApplicableStandardsService],
 })
 export class ApplicableStandardsModule {}

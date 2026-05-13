@@ -5,11 +5,17 @@ export async function runSafeScopeV2Classify(payload: {
   text: string;
   evidenceTexts?: string[];
   scopes?: string[];
+  riskProfileId?: "simple_4x4" | "standard_5x5" | "advanced_6x6";
 }) {
   const response = await fetch(`${API_BASE_URL}/safescope-v2/classify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      text: payload.text,
+      scopes: payload.scopes || ["msha", "osha_general", "osha_construction"],
+      evidenceTexts: payload.evidenceTexts || [],
+      riskProfileId: payload.riskProfileId || "standard_5x5",
+    }),
   });
 
   if (!response.ok) {

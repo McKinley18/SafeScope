@@ -5,17 +5,96 @@ import { evaluateRisk } from './risk/risk-engine';
 import { ActionEngineService } from '../action-engine/action-engine.service';
 import { ContextExpansionService } from './context/context-expansion.service';
 import { EvidenceFusionService } from './evidence/evidence-fusion.service';
+import { ApplicableStandardsService } from '../applicable-standards/applicable-standards.service';
+import { ConfidenceIntelligenceService } from './confidence/confidence-intelligence.service';
 
 @Injectable()
 export class SafescopeV2Service {
   private classifier = new WeightedClassifierService();
   private bridge = new StandardsBridgeService();
+  private confidenceEngine = new ConfidenceIntelligenceService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
     private readonly contextExpansion: ContextExpansionService,
     private readonly evidenceFusion: EvidenceFusionService,
+    private readonly applicableStandards: ApplicableStandardsService,
   ) {}
+
+
+  private scopeToSource(scopes?: string[]) {
+    if (!scopes || scopes.length === 0 || scopes.includes('all')) return undefined;
+    if (scopes.includes('msha')) return 'MSHA';
+    if (scopes.includes('osha_construction')) return 'OSHA_CONSTRUCTION';
+    if (scopes.includes('osha_general')) return 'OSHA_GENERAL_INDUSTRY';
+    return undefined;
+  }
+
+  private async getMergedStandards(classification: string, text: string, scopes?: string[]) {
+    const curated = this.bridge.getSuggestedStandards(classification, scopes);
+
+    const cfrMatches = await this.applicableStandards.suggest(
+      text,
+      classification,
+      this.scopeToSource(scopes),
+      5,
+    );
+
+    const normalizedCurated = curated.suggestedStandards.map((standard: any) => ({
+      ...standard,
+      source: 'curated',
+      score: 100,
+      matchingReasons: [standard.rationale || 'Curated SafeScope mapping'],
+    }));
+
+    const normalizedCfr = cfrMatches.map((standard: any) => ({
+      citation: standard.citation,
+      agency: standard.agencyCode,
+      scope: standard.scopeCode,
+      rationale: standard.summary || standard.heading || 'CFR database match',
+      source: 'cfr_database',
+      score: standard.score,
+      confidence: standard.confidence,
+      matchingReasons: standard.matchingReasons || [],
+    }));
+
+    const merged = [...normalizedCurated, ...normalizedCfr];
+    const byCitation = new Map<string, any>();
+
+    for (const standard of merged) {
+      const existing = byCitation.get(standard.citation);
+
+      if (!existing) {
+        byCitation.set(standard.citation, {
+          ...standard,
+          source: [standard.source],
+          matchingReasons: standard.matchingReasons || [],
+        });
+        continue;
+      }
+
+      byCitation.set(standard.citation, {
+        ...existing,
+        ...standard,
+        source: Array.from(new Set([...(existing.source || []), standard.source])),
+        score: Math.max(existing.score || 0, standard.score || 0),
+        confidence: Math.max(existing.confidence || 0, standard.confidence || 0),
+        matchingReasons: Array.from(
+          new Set([
+            ...(existing.matchingReasons || []),
+            ...(standard.matchingReasons || []),
+          ]),
+        ),
+      });
+    }
+
+    const unique = Array.from(byCitation.values());
+
+    return {
+      suggestedStandards: unique.sort((a: any, b: any) => (b.score || 0) - (a.score || 0)).slice(0, 8),
+      excludedStandards: curated.excludedStandards,
+    };
+  }
 
   private async buildActionPreview(
     classification: string,
@@ -133,10 +212,25 @@ export class SafescopeV2Service {
       evidenceFusion.inferredThemes,
     );
 
-    const primaryStandardsResult = this.bridge.getSuggestedStandards(
+    const primaryStandardsResult = await this.getMergedStandards(
       promotedPrimary.classification,
+      fusedText,
       scopes,
     );
+
+    const confidenceIntelligence = this.confidenceEngine.evaluate({
+      text: fusedText,
+      classification: promotedPrimary.classification,
+      classifierConfidence: promotedPrimary.confidence,
+      evidenceTexts,
+      evidenceTokens: promotedPrimary.evidenceTokens,
+      ambiguityWarnings: [...result.ambiguityWarnings],
+      expandedContext,
+      suggestedStandards: primaryStandardsResult.suggestedStandards,
+      photosAttached: (evidenceTexts || []).some((item) =>
+        String(item).toLowerCase().includes('photo')
+      ),
+    });
 
     const generatedActions = await this.buildActionPreview(
       promotedPrimary.classification,
@@ -150,8 +244,9 @@ export class SafescopeV2Service {
       allCandidates
         .filter((hazard) => hazard.classification !== promotedPrimary.classification)
         .map(async (hazard) => {
-          const standardsResult = this.bridge.getSuggestedStandards(
+          const standardsResult = await this.getMergedStandards(
             hazard.classification,
+            fusedText,
             scopes,
           );
 
@@ -202,6 +297,7 @@ export class SafescopeV2Service {
       risk: promotedPrimary.risk,
       evidenceFusion,
       expandedContext,
+      confidenceIntelligence,
       generatedActions,
       additionalHazards,
     };

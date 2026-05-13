@@ -138,6 +138,101 @@ export const STANDARDS_MAPPING: Record<string, SafeScopeStandardMapping[]> = {
     },
   ],
 
+
+  "Confined Space": [
+    {
+      citation: '1910.146',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Permit-required confined space entry requirements',
+    },
+    {
+      citation: '1926 Subpart AA',
+      agency: 'OSHA',
+      scope: 'osha_construction',
+      rationale: 'Confined spaces in construction requirements',
+    },
+  ],
+
+  "Fire / Explosion": [
+    {
+      citation: '1910.106',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Flammable liquids handling and storage requirements',
+    },
+    {
+      citation: '1910.157',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Portable fire extinguisher requirements',
+    },
+    {
+      citation: '30 CFR 56.4100',
+      agency: 'MSHA',
+      scope: 'msha',
+      rationale: 'Firefighting equipment requirements at surface metal/nonmetal mines',
+    },
+  ],
+
+  "Lockout / Stored Energy": [
+    {
+      citation: '1910.147',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Control of hazardous energy during servicing and maintenance',
+    },
+    {
+      citation: '30 CFR 56.12016',
+      agency: 'MSHA',
+      scope: 'msha',
+      rationale: 'Electrical work must be de-energized before work is performed',
+    },
+    {
+      citation: '30 CFR 56.14105',
+      agency: 'MSHA',
+      scope: 'msha',
+      rationale: 'Repairs or maintenance must not be performed until machinery is blocked against hazardous motion',
+    },
+  ],
+
+  "Respirable Dust / Silica": [
+    {
+      citation: '1910.1053',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Respirable crystalline silica exposure controls',
+    },
+    {
+      citation: '1926.1153',
+      agency: 'OSHA',
+      scope: 'osha_construction',
+      rationale: 'Respirable crystalline silica in construction',
+    },
+    {
+      citation: '30 CFR 56.5001',
+      agency: 'MSHA',
+      scope: 'msha',
+      rationale: 'Exposure limits for airborne contaminants',
+    },
+  ],
+
+  "Emergency Egress": [
+    {
+      citation: '1910.36',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Design and construction requirements for exit routes',
+    },
+    {
+      citation: '1910.37',
+      agency: 'OSHA',
+      scope: 'osha_general',
+      rationale: 'Maintenance, safeguards, and operational features for exit routes',
+    },
+  ],
+
+
   Access: [
     {
       citation: '30 CFR 56.11001',

@@ -260,5 +260,184 @@ export const HAZARD_TAXONOMY: HazardProfile[] = [
     defaultSeverityScore: 3,
     defaultLikelihoodScore: 3,
     humanReviewTriggers: ["unknown chemical", "corrosive exposure", "missing SDS"]
+  },
+{
+    id: "confined_space",
+    label: "Confined Space",
+    family: "Confined Space",
+    strongSignals: [
+      { term: "permit required confined space", weight: 10 },
+      { term: "confined space entry", weight: 10 },
+      { term: "tank entry", weight: 8 },
+      { term: "vessel entry", weight: 8 },
+      { term: "atmospheric testing not performed", weight: 10 },
+      { term: "no attendant", weight: 8 }
+    ],
+    moderateSignals: [
+      { term: "confined space", weight: 7 },
+      { term: "permit space", weight: 7 },
+      { term: "oxygen deficient", weight: 7 },
+      { term: "engulfment", weight: 7 },
+      { term: "entry permit", weight: 6 }
+    ],
+    weakSignals: [
+      { term: "tank", weight: 2 },
+      { term: "vessel", weight: 2 },
+      { term: "entry", weight: 2 }
+    ],
+    negativeSignals: [],
+    contextBoosts: [
+      { term: "inside", weight: 3 },
+      { term: "rescue plan", weight: 4 },
+      { term: "ventilation", weight: 3 }
+    ],
+    commonConsequences: ["asphyxiation", "toxic exposure", "engulfment", "fatality"],
+    requiredControls: ["entry permit", "atmospheric testing", "attendant", "rescue plan", "ventilation"],
+    defaultSeverity: "critical",
+    defaultSeverityScore: 5,
+    defaultLikelihoodScore: 4,
+    humanReviewTriggers: ["permit space entry", "atmospheric hazard", "rescue readiness"]
+  },
+  {
+    id: "fire_explosion",
+    label: "Fire / Explosion",
+    family: "Fire",
+    strongSignals: [
+      { term: "flammable vapors near ignition source", weight: 10 },
+      { term: "fuel leak near hot work", weight: 10 },
+      { term: "combustible dust accumulation", weight: 9 },
+      { term: "fire extinguisher missing", weight: 8 },
+      { term: "explosion hazard", weight: 10 }
+    ],
+    moderateSignals: [
+      { term: "flammable", weight: 5 },
+      { term: "combustible", weight: 5 },
+      { term: "ignition source", weight: 6 },
+      { term: "hot work", weight: 6 },
+      { term: "sparks", weight: 5 },
+      { term: "fire extinguisher", weight: 5 }
+    ],
+    weakSignals: [
+      { term: "fire", weight: 3 },
+      { term: "fuel", weight: 3 }
+    ],
+    negativeSignals: [],
+    contextBoosts: [
+      { term: "near welding", weight: 4 },
+      { term: "storage area", weight: 2 },
+      { term: "poor ventilation", weight: 3 }
+    ],
+    commonConsequences: ["burn injury", "explosion", "property loss", "fatality"],
+    requiredControls: ["remove ignition source", "control flammables", "provide fire extinguisher", "hot work permit", "ventilation"],
+    defaultSeverity: "critical",
+    defaultSeverityScore: 5,
+    defaultLikelihoodScore: 3,
+    humanReviewTriggers: ["flammable atmosphere", "combustible dust", "hot work exposure"]
+  },
+  {
+    id: "loto_stored_energy",
+    label: "Lockout / Stored Energy",
+    family: "LOTO",
+    strongSignals: [
+      { term: "unexpected startup", weight: 10 },
+      { term: "lockout not applied", weight: 10 },
+      { term: "stored energy not released", weight: 10 },
+      { term: "maintenance without lockout", weight: 10 },
+      { term: "equipment energized during maintenance", weight: 10 }
+    ],
+    moderateSignals: [
+      { term: "lockout", weight: 6 },
+      { term: "tagout", weight: 6 },
+      { term: "stored energy", weight: 7 },
+      { term: "hydraulic pressure", weight: 6 },
+      { term: "pneumatic pressure", weight: 6 },
+      { term: "maintenance", weight: 4 }
+    ],
+    weakSignals: [
+      { term: "service", weight: 2 },
+      { term: "repair", weight: 2 },
+      { term: "jam", weight: 3 }
+    ],
+    negativeSignals: [],
+    contextBoosts: [
+      { term: "unguarded moving parts", weight: 4 },
+      { term: "zero energy", weight: 4 },
+      { term: "blocked equipment", weight: 3 }
+    ],
+    commonConsequences: ["crushing injury", "amputation", "electrocution", "fatality"],
+    requiredControls: ["lockout/tagout", "verify zero energy", "release stored energy", "authorized employee procedure"],
+    defaultSeverity: "critical",
+    defaultSeverityScore: 5,
+    defaultLikelihoodScore: 4,
+    humanReviewTriggers: ["maintenance exposure", "unexpected startup", "stored energy"]
+  },
+  {
+    id: "respirable_dust_silica",
+    label: "Respirable Dust / Silica",
+    family: "Industrial Hygiene",
+    strongSignals: [
+      { term: "visible silica dust", weight: 9 },
+      { term: "respirable dust exposure", weight: 10 },
+      { term: "dry cutting concrete", weight: 9 },
+      { term: "no dust control", weight: 8 },
+      { term: "dust collector not working", weight: 8 }
+    ],
+    moderateSignals: [
+      { term: "silica", weight: 7 },
+      { term: "respirable dust", weight: 7 },
+      { term: "dust cloud", weight: 6 },
+      { term: "sweeping dust", weight: 5 },
+      { term: "crusher dust", weight: 5 }
+    ],
+    weakSignals: [
+      { term: "dust", weight: 3 },
+      { term: "respirator", weight: 2 }
+    ],
+    negativeSignals: [],
+    contextBoosts: [
+      { term: "no water suppression", weight: 4 },
+      { term: "no ventilation", weight: 3 },
+      { term: "employees breathing dust", weight: 4 }
+    ],
+    commonConsequences: ["silicosis", "lung disease", "respiratory irritation"],
+    requiredControls: ["wet methods", "local exhaust ventilation", "dust collection", "respiratory protection", "exposure assessment"],
+    defaultSeverity: "high",
+    defaultSeverityScore: 4,
+    defaultLikelihoodScore: 3,
+    humanReviewTriggers: ["silica exposure", "visible dust cloud", "failed dust controls"]
+  },
+  {
+    id: "emergency_egress",
+    label: "Emergency Egress",
+    family: "Emergency Preparedness",
+    strongSignals: [
+      { term: "emergency exit blocked", weight: 10 },
+      { term: "exit door locked", weight: 10 },
+      { term: "exit route obstructed", weight: 9 },
+      { term: "no exit signage", weight: 8 }
+    ],
+    moderateSignals: [
+      { term: "exit", weight: 4 },
+      { term: "egress", weight: 6 },
+      { term: "blocked exit", weight: 8 },
+      { term: "exit sign", weight: 5 },
+      { term: "emergency route", weight: 6 }
+    ],
+    weakSignals: [
+      { term: "door", weight: 2 },
+      { term: "route", weight: 2 }
+    ],
+    negativeSignals: [],
+    contextBoosts: [
+      { term: "during shift", weight: 3 },
+      { term: "occupied", weight: 3 },
+      { term: "fire", weight: 4 }
+    ],
+    commonConsequences: ["delayed evacuation", "entrapment", "fatality during emergency"],
+    requiredControls: ["clear exit route", "unlock exit door", "maintain exit signage", "inspect emergency routes"],
+    defaultSeverity: "critical",
+    defaultSeverityScore: 5,
+    defaultLikelihoodScore: 3,
+    humanReviewTriggers: ["blocked exit", "locked exit", "occupied building"]
   }
 ];

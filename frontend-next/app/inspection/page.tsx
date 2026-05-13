@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
@@ -42,6 +42,7 @@ export default function InspectionPage() {
   const [annotatingPhotoIndex, setAnnotatingPhotoIndex] = useState<number | null>(null);
   const [annotationExpanded, setAnnotationExpanded] = useState(false);
   const [agencyMode, setAgencyMode] = useState("all");
+  const [riskProfileId, setRiskProfileId] = useState<"simple_4x4" | "standard_5x5" | "advanced_6x6">("standard_5x5");
   const [safeScopeStatus, setSafeScopeStatus] = useState("");
   const [safeScopeResult, setSafeScopeResult] = useState<any>(null);
   const [feedbackNotes, setFeedbackNotes] = useState("");
@@ -52,6 +53,24 @@ export default function InspectionPage() {
   const [currentFindingSaved, setCurrentFindingSaved] = useState(false);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
+
+  useEffect(() => {
+    const existing = window.localStorage.getItem("sentinel_edit_report");
+    if (!existing) return;
+
+    try {
+      const report = JSON.parse(existing);
+
+      if (Array.isArray(report.findings)) {
+        setFindings(report.findings);
+      }
+
+      window.localStorage.setItem("sentinel_editing_report_id", report.id || "");
+      window.localStorage.removeItem("sentinel_edit_report");
+    } catch {
+      window.localStorage.removeItem("sentinel_edit_report");
+    }
+  }, []);
 
   async function handleRunSafeScope() {
     try {
@@ -65,6 +84,7 @@ export default function InspectionPage() {
           `Regulatory scope: ${agencyMode.toUpperCase()}`,
         ].join("\n"),
         scopes: agencyMode === "all" ? undefined : [agencyMode],
+        riskProfileId,
         evidenceTexts: [
           evidenceNotes,
           location,
@@ -509,6 +529,27 @@ export default function InspectionPage() {
               ))}
             </div>
 
+            <label className="mb-2 block text-sm font-black text-slate-700">Risk Matrix</label>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {[
+                ["simple_4x4", "Simple 4x4"],
+                ["standard_5x5", "Standard 5x5"],
+                ["advanced_6x6", "Advanced 6x6"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setRiskProfileId(value as "simple_4x4" | "standard_5x5" | "advanced_6x6")}
+                  className={`rounded-full px-4 py-2 text-sm font-black ${
+                    riskProfileId === value
+                      ? "bg-[#102A43] text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
             <button
               onClick={handleRunSafeScope}
               className="mb-3 rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
@@ -518,17 +559,63 @@ export default function InspectionPage() {
 
             {safeScopeStatus && <p className="mb-4 text-sm font-black text-slate-600">{safeScopeStatus}</p>}
 
+            {safeScopeResult?.confidenceIntelligence && (
+              <div className="mb-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-black text-slate-900">SafeScope Confidence Intelligence</h3>
+                  <span className="rounded-full bg-[#E8F4FF] px-3 py-1 text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                    {Math.round((safeScopeResult.confidenceIntelligence.overallConfidence || 0) * 100)}% {safeScopeResult.confidenceIntelligence.confidenceBand}
+                  </span>
+                </div>
+
+                {!!safeScopeResult.confidenceIntelligence.strengths?.length && (
+                  <div className="mt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-500">Strengths</p>
+                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm font-semibold text-slate-700">
+                      {safeScopeResult.confidenceIntelligence.strengths.map((item: string) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {!!safeScopeResult.confidenceIntelligence.missingCriticalInformation?.length && (
+                  <div className="mt-3 rounded-xl bg-amber-50 p-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-amber-700">Missing Critical Information</p>
+                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm font-semibold text-amber-900">
+                      {safeScopeResult.confidenceIntelligence.missingCriticalInformation.map((item: string) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {!!safeScopeResult.confidenceIntelligence.recommendedFollowup?.length && (
+                  <div className="mt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-500">Recommended Follow-up</p>
+                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm font-semibold text-slate-700">
+                      {safeScopeResult.confidenceIntelligence.recommendedFollowup.map((item: string) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
             {safeScopeResult?.risk && (
               <div className="mb-4 rounded-2xl bg-slate-50 p-4">
                 <h3 className="mb-3 text-lg font-black text-slate-900">SafeScope Risk Intelligence</h3>
 
                 <div className="mb-3 rounded-xl bg-white p-3">
-                  <div className="text-sm font-black text-slate-900">Operational Matrix</div>
+                  <div className="text-sm font-black text-slate-900">
+                    Operational Matrix • {safeScopeResult.risk.operationalRisk?.profileLabel || "Standard 5x5"}
+                  </div>
                   <p className="mt-1 text-sm text-slate-600">
                     Severity {safeScopeResult.risk.operationalRisk?.severity} × Likelihood {safeScopeResult.risk.operationalRisk?.likelihood}
                   </p>
                   <p className="text-sm text-slate-600">
-                    Score: {safeScopeResult.risk.operationalRisk?.matrixScore} • {safeScopeResult.risk.operationalRisk?.matrixBand}
+                    Score: {safeScopeResult.risk.operationalRisk?.matrixScore} / {safeScopeResult.risk.operationalRisk?.matrixSize ? safeScopeResult.risk.operationalRisk.matrixSize * safeScopeResult.risk.operationalRisk.matrixSize : 25} • {safeScopeResult.risk.operationalRisk?.matrixBand}
                   </p>
                 </div>
 
@@ -605,8 +692,28 @@ export default function InspectionPage() {
                 />
                 {safeScopeResult.suggestedStandards.map((standard: any) => (
                   <div key={standard.citation} className="mb-3 rounded-2xl border border-slate-200 bg-white p-4">
-                    <div className="font-black text-[#1D72B8]">{standard.citation}</div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-black text-[#1D72B8]">{standard.citation}</div>
+                      {(Array.isArray(standard.source) ? standard.source : [standard.source]).filter(Boolean).map((source: string) => (
+                        <span
+                          key={source}
+                          className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600"
+                        >
+                          {source === "cfr_database" ? "CFR Database" : "Curated"}
+                        </span>
+                      ))}
+                    </div>
+
                     <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
+
+                    {!!standard.matchingReasons?.length && (
+                      <div className="mt-2 rounded-xl bg-slate-50 p-3">
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Why SafeScope matched this</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-600">
+                          {standard.matchingReasons.slice(0, 6).join(" • ")}
+                        </p>
+                      </div>
+                    )}
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
@@ -815,7 +922,7 @@ export default function InspectionPage() {
         ) : (
           <div className="space-y-3">
             {findings.map((finding, index) => (
-              <div key={finding.id} className="rounded-xl border border-slate-200 p-3">
+              <div key={finding.id || `finding-${index}-${finding.hazardCategory || "unknown"}`} className="rounded-xl border border-slate-200 p-3">
                 <div className="font-black">Finding {index + 1}: {finding.hazardCategory || "Uncategorized"}</div>
                 <p className="mt-1 text-sm text-slate-600">{finding.description || "No description provided."}</p>
                 {!!finding.location && (

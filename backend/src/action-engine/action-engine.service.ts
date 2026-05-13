@@ -50,14 +50,18 @@ export class ActionEngineService {
     slip: "Initiate housekeeping inspection",
     ppe: "Enforce PPE compliance audit",
     electrical: "Dispatch qualified electrician immediately",
-    fire: "Clear and inspect all emergency egress paths",
+    fire: "Control ignition sources and restore fire protection",
     machine: "Inspect machine guarding and apply lockout/tagout",
     fall: "Install fall protection or secure elevated surfaces",
     vehicle: "Restrict vehicle access and enforce traffic controls",
     "powered mobile equipment": "Establish mobile equipment traffic controls",
     housekeeping: "Restore walking-working surface conditions",
     chemical: "Verify labeling and secure hazardous materials",
-    "hazard communication": "Correct chemical labeling and hazard communication controls"
+    "hazard communication": "Correct chemical labeling and hazard communication controls",
+    "confined space": "Stop entry and implement confined space controls",
+    "loto": "Apply lockout/tagout and verify zero energy",
+    "industrial hygiene": "Control dust exposure and verify respiratory protection",
+    "emergency preparedness": "Clear and restore emergency egress route"
   };
 
   async generateActionsFromReport(report: ActionInput): Promise<GeneratedAction[]> {
@@ -92,6 +96,10 @@ export class ActionEngineService {
       "fall protection": "fall",
       "mobile equipment / traffic": "powered mobile equipment",
       "walking/working surfaces": "housekeeping",
+      "fire / explosion": "fire",
+      "lockout / stored energy": "loto",
+      "respirable dust / silica": "industrial hygiene",
+      "emergency egress": "emergency preparedness",
     };
 
     const actionCategory = actionCategoryAliases[rawActionCategory] || rawActionCategory;

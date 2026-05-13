@@ -4,9 +4,10 @@ import { SafescopeV2Controller } from './safescope-v2.controller';
 import { ActionEngineModule } from '../action-engine/action-engine.module';
 import { ContextExpansionService } from './context/context-expansion.service';
 import { EvidenceFusionService } from './evidence/evidence-fusion.service';
+import { ApplicableStandardsModule } from '../applicable-standards/applicable-standards.module';
 
 @Module({
-  imports: [ActionEngineModule],
+  imports: [ActionEngineModule, ApplicableStandardsModule],
   controllers: [SafescopeV2Controller],
   providers: [SafescopeV2Service, ContextExpansionService, EvidenceFusionService],
 })
