@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
+import { OptionalJwtGuard } from '../../auth/guards/optional-jwt.guard';
 import { SafeScopeFeedbackService } from './safescope-feedback.service';
 import { CreateSafeScopeFeedbackDto } from './create-feedback.dto';
 
@@ -8,24 +10,34 @@ export class SafeScopeFeedbackController {
     private readonly service: SafeScopeFeedbackService,
   ) {}
 
+  @UseGuards(OptionalJwtGuard)
   @Post()
   async create(
     @Body() dto: CreateSafeScopeFeedbackDto,
+    @Req() req: Request & { user?: any },
   ) {
-    return this.service.create(dto);
+    return this.service.create({
+      ...dto,
+      workspaceId: req.user?.organizationId || dto.workspaceId,
+      userId: req.user?.userId || dto.userId,
+    });
   }
 
+  @UseGuards(OptionalJwtGuard)
   @Get()
   async getWorkspaceSignals(
-    @Query('workspaceId') workspaceId?: string,
+    @Query('workspaceId') workspaceId: string | undefined,
+    @Req() req: Request & { user?: any },
   ) {
-    return this.service.getWorkspaceSignals(workspaceId);
+    return this.service.getWorkspaceSignals(req.user?.organizationId || workspaceId);
   }
 
+  @UseGuards(OptionalJwtGuard)
   @Get('adjustments')
   async getWorkspaceAdjustments(
-    @Query('workspaceId') workspaceId?: string,
+    @Query('workspaceId') workspaceId: string | undefined,
+    @Req() req: Request & { user?: any },
   ) {
-    return this.service.getWorkspaceStandardAdjustments(workspaceId);
+    return this.service.getWorkspaceStandardAdjustments(req.user?.organizationId || workspaceId);
   }
 }

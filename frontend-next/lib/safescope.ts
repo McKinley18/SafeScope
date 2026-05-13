@@ -1,6 +1,23 @@
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
+function getAuthToken() {
+  if (typeof window === "undefined") return null;
+  return (
+    window.localStorage.getItem("sentinel_auth_token") ||
+    window.localStorage.getItem("token")
+  );
+}
+
+function authHeaders() {
+  const token = getAuthToken();
+
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 export async function runSafeScopeV2Classify(payload: {
   text: string;
   evidenceTexts?: string[];
@@ -10,13 +27,13 @@ export async function runSafeScopeV2Classify(payload: {
 }) {
   const response = await fetch(`${API_BASE_URL}/safescope-v2/classify`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(),
     body: JSON.stringify({
       text: payload.text,
       scopes: payload.scopes || ["msha", "osha_general", "osha_construction"],
       evidenceTexts: payload.evidenceTexts || [],
       riskProfileId: payload.riskProfileId || "standard_5x5",
-      workspaceId: payload.workspaceId || "demo-workspace",
+      ...(payload.workspaceId ? { workspaceId: payload.workspaceId } : {}),
     }),
   });
 
@@ -41,8 +58,8 @@ export async function sendSafeScopeFeedback(payload: {
   findingId?: string;
 }) {
   const recordPayload = {
-    workspaceId: "demo-workspace",
-    userId: "demo-user",
+    workspaceId: undefined,
+    userId: undefined,
     reportId: payload.reportId,
     findingId: payload.findingId,
     classification: payload.category,
@@ -57,7 +74,7 @@ export async function sendSafeScopeFeedback(payload: {
 
   const response = await fetch(`${API_BASE_URL}/safescope-v2/feedback`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(),
     body: JSON.stringify(recordPayload),
   });
 
