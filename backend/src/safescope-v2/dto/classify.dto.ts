@@ -18,4 +18,11 @@ export class ClassifyDto {
   @IsOptional()
   @IsString()
   riskProfileId?: "simple_4x4" | "standard_5x5" | "advanced_6x6";
+
+  @IsOptional()
+  @IsString()
+  workspaceId?: string;
 }
+
+
+export type SafeScopeRiskProfileId = "simple_4x4" | "standard_5x5" | "advanced_6x6";

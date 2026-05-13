@@ -7,6 +7,7 @@ import { ContextExpansionService } from './context/context-expansion.service';
 import { EvidenceFusionService } from './evidence/evidence-fusion.service';
 import { ApplicableStandardsService } from '../applicable-standards/applicable-standards.service';
 import { ConfidenceIntelligenceService } from './confidence/confidence-intelligence.service';
+import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -19,6 +20,7 @@ export class SafescopeV2Service {
     private readonly contextExpansion: ContextExpansionService,
     private readonly evidenceFusion: EvidenceFusionService,
     private readonly applicableStandards: ApplicableStandardsService,
+    private readonly feedbackService: SafeScopeFeedbackService,
   ) {}
 
 
@@ -30,7 +32,7 @@ export class SafescopeV2Service {
     return undefined;
   }
 
-  private async getMergedStandards(classification: string, text: string, scopes?: string[]) {
+  private async getMergedStandards(classification: string, text: string, scopes?: string[], workspaceId?: string) {
     const curated = this.bridge.getSuggestedStandards(classification, scopes);
 
     const cfrMatches = await this.applicableStandards.suggest(
@@ -88,7 +90,27 @@ export class SafescopeV2Service {
       });
     }
 
-    const unique = Array.from(byCitation.values());
+    const adjustments = await this.feedbackService.getWorkspaceStandardAdjustments(workspaceId);
+    const adjustmentMap = new Map(adjustments.map((item: any) => [item.citation, item]));
+
+    const unique = Array.from(byCitation.values()).map((standard: any) => {
+      const adjustment = adjustmentMap.get(standard.citation);
+
+      if (!adjustment) {
+        return {
+          ...standard,
+          workspaceLearningAdjustment: 0,
+          workspaceLearningWarnings: [],
+        };
+      }
+
+      return {
+        ...standard,
+        score: Math.max(0, (standard.score || 0) + adjustment.adjustment),
+        workspaceLearningAdjustment: adjustment.adjustment,
+        workspaceLearningWarnings: adjustment.warnings || [],
+      };
+    });
 
     return {
       suggestedStandards: unique.sort((a: any, b: any) => (b.score || 0) - (a.score || 0)).slice(0, 8),
@@ -141,7 +163,7 @@ export class SafescopeV2Service {
     }));
   }
 
-  async classify(text: string, scopes?: string[], evidenceTexts?: string[], riskProfileId?: 'simple_4x4' | 'standard_5x5' | 'advanced_6x6') {
+  async classify(text: string, scopes?: string[], evidenceTexts?: string[], riskProfileId?: 'simple_4x4' | 'standard_5x5' | 'advanced_6x6', workspaceId?: string) {
     const evidenceFusion = this.evidenceFusion.synthesize([
       text,
       ...(evidenceTexts || []),
@@ -216,6 +238,7 @@ export class SafescopeV2Service {
       promotedPrimary.classification,
       fusedText,
       scopes,
+      workspaceId,
     );
 
     const confidenceIntelligence = this.confidenceEngine.evaluate({
@@ -248,6 +271,7 @@ export class SafescopeV2Service {
             hazard.classification,
             fusedText,
             scopes,
+            workspaceId,
           );
 
           const hazardExpandedContext = this.contextExpansion.expand(

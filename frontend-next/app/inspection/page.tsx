@@ -119,11 +119,13 @@ export default function InspectionPage() {
 
       await sendSafeScopeFeedback({
         text: buildSafeScopeText(),
-        category: hazardCategory || "General",
+        category: safeScopeResult?.classification || hazardCategory || "General",
         mode: agencyMode,
         citation: standard.citation,
         action,
         notes: feedbackNotes,
+        confidenceBefore: safeScopeResult?.confidenceIntelligence?.overallConfidence ?? safeScopeResult?.confidence,
+        riskProfileId,
       });
 
       setSafeScopeStatus(`Feedback saved: ${action} ${standard.citation}`);
@@ -705,6 +707,18 @@ export default function InspectionPage() {
                     </div>
 
                     <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
+
+                    {standard.workspaceLearningAdjustment !== undefined && standard.workspaceLearningAdjustment !== 0 && (
+                      <div className="mt-2 rounded-xl bg-emerald-50 p-3 text-xs font-black text-emerald-800">
+                        Workspace learning adjustment: {standard.workspaceLearningAdjustment > 0 ? "+" : ""}{standard.workspaceLearningAdjustment}
+                      </div>
+                    )}
+
+                    {!!standard.workspaceLearningWarnings?.length && (
+                      <div className="mt-2 rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-900">
+                        {standard.workspaceLearningWarnings.join(" • ")}
+                      </div>
+                    )}
 
                     {!!standard.matchingReasons?.length && (
                       <div className="mt-2 rounded-xl bg-slate-50 p-3">

@@ -6,6 +6,7 @@ export async function runSafeScopeV2Classify(payload: {
   evidenceTexts?: string[];
   scopes?: string[];
   riskProfileId?: "simple_4x4" | "standard_5x5" | "advanced_6x6";
+  workspaceId?: string;
 }) {
   const response = await fetch(`${API_BASE_URL}/safescope-v2/classify`, {
     method: "POST",
@@ -15,6 +16,7 @@ export async function runSafeScopeV2Classify(payload: {
       scopes: payload.scopes || ["msha", "osha_general", "osha_construction"],
       evidenceTexts: payload.evidenceTexts || [],
       riskProfileId: payload.riskProfileId || "standard_5x5",
+      workspaceId: payload.workspaceId || "demo-workspace",
     }),
   });
 
@@ -30,26 +32,52 @@ export async function sendSafeScopeFeedback(payload: {
   category: string;
   mode: string;
   citation: string;
-  action: "accepted" | "rejected" | "flagged";
+  action: "accepted" | "rejected" | "flagged" | "changed";
   notes?: string;
+  replacementCitation?: string;
+  confidenceBefore?: number;
+  riskProfileId?: string;
+  reportId?: string;
+  findingId?: string;
 }) {
+  const recordPayload = {
+    workspaceId: "demo-workspace",
+    userId: "demo-user",
+    reportId: payload.reportId,
+    findingId: payload.findingId,
+    classification: payload.category,
+    citation: payload.citation,
+    action: payload.action,
+    replacementCitation: payload.replacementCitation,
+    reason: payload.notes || payload.text,
+    confidenceBefore: payload.confidenceBefore,
+    riskProfileId: payload.riskProfileId,
+    reviewerRole: "Safety Manager",
+  };
+
+  const response = await fetch(`${API_BASE_URL}/safescope-v2/feedback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(recordPayload),
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  const saved = await response.json();
+
   const existing =
     typeof window !== "undefined"
       ? JSON.parse(window.localStorage.getItem("sentinel_safescope_feedback") || "[]")
       : [];
 
-  const record = {
-    id: `feedback-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    ...payload,
-  };
-
   if (typeof window !== "undefined") {
     window.localStorage.setItem(
       "sentinel_safescope_feedback",
-      JSON.stringify([record, ...existing])
+      JSON.stringify([saved, ...existing])
     );
   }
 
-  return record;
+  return saved;
 }
