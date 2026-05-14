@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
+import { getOrganizationSettings } from "@/lib/auth";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
 
@@ -45,13 +46,34 @@ export default function InspectionPage() {
   const [riskProfileId, setRiskProfileId] = useState<"simple_4x4" | "standard_5x5" | "advanced_6x6">("standard_5x5");
 
   useEffect(() => {
-    const savedRiskProfile = window.localStorage.getItem("sentinel_company_risk_profile") as
-      | "simple_4x4"
-      | "standard_5x5"
-      | "advanced_6x6"
-      | null;
+    async function loadCompanyRiskProfile() {
+      try {
+        const settings = await getOrganizationSettings();
+        const backendRiskProfile = settings.riskProfileId as
+          | "simple_4x4"
+          | "standard_5x5"
+          | "advanced_6x6"
+          | undefined;
 
-    if (savedRiskProfile) setRiskProfileId(savedRiskProfile);
+        if (backendRiskProfile) {
+          setRiskProfileId(backendRiskProfile);
+          window.localStorage.setItem("sentinel_company_risk_profile", backendRiskProfile);
+          return;
+        }
+      } catch {
+        // Fall back to local workspace setting when offline or signed out.
+      }
+
+      const savedRiskProfile = window.localStorage.getItem("sentinel_company_risk_profile") as
+        | "simple_4x4"
+        | "standard_5x5"
+        | "advanced_6x6"
+        | null;
+
+      if (savedRiskProfile) setRiskProfileId(savedRiskProfile);
+    }
+
+    loadCompanyRiskProfile();
   }, []);
   const [safeScopeStatus, setSafeScopeStatus] = useState("");
   const [safeScopeResult, setSafeScopeResult] = useState<any>(null);
