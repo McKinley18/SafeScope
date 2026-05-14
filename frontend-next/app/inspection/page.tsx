@@ -317,17 +317,38 @@ export default function InspectionPage() {
       findings: finalizedFindings,
     };
 
-    const existingReports = JSON.parse(
-      window.localStorage.getItem("sentinel_reports") || "[]"
-    );
+    const storageMode =
+      (window.localStorage.getItem("sentinel_report_storage_mode") as
+        | "local"
+        | "cloud"
+        | "ask"
+        | null) || "local";
 
-    const nextReports = [
-      report,
-      ...existingReports.filter((existing: any) => existing.id !== report.id),
-    ];
+    let shouldSaveLocal = storageMode !== "cloud";
 
-    window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
-    window.localStorage.setItem("sentinel_reports", JSON.stringify(nextReports));
+    if (storageMode === "ask") {
+      shouldSaveLocal = window.confirm(
+        "Save this report locally in this browser?\n\nSelect Cancel for cloud-only storage."
+      );
+    }
+
+    if (shouldSaveLocal) {
+      const existingReports = JSON.parse(
+        window.localStorage.getItem("sentinel_reports") || "[]"
+      );
+
+      const nextReports = [
+        report,
+        ...existingReports.filter((existing: any) => existing.id !== report.id),
+      ];
+
+      window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
+      window.localStorage.setItem("sentinel_reports", JSON.stringify(nextReports));
+    }
+
+    if (storageMode === "cloud" || storageMode === "ask") {
+      console.log("TODO: save report to workspace database", report);
+    }
 
     router.push("/inspection-review");
   }
