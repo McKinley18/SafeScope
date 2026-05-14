@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import { localExporter } from "@/lib/localExporter";
-import { getWorkspaceReports } from "@/lib/auth";
 
 type Report = {
   id: string;
@@ -91,42 +90,7 @@ export default function ReportsPage() {
         });
       }
 
-      try {
-        const cloudRows = await getWorkspaceReports();
 
-        const cloudReports = (cloudRows || []).map((row: any) => {
-          const frontend = row.frontendReportJson || {};
-
-          return {
-            ...frontend,
-            id: frontend.id || row.id,
-            createdAt: frontend.createdAt || row.reportedDatetime,
-            title: frontend.title || row.company || "Inspection Report",
-            location: frontend.siteLocation || row.site || "Field Inspection",
-            findings: frontend.findings || row.findings || [],
-            storageSource: "cloud" as const,
-          };
-        });
-
-        for (const cloudReport of cloudReports) {
-          const index = merged.findIndex((report) => report.id === cloudReport.id);
-          if (index >= 0) {
-            merged[index] = cloudReport;
-          } else {
-            merged.push(cloudReport);
-          }
-        }
-      } catch {
-        // Cloud reports are optional; local reports still load.
-      }
-
-      if (merged.length === 0) {
-        setReports(SEEDED_REPORTS.map((report) => ({ ...report, storageSource: "seed" })));
-      } else {
-        setReports(merged);
-        const onlyLocal = merged.filter((report) => report.storageSource !== "cloud");
-        secureStorage.set("reports", JSON.stringify(onlyLocal));
-      }
     }
 
     loadReports();
