@@ -15,3 +15,4 @@ export class SafescopeV2Controller {
     return this.service.classify(body.text, body.scopes, body.evidenceTexts, body.riskProfileId, workspaceId);
   }
 }
+// SafeScope v2 route deploy trigger Thu May 14 09:35:37 EDT 2026
