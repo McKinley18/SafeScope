@@ -33,3 +33,4 @@ async function bootstrap() {
   console.log(`🌍 Environment: ${configService.get<string>('NODE_ENV')}`);
 }
 bootstrap();
+// Render redeploy trigger Thu May 14 08:57:38 EDT 2026
