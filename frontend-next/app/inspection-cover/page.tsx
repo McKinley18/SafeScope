@@ -1,6 +1,6 @@
 "use client";
 
-import { secureStorage } from "@/lib/secureStorage";
+import { getCoverPage, setCoverPage } from "@/lib/reportStorage";
 import PageHeader from "@/components/ui/PageHeader";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -16,40 +16,40 @@ export default function InspectionCoverPage() {
   const [includeLogoOnCover, setIncludeLogoOnCover] = useState(true);
 
   useEffect(() => {
-    const savedLogo = localStorage.getItem("sentinel_company_logo") || "";
-    const savedIncludeLogo = localStorage.getItem("sentinel_include_logo_on_cover") !== "false";
+    async function loadCoverPage() {
+      const savedLogo = localStorage.getItem("sentinel_company_logo") || "";
+      const savedIncludeLogo = localStorage.getItem("sentinel_include_logo_on_cover") !== "false";
 
-    setCompanyLogo(savedLogo);
-    setIncludeLogoOnCover(savedIncludeLogo);
+      setCompanyLogo(savedLogo);
+      setIncludeLogoOnCover(savedIncludeLogo);
 
-    const existing = secureStorage.get("cover_page", null as any);
-    if (!existing) return;
+      const parsed = await getCoverPage<any>();
+      if (!parsed) return;
 
-    const parsed = JSON.parse(existing);
-    setOrganizationName(parsed.organizationName || "");
-    setSiteLocation(parsed.siteLocation || "");
-    setInspectionDate(parsed.inspectionDate || "");
-    setLeadInspector(parsed.leadInspector || "");
-    setAdditionalInspectors(parsed.additionalInspectors?.length ? parsed.additionalInspectors : [""]);
-    setIsConfidential(!!parsed.isConfidential);
-    setCompanyLogo(parsed.companyLogo || savedLogo);
-    setIncludeLogoOnCover(parsed.includeLogoOnCover ?? savedIncludeLogo);
+      setOrganizationName(parsed.organizationName || "");
+      setSiteLocation(parsed.siteLocation || "");
+      setInspectionDate(parsed.inspectionDate || "");
+      setLeadInspector(parsed.leadInspector || "");
+      setAdditionalInspectors(parsed.additionalInspectors?.length ? parsed.additionalInspectors : [""]);
+      setIsConfidential(!!parsed.isConfidential);
+      setCompanyLogo(parsed.companyLogo || savedLogo);
+      setIncludeLogoOnCover(parsed.includeLogoOnCover ?? savedIncludeLogo);
+    }
+
+    loadCoverPage();
   }, []);
 
-  function saveCoverPage() {
-    secureStorage.set(
-      "cover_page",
-      JSON.stringify({
-        organizationName,
-        siteLocation,
-        inspectionDate,
-        leadInspector,
-        additionalInspectors: additionalInspectors.filter(Boolean),
-        isConfidential,
-        companyLogo,
-        includeLogoOnCover,
-      })
-    );
+  async function saveCoverPage() {
+    await setCoverPage({
+      organizationName,
+      siteLocation,
+      inspectionDate,
+      leadInspector,
+      additionalInspectors: additionalInspectors.filter(Boolean),
+      isConfidential,
+      companyLogo,
+      includeLogoOnCover,
+    });
   }
 
   return (
