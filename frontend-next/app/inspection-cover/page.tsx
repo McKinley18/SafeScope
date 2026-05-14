@@ -10,8 +10,16 @@ export default function InspectionCoverPage() {
   const [leadInspector, setLeadInspector] = useState("");
   const [additionalInspectors, setAdditionalInspectors] = useState([""]);
   const [isConfidential, setIsConfidential] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState("");
+  const [includeLogoOnCover, setIncludeLogoOnCover] = useState(true);
 
   useEffect(() => {
+    const savedLogo = localStorage.getItem("sentinel_company_logo") || "";
+    const savedIncludeLogo = localStorage.getItem("sentinel_include_logo_on_cover") !== "false";
+
+    setCompanyLogo(savedLogo);
+    setIncludeLogoOnCover(savedIncludeLogo);
+
     const existing = localStorage.getItem("sentinel_cover_page");
     if (!existing) return;
 
@@ -22,6 +30,8 @@ export default function InspectionCoverPage() {
     setLeadInspector(parsed.leadInspector || "");
     setAdditionalInspectors(parsed.additionalInspectors?.length ? parsed.additionalInspectors : [""]);
     setIsConfidential(!!parsed.isConfidential);
+    setCompanyLogo(parsed.companyLogo || savedLogo);
+    setIncludeLogoOnCover(parsed.includeLogoOnCover ?? savedIncludeLogo);
   }, []);
 
   function saveCoverPage() {
@@ -34,12 +44,20 @@ export default function InspectionCoverPage() {
         leadInspector,
         additionalInspectors: additionalInspectors.filter(Boolean),
         isConfidential,
+        companyLogo,
+        includeLogoOnCover,
       })
     );
   }
 
   return (
     <section>
+      {includeLogoOnCover && companyLogo && (
+        <div className="mb-5 rounded-2xl bg-white p-5 shadow-sm">
+          <img src={companyLogo} alt="Company logo" className="max-h-28 max-w-full object-contain" />
+        </div>
+      )}
+
       <div className="mb-[18px] border-l-4 border-[#1D72B8] pl-4">
         <h1 className="text-[28px] font-black text-slate-900">
           Inspection Cover Page
@@ -135,6 +153,29 @@ export default function InspectionCoverPage() {
           </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setIncludeLogoOnCover(!includeLogoOnCover)}
+        className="mb-3.5 flex w-full gap-2.5 rounded-[14px] border border-slate-300 bg-slate-50 px-3.5 py-3 text-left"
+      >
+        <span
+          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border-2 border-[#1D72B8] text-[13px] font-black text-white ${
+            includeLogoOnCover ? "bg-[#1D72B8]" : "bg-white"
+          }`}
+        >
+          {includeLogoOnCover ? "✓" : ""}
+        </span>
+
+        <span className="flex-1">
+          <span className="block text-sm font-black text-slate-800">
+            Include Company Logo on Cover Page
+          </span>
+          <span className="mt-1 block text-xs leading-[17px] text-slate-600">
+            Controlled by workspace settings. You can toggle it for this report.
+          </span>
+        </span>
+      </button>
 
       <button
         type="button"

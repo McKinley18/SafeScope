@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
-import { getOrganizationSettings } from "@/lib/auth";
+import { getOrganizationSettings, saveWorkspaceReport } from "@/lib/auth";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
 
@@ -291,7 +291,7 @@ export default function InspectionPage() {
   }
 
 
-  function generateReport() {
+  async function generateReport() {
     const finalizedFindings = [...findings];
 
     if (!currentFindingSaved && hasCurrentFindingData()) {
@@ -347,7 +347,28 @@ export default function InspectionPage() {
     }
 
     if (storageMode === "cloud" || storageMode === "ask") {
-      console.log("TODO: save report to workspace database", report);
+      try {
+        const savedCloudReport = await saveWorkspaceReport(report);
+        window.localStorage.setItem("sentinel_latest_cloud_report_id", savedCloudReport.id);
+        window.localStorage.setItem(
+          "sentinel_latest_report",
+          JSON.stringify(savedCloudReport.frontendReportJson || report)
+        );
+      } catch {
+        alert("Report could not be saved to the workspace database. It will be saved locally instead.");
+
+        const existingReports = JSON.parse(
+          window.localStorage.getItem("sentinel_reports") || "[]"
+        );
+
+        const nextReports = [
+          report,
+          ...existingReports.filter((existing: any) => existing.id !== report.id),
+        ];
+
+        window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
+        window.localStorage.setItem("sentinel_reports", JSON.stringify(nextReports));
+      }
     }
 
     router.push("/inspection-review");

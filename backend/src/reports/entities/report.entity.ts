@@ -14,6 +14,12 @@ export class Report {
   id: string;
 
   @Column({ nullable: true })
+  organizationId: string;
+
+  @Column({ nullable: true })
+  createdByUserId: string;
+
+  @Column({ nullable: true })
   company: string;
 
   @Column({ nullable: true })
@@ -42,6 +48,9 @@ export class Report {
 
   @Column({ type: 'jsonb', nullable: true })
   narrative: any;
+
+  @Column({ type: 'jsonb', nullable: true })
+  frontendReportJson: any;
 
   @Column({ nullable: true })
   eventTypeCode: string;

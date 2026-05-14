@@ -47,3 +47,60 @@ export async function updateOrganizationSettings(payload: {
 
   return response.json();
 }
+
+export async function getOrganizationMembers() {
+  const response = await fetch(`${API_BASE_URL}/organization/me/members`, {
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to load organization members.");
+  }
+
+  return response.json();
+}
+
+export async function getOrganizationInvites() {
+  const response = await fetch(`${API_BASE_URL}/organization/me/invites`, {
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to load organization invites.");
+  }
+
+  return response.json();
+}
+
+export async function inviteOrganizationMember(payload: {
+  email: string;
+  role: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/organization/me/invite`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to create invitation.");
+  }
+
+  return response.json();
+}
+
+export async function saveWorkspaceReport(report: any) {
+  const response = await fetch(`${API_BASE_URL}/reports`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      frontendReportJson: report,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to save report to workspace database.");
+  }
+
+  return response.json();
+}

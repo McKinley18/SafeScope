@@ -1,27 +1,29 @@
-import { IsString, IsArray, ValidateNested, IsNotEmpty } from 'class-validator';
-import { Type } from 'class-transformer';
-
-class FindingDto {
-  @IsString()
-  @IsNotEmpty()
-  hazardCategory: string;
-
-  @IsString()
-  @IsNotEmpty()
-  severity: string;
-}
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class CreateReportDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  company: string;
+  company?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  inspector: string;
+  inspector?: string;
 
+  @IsOptional()
+  @IsString()
+  site?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  confidential?: boolean;
+
+  @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => FindingDto)
-  findings: FindingDto[];
+  findings?: any[];
+
+  @IsOptional()
+  frontendReportJson?: any;
+
+  @IsOptional()
+  report?: any;
 }

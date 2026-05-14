@@ -22,10 +22,17 @@ export class ReportsService {
     private actionEngine: ActionEngineService,
   ) {}
 
-  async create(body: any) {
+  async create(body: any, user?: any) {
+    const frontendReport = body.frontendReportJson || body.report || body;
+
     const report = this.reportRepo.create({
-      company: body.company,
-      inspector: body.inspector,
+      organizationId: user?.organizationId || body.organizationId,
+      createdByUserId: user?.userId ? String(user.userId) : body.createdByUserId,
+      company: body.company || frontendReport.organizationName,
+      site: body.site || frontendReport.siteLocation,
+      inspector: body.inspector || frontendReport.leadInspector,
+      confidential: body.confidential ?? frontendReport.isConfidential ?? false,
+      frontendReportJson: frontendReport,
     });
 
     const savedReport = await this.reportRepo.save(report);
@@ -33,13 +40,13 @@ export class ReportsService {
     const findings = [];
     const allActions = [];
 
-    for (const f of body.findings || []) {
+    for (const f of frontendReport.findings || body.findings || []) {
       // 1. RUN STANDARDS ENGINE
       const matches = this.standards.match(f.hazardCategory || '');
 
       const finding = this.findingRepo.create({
         hazardCategory: f.hazardCategory,
-        hazard: f.hazard,
+        hazard: f.hazard || f.description,
         severity: f.severity,
         report: savedReport,
       });
@@ -74,15 +81,19 @@ export class ReportsService {
     };
   }
 
-  async findAll() {
+  async findAll(user?: any) {
     return this.reportRepo.find({
+      where: user?.organizationId ? { organizationId: user.organizationId } : {},
       relations: ['findings'],
+      order: { reportedDatetime: 'DESC' },
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user?: any) {
     const report = await this.reportRepo.findOne({
-      where: { id },
+      where: user?.organizationId
+        ? { id, organizationId: user.organizationId }
+        : { id },
       relations: ['findings'],
     });
 

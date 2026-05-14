@@ -6,7 +6,9 @@ import {
   Get,
   Param,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -22,27 +24,28 @@ export class ReportsController {
   ) {}
 
   @Post()
-  create(@Body() body: CreateReportDto) {
-    return this.reportsService.create(body);
+  create(@Body() body: CreateReportDto, @Req() req: Request & { user?: any }) {
+    return this.reportsService.create(body, req.user);
   }
-@Post(':id/recommendations/feedback')
-submitFeedback(@Body() body: any) {
-  return this.recommendationsService.submitFeedback(body);
-}
+
+  @Post(':id/recommendations/feedback')
+  submitFeedback(@Body() body: any) {
+    return this.recommendationsService.submitFeedback(body);
+  }
 
   @Get()
-  findAll() {
-    return this.reportsService.findAll();
+  findAll(@Req() req: Request & { user?: any }) {
+    return this.reportsService.findAll(req.user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reportsService.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: Request & { user?: any }) {
+    return this.reportsService.findOne(id, req.user);
   }
 
   @Get(':id/recommendations')
-  async getRecommendations(@Param('id') id: string) {
-    const report = await this.reportsService.findOne(id);
+  async getRecommendations(@Param('id') id: string, @Req() req: Request & { user?: any }) {
+    const report = await this.reportsService.findOne(id, req.user);
 
     if (!report) {
       throw new NotFoundException("Report not found");
