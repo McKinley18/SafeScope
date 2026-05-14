@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { clearActiveInspectionDraft } from "@/lib/inspectionDraft";
 import PageHeader from "@/components/ui/PageHeader";
 import { useEffect, useState } from "react";
 import { getLatestReport, setEditReport } from "@/lib/reportStorage";
@@ -16,6 +15,16 @@ function getFindingRisk(finding: any) {
 
 export default function InspectionReviewPage() {
   const [report, setReport] = useState<any>(null);
+
+  async function clearActiveInspectionDraft() {
+    if (typeof window === "undefined") return;
+
+    window.localStorage.removeItem("sentinel_editing_report_id");
+    window.localStorage.removeItem("sentinel_encrypted_cover_page");
+    window.localStorage.removeItem("sentinel_encrypted_edit_report");
+    window.localStorage.removeItem("sentinel_secure_cover_page");
+    window.localStorage.removeItem("sentinel_secure_edit_report");
+  }
 
   useEffect(() => {
     async function loadReport() {
