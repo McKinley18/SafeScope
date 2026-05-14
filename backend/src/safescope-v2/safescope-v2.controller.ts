@@ -1,4 +1,6 @@
+import { Roles } from '../auth/decorators/roles.decorator';
 import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { SafescopeV2Service } from './safescope-v2.service';
 import { ClassifyDto } from './dto/classify.dto';
@@ -7,6 +9,8 @@ import { ClassifyDto } from './dto/classify.dto';
 export class SafescopeV2Controller {
   constructor(private readonly service: SafescopeV2Service) {}
 
+  @Roles('ORG_OWNER', 'SAFETY_DIRECTOR', 'SUPERVISOR', 'AUDITOR', 'WORKER')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Post('classify')
   async classify(@Body() body: ClassifyDto, @Req() req: Request & { user?: any }) {
     const workspaceId = req.user?.organizationId || req.user?.workspaceId;

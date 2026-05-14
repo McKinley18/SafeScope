@@ -1,3 +1,4 @@
+import { Roles } from '../auth/decorators/roles.decorator';
 import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { OrganizationsService } from './organizations.service';
@@ -14,6 +15,7 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles('ORG_OWNER')
   @Patch('me/settings')
   updateMySettings(
     @Req() req: Request & { user?: any },
@@ -35,6 +37,7 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles('ORG_OWNER', 'SAFETY_DIRECTOR')
   @Post('me/invite')
   inviteToMyOrganization(
     @Req() req: Request & { user?: any },
@@ -50,6 +53,7 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles('ORG_OWNER', 'SAFETY_DIRECTOR')
   @Post(':id/invite')
   invite(@Param('id') id: string, @Body() body: { email: string; role: string }) {
     return this.service.createInvitation(id, body.email, body.role);

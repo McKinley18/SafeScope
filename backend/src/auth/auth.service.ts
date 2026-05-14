@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { OrganizationsService } from '../organizations/organizations.service';
+import { getRequestMetadata } from '../common/utils/request-metadata';
 
 @Injectable()
 export class AuthService {
@@ -16,8 +17,9 @@ export class AuthService {
     private orgService: OrganizationsService,
   ) {}
 
-  async register(dto: RegisterDto & { inviteToken?: string }) {
+  async register(dto: RegisterDto & { inviteToken?: string }, req?: any) {
     const { email, password, name, type, inviteToken } = dto;
+    const metadata = req ? getRequestMetadata(req) : null;
 
     const existing = await this.userRepo.findOne({ where: { email } });
     if (existing) throw new BadRequestException('Email already exists');
@@ -42,7 +44,10 @@ export class AuthService {
       organizationId = org.id;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      Number(process.env.BCRYPT_ROUNDS || 12),
+    );
 
     const user = this.userRepo.create({
       email,
@@ -58,7 +63,8 @@ export class AuthService {
     return {
       message: 'User created successfully',
       userId: user.id,
-      organizationId
+      organizationId,
+      metadata,
     };
   }
 
@@ -66,7 +72,9 @@ export class AuthService {
     return await this.orgService.verifyInvitation(token);
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, req?: any) {
+    const metadata = req ? getRequestMetadata(req) : null;
+
     const user = await this.userRepo
       .createQueryBuilder("user")
       .addSelect("user.password")
@@ -96,6 +104,7 @@ export class AuthService {
     return {
       message: 'Login successful',
       token,
+      metadata,
     };
   }
 }

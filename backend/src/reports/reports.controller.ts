@@ -1,3 +1,4 @@
+import { Roles } from '../auth/decorators/roles.decorator';
 import {
   NotFoundException,
   Controller,
@@ -23,11 +24,13 @@ export class ReportsController {
     private readonly recommendationsService: RecommendationsService,
   ) {}
 
+  @Roles('ORG_OWNER', 'SAFETY_DIRECTOR', 'SUPERVISOR', 'AUDITOR')
   @Post()
   create(@Body() body: CreateReportDto, @Req() req: Request & { user?: any }) {
     return this.reportsService.create(body, req.user);
   }
 
+  @Roles('ORG_OWNER', 'SAFETY_DIRECTOR', 'SUPERVISOR', 'AUDITOR')
   @Post(':id/recommendations/feedback')
   submitFeedback(@Body() body: any) {
     return this.recommendationsService.submitFeedback(body);

@@ -13,8 +13,10 @@ import { OrganizationsModule } from '../organizations/organizations.module';
     TypeOrmModule.forFeature([User]),
     OrganizationsModule,
     JwtModule.register({
-      secret: 'supersecretkey', // 🔥 change later
-      signOptions: { expiresIn: '1d' },
+      secret: process.env.JWT_SECRET || 'development-only-secret-change-me',
+      signOptions: {
+        expiresIn: (process.env.JWT_EXPIRES_IN || '15m') as any,
+      },
     }),
   ],
   controllers: [AuthController],

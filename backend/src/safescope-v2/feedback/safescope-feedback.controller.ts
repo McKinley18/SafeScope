@@ -1,3 +1,4 @@
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { OptionalJwtGuard } from '../../auth/guards/optional-jwt.guard';
@@ -11,6 +12,7 @@ export class SafeScopeFeedbackController {
   ) {}
 
   @UseGuards(OptionalJwtGuard)
+  @Roles('ORG_OWNER', 'SAFETY_DIRECTOR', 'SUPERVISOR', 'AUDITOR')
   @Post()
   async create(
     @Body() dto: CreateSafeScopeFeedbackDto,
