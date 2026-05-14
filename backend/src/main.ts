@@ -27,7 +27,8 @@ async function bootstrap() {
 
   const PORT = configService.get<number>('PORT') || 4000; 
 
-  await app.listen(PORT);
+  const port = process.env.PORT ? Number(process.env.PORT) : 4000;
+  await app.listen(port, "0.0.0.0");
 
   console.log(`🚀 Backend running on http://localhost:${PORT}`);
   console.log(`🌍 Environment: ${configService.get<string>('NODE_ENV')}`);
