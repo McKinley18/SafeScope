@@ -1,140 +1,74 @@
-import PageHeader from "@/components/ui/PageHeader";
-const morningBrief = [
+import StatusBadge from "@/components/ui/StatusBadge";
+
+const intelligenceBrief = [
   {
     rank: "01",
-    label: "Critical exposure concentration",
-    desc: "Open findings show elevated risk concentration around guarding, access, and energy-control conditions.",
+    title: "Critical exposure concentration",
+    body: "Guarding, access, and energy-control conditions are carrying the highest operational risk.",
   },
   {
     rank: "02",
-    label: "Corrective action velocity",
-    desc: "Priority should remain on closing high-risk actions before adding additional low-impact observations.",
+    title: "Corrective action velocity",
+    body: "Close high-risk actions before expanding lower-impact observations.",
   },
   {
     rank: "03",
-    label: "Regulatory intelligence",
-    desc: "SafeScope trend review indicates recurring standards themes that should be validated during supervisor review.",
+    title: "Regulatory intelligence",
+    body: "SafeScope is detecting recurring standards themes that need supervisor validation.",
   },
 ];
 
-const metrics = [
+const executiveMetrics = [
   {
-    category: "Executive Risk Metrics",
-    lead: "Organizational Risk Signal",
-    desc: "Core decision-support indicators for operational safety performance.",
-    items: [
-      {
-        label: "Composite Risk Index",
-        value: "82",
-        trend: "+12% elevated",
-        trendColor: "#DC2626",
-        equation: "(Severity × Likelihood × Exposure) ÷ Control Strength",
-        justification:
-          "A weighted index gives leadership a single operational risk signal without hiding the underlying findings.",
-        impact:
-          "Use this score to prioritize resources, supervisor attention, and corrective action verification.",
-      },
-      {
-        label: "Corrective Action Closure Rate",
-        value: "68%",
-        trend: "-8% below target",
-        trendColor: "#F97316",
-        equation: "Closed Actions ÷ Total Assigned Actions",
-        justification:
-          "Closure rate reflects whether identified hazards are being converted into completed controls.",
-        impact:
-          "A falling closure rate indicates operational drag and possible repeat exposure.",
-      },
-    ],
+    label: "Composite Risk Index",
+    value: "82",
+    trend: "+12% elevated",
+    tone: "critical" as const,
+    meaning: "Weighted signal for current operational safety risk.",
+    calculation: "Severity × Likelihood × Exposure ÷ Control Strength",
   },
   {
-    category: "Predictive Safety Intelligence",
-    lead: "Leading Indicator Strength",
-    desc: "Signals that help identify where future serious exposure may emerge.",
-    items: [
-      {
-        label: "Repeat Hazard Density",
-        value: "4.2",
-        trend: "Recurring cluster",
-        trendColor: "#DC2626",
-        equation: "Repeat Findings ÷ Inspection Area",
-        justification:
-          "Repeated findings in the same category can indicate weak controls, training gaps, or supervision drift.",
-        impact:
-          "Focus audits and coaching on categories showing repeated recurrence.",
-      },
-      {
-        label: "Verification Reliability",
-        value: "91%",
-        trend: "+6% improved",
-        trendColor: "#16A34A",
-        equation: "Verified Corrective Actions ÷ Reported Completed Actions",
-        justification:
-          "Verification reliability helps separate paperwork closure from actual field correction.",
-        impact:
-          "High verification reliability supports stronger audit defensibility.",
-      },
-    ],
+    label: "Closure Rate",
+    value: "68%",
+    trend: "-8% target gap",
+    tone: "high" as const,
+    meaning: "How quickly identified hazards become verified controls.",
+    calculation: "Closed Actions ÷ Total Assigned Actions",
+  },
+  {
+    label: "Verification Reliability",
+    value: "91%",
+    trend: "+6% improved",
+    tone: "success" as const,
+    meaning: "Separates paperwork closure from actual field correction.",
+    calculation: "Verified Actions ÷ Reported Completed Actions",
   },
 ];
 
-const complianceRadarData = [
-  { subject: "Guarding", A: 87 },
-  { subject: "Electrical", A: 75 },
-  { subject: "Access", A: 68 },
-  { subject: "PPE", A: 56 },
-  { subject: "Housekeeping", A: 73 },
+const riskThemes = [
+  ["Guarding", 87],
+  ["Electrical", 75],
+  ["Access", 68],
+  ["PPE", 56],
+  ["Housekeeping", 73],
 ];
 
-const spcData = [
-  { month: "Jan", findings: 18 },
-  { month: "Feb", findings: 22 },
-  { month: "Mar", findings: 17 },
-  { month: "Apr", findings: 29 },
-  { month: "May", findings: 24 },
+const siteScores = [
+  ["Plant East", 82],
+  ["Warehouse North", 76],
+  ["Quarry South", 71],
+  ["Maintenance", 68],
 ];
 
-const riskData = [
-  { name: "Guarding", likelihood: 4, severity: 5 },
-  { name: "Electrical", likelihood: 3, severity: 5 },
-  { name: "Access", likelihood: 4, severity: 3 },
-  { name: "Housekeeping", likelihood: 3, severity: 2 },
-];
-
-const benchmarkData = [
-  { site: "Plant East", score: 82 },
-  { site: "Warehouse North", score: 76 },
-  { site: "Quarry South", score: 71 },
-  { site: "Maintenance", score: 68 },
-];
-
-const proGatingContent = {
-  title: "Unlock Advanced Analytics",
-  description:
-    "Enable deeper benchmarking, exportable intelligence summaries, predictive indicators, and executive-ready trend reports.",
-  cta: "Upgrade Analytics",
-};
-
-function ChartPlaceholder({
-  title,
-  subtitle,
-  rows,
-}: {
-  title: string;
-  subtitle: string;
-  rows: string[];
-}) {
+function ProgressRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-[20px] border border-slate-200 bg-white p-[18px]">
-      <h3 className="text-base font-black text-slate-900">{title}</h3>
-      <p className="mb-3 mt-1 text-xs text-slate-500">{subtitle}</p>
-
-      <div className="rounded-[14px] border border-slate-200 bg-slate-50 p-3.5">
-        {rows.map((row) => (
-          <p key={row} className="mb-1.5 text-[13px] font-bold text-slate-700">
-            {row}
-          </p>
-        ))}
+    <div>
+      <div className="mb-1 flex items-center justify-between text-xs font-black text-slate-600">
+        <span>{label}</span>
+        <span>{value}</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+        <div className="h-full rounded-full bg-[#1D72B8]" style={{ width: `${value}%` }} />
       </div>
     </div>
   );
@@ -142,157 +76,100 @@ function ChartPlaceholder({
 
 export default function AnalyticsPage() {
   return (
-    <section>
-      <PageHeader
-        title="Insights"
-        description="Safety intelligence, trends, and decision-support explained in plain language."
-      />
-
-      <section className="mb-7 rounded-[24px] bg-[#0B1320] p-[22px]">
-        <p className="mb-2 text-[11px] font-black uppercase tracking-[1px] text-[#F97316]">
-          Morning Intelligence Brief
+    <section className="space-y-8">
+      <section className="rounded-[32px] bg-gradient-to-br from-[#0B1320] via-[#102A43] to-[#0B1320] p-6 text-white shadow-xl shadow-slate-300/40 sm:p-8">
+        <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-200">
+          Analytics Intelligence
         </p>
-        <h2 className="mb-5 text-2xl font-black text-white">What should I look at first?</h2>
-
-        {morningBrief.map((item) => (
-          <div key={item.rank} className="mb-[18px] flex gap-3.5">
-            <p className="w-[42px] text-[27px] font-black text-white/20">
-              {item.rank}
-            </p>
-
-            <div className="flex-1">
-              <p className="mb-1 text-[15px] font-black text-white">
-                {item.label}
-              </p>
-              <p className="text-[13px] leading-[19px] text-slate-400">
-                {item.desc}
-              </p>
-            </div>
-          </div>
-        ))}
+        <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
+          Insights that prioritize action.
+        </h1>
+        <p className="mt-4 max-w-2xl text-sm font-semibold leading-6 text-slate-300">
+          Executive risk indicators, SafeScope trends, and corrective action signals organized for faster decisions.
+        </p>
       </section>
 
-      {metrics.map((chapter) => (
-        <div key={chapter.category} className="mb-[30px]">
-          <p className="mb-2 text-[11px] font-black uppercase tracking-[1px] text-orange-500">
-            {chapter.category}
+      <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="rounded-[28px] bg-[#0B1320] p-5 text-white">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#F97316]">
+            Morning Brief
           </p>
-          <h2 className="mb-1.5 text-[22px] font-black text-slate-900">
-            {chapter.lead}
-          </h2>
-          <p className="mb-4 text-sm leading-[21px] text-slate-500">
-            {chapter.desc}
-          </p>
+          <h2 className="mt-2 text-2xl font-black">What to review first</h2>
 
-          <div className="space-y-4">
-            {chapter.items.map((item) => (
-              <section
-                key={item.label}
-                className="border-t border-slate-300 pt-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-wide text-[#F97316]">
-                      {item.label}
-                    </p>
-                    <p className="mt-2 text-4xl font-black text-slate-900">
-                      {item.value}
-                    </p>
-                  </div>
-
-                  <p
-                    className="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-black shadow-sm"
-                    style={{ color: item.trendColor }}
-                  >
-                    {item.trend}
-                  </p>
+          <div className="mt-5 space-y-5">
+            {intelligenceBrief.map((item) => (
+              <div key={item.rank} className="flex gap-4">
+                <p className="w-10 text-2xl font-black text-white/20">{item.rank}</p>
+                <div>
+                  <p className="text-sm font-black text-white">{item.title}</p>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-400">{item.body}</p>
                 </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-3">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
-                      What it means
-                    </p>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
-                      {item.justification}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
-                      How calculated
-                    </p>
-                    <p className="mt-1 text-sm font-extrabold leading-6 text-slate-700">
-                      {item.equation}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
-                      Why it matters
-                    </p>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
-                      {item.impact}
-                    </p>
-                  </div>
-                </div>
-              </section>
+              </div>
             ))}
           </div>
         </div>
-      ))}
 
-      <div className="mb-[30px]">
-        <p className="mb-2 text-[11px] font-black uppercase tracking-[1px] text-orange-500">
-          Deep Analytical Intelligence
-        </p>
-        <h2 className="mb-1.5 text-[22px] font-black text-slate-900">
-          Multi-Dimensional Risk Mapping
-        </h2>
-        <p className="mb-4 text-sm leading-[21px] text-slate-500">
-          Native chart rendering will be added after the core screens are stable. These placeholders preserve the legacy analytics structure.
-        </p>
-
-        <div className="grid gap-3.5 md:grid-cols-2">
-          <ChartPlaceholder
-            title="Regulatory Hot Zones"
-            subtitle="Normalized compliance density"
-            rows={complianceRadarData.map((item) => `${item.subject}: ${item.A}`)}
-          />
-
-          <ChartPlaceholder
-            title="Process Stability (SPC)"
-            subtitle="Statistical variance detection"
-            rows={spcData.map((item) => `${item.month}: ${item.findings} findings`)}
-          />
-
-          <ChartPlaceholder
-            title="Risk Priority Matrix (RPN)"
-            subtitle="Likelihood x Severity"
-            rows={riskData.map(
-              (item) => `${item.name}: L${item.likelihood} x S${item.severity}`
-            )}
-          />
-
-          <ChartPlaceholder
-            title="Maturity Benchmarking"
-            subtitle="Site-specific performance ranking"
-            rows={benchmarkData.map((item) => `${item.site}: ${item.score}`)}
-          />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {executiveMetrics.map((metric) => (
+            <div key={metric.label} className="border-b border-slate-200 pb-4 sm:border-b-0">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                  {metric.label}
+                </p>
+                <StatusBadge tone={metric.tone}>{metric.trend}</StatusBadge>
+              </div>
+              <p className="mt-3 text-4xl font-black text-slate-900">{metric.value}</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{metric.meaning}</p>
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      <div className="mb-2.5 rounded-[22px] bg-slate-900 p-[22px]">
-        <h2 className="mb-2 text-xl font-black text-white">
-          {proGatingContent.title}
-        </h2>
-        <p className="mb-4 text-sm leading-[21px] text-slate-300">
-          {proGatingContent.description}
-        </p>
-        <div className="rounded-full bg-orange-500 py-[13px] text-center">
-          <p className="text-sm font-black text-white">{proGatingContent.cta}</p>
+      <section className="grid gap-8 border-t border-slate-200 pt-7 lg:grid-cols-2">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+            Risk Themes
+          </p>
+          <h2 className="mt-2 text-2xl font-black text-slate-900">
+            Compliance hot zones
+          </h2>
+          <div className="mt-5 space-y-4">
+            {riskThemes.map(([label, value]) => (
+              <ProgressRow key={label} label={String(label)} value={Number(value)} />
+            ))}
+          </div>
         </div>
-      </div>
+
+        <div className="rounded-[28px] bg-slate-100 p-5">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+            Benchmarking
+          </p>
+          <h2 className="mt-2 text-2xl font-black text-slate-900">
+            Site performance signals
+          </h2>
+          <div className="mt-5 space-y-4">
+            {siteScores.map(([label, value]) => (
+              <ProgressRow key={label} label={String(label)} value={Number(value)} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-[28px] border border-blue-100 bg-[#E8F4FF] p-5">
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+          How Sentinel Calculates Risk
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {executiveMetrics.map((metric) => (
+            <div key={metric.label}>
+              <p className="text-sm font-black text-slate-900">{metric.label}</p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                {metric.calculation}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
     </section>
   );
 }
