@@ -30,6 +30,23 @@ export class OrganizationsService {
     return org;
   }
 
+  async updateSettings(id: string, data: { riskProfileId?: string; name?: string; logoPath?: string }) {
+    const org = await this.findOne(id);
+
+    if (data.name !== undefined) org.name = data.name;
+    if (data.logoPath !== undefined) org.logoPath = data.logoPath;
+
+    if (data.riskProfileId !== undefined) {
+      const allowed = ['simple_4x4', 'standard_5x5', 'advanced_6x6'];
+
+      if (allowed.includes(data.riskProfileId)) {
+        org.riskProfileId = data.riskProfileId;
+      }
+    }
+
+    return this.orgRepo.save(org);
+  }
+
   async createInvitation(orgId: string, email: string, role: string) {
     const token = crypto.randomBytes(16).toString('hex');
     const invite = this.inviteRepo.create({

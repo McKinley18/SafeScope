@@ -12,6 +12,9 @@ export class Organization {
   @Column({ nullable: true })
   logoPath: string;
 
+  @Column({ default: 'standard_5x5' })
+  riskProfileId: string;
+
   @OneToMany(() => Site, site => site.organization)
   sites: Site[];
 

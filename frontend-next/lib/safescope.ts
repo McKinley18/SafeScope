@@ -1,22 +1,7 @@
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-function getAuthToken() {
-  if (typeof window === "undefined") return null;
-  return (
-    window.localStorage.getItem("sentinel_auth_token") ||
-    window.localStorage.getItem("token")
-  );
-}
-
-function authHeaders() {
-  const token = getAuthToken();
-
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+import { authHeaders } from "./auth";
 
 export async function runSafeScopeV2Classify(payload: {
   text: string;
