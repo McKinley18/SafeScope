@@ -117,14 +117,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [isPublicPage, pathname, router]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F6F8FB] text-slate-900">
-      <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-[#0B1320] px-4 py-5">
+    <div className="flex min-h-screen flex-col bg-transparent text-slate-900">
+      <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#0B1320]/95 px-4 py-3 shadow-lg shadow-slate-950/10 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3">
           <Link href={isPublicPage ? "/" : "/command-center"} className="flex min-w-0 items-center gap-3">
             <img
               src="/logo.png"
               alt="Sentinel Safety"
-              className="h-20 w-auto object-contain sm:h-24"
+              className="h-14 w-auto object-contain sm:h-16"
             />
           </Link>
 
@@ -141,7 +141,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       key={item.href}
                       href={item.href}
                       className={[
-                        "rounded-full px-4 py-2 text-sm font-black transition",
+                        "rounded-full px-4 py-2 text-sm font-black tracking-tight transition",
                         active
                           ? "bg-[#1D72B8] text-white shadow-md shadow-blue-900/20"
                           : "text-slate-300 hover:bg-white/10 hover:text-white",
@@ -156,7 +156,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <div className="flex shrink-0 items-center gap-2">
                 <button ref={profileButtonRef}
                   type="button"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-sm font-black text-white ring-1 ring-white/10"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-sm font-black text-white ring-1 ring-white/10 transition hover:bg-white/15"
                   aria-label="Notifications"
                 >
                   🔔
@@ -167,14 +167,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <button
                   type="button"
                   onClick={() => setProfileOpen((open) => !open)}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F4FF] text-xs font-black text-[#1D72B8] ring-1 ring-blue-100"
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E8F4FF] text-xs font-black text-[#1D72B8] ring-1 ring-blue-100 transition hover:bg-white"
                   aria-label="Open profile menu"
                 >
                   CM
                 </button>
 
                 {profileOpen && (
-                  <div ref={profileMenuRef} className="absolute right-0 top-13 z-50 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                  <div ref={profileMenuRef} className="absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
                     <div className="border-b border-slate-100 px-4 py-3">
                     <p className="text-xs font-black text-slate-500">{securityLabel}</p>
                   </div>
@@ -229,7 +229,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className={`mx-auto w-full max-w-[1200px] flex-1 px-4 pt-4 sm:px-6 md:pt-6 ${isPublicPage ? "pb-8" : "pb-36 lg:pb-8"}`}>
+      <main className={`mx-auto w-full max-w-[1200px] flex-1 px-4 pt-5 sm:px-6 md:pt-7 ${isPublicPage ? "pb-8" : "pb-36 lg:pb-10"}`}>
         {children}
       </main>
 

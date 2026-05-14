@@ -51,8 +51,26 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="mx-auto max-w-md space-y-5">
-      <form onSubmit={handleLogin} className="rounded-2xl bg-white p-6 shadow-sm">
+    <section className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="rounded-[28px] bg-[#0B1320] p-6 text-white shadow-xl shadow-slate-300/40">
+        <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-200">
+          Sentinel Safety
+        </p>
+        <h1 className="mt-3 text-4xl font-black tracking-tight">
+          Welcome back to your command center.
+        </h1>
+        <p className="mt-4 text-sm font-semibold leading-6 text-slate-300">
+          Access inspections, reports, corrective actions, and SafeScope intelligence from your secure workspace.
+        </p>
+
+        <div className="mt-6 space-y-3 text-sm font-bold text-slate-200">
+          <p>✓ Protected workspace access</p>
+          <p>✓ Audit-ready safety records</p>
+          <p>✓ Operational risk intelligence</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleLogin} className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-3xl font-black text-slate-900">Sign In</h1>
         <p className="mt-2 text-sm font-semibold text-slate-500">
           Access your Sentinel Safety workspace.

@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState<"idle" | "success" | "error">("idle");
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const checks = validatePassword(password);
   const passwordValid = Object.values(checks).every(Boolean);
@@ -47,6 +48,12 @@ export default function RegisterPage() {
     if (!passwordsMatch) {
       setStatusType("error");
       setStatus("Passwords do not match.");
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setStatusType("error");
+      setStatus("You must accept the user agreement before creating an account.");
       return;
     }
 
@@ -84,8 +91,26 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="mx-auto max-w-md space-y-5">
-      <form onSubmit={handleRegister} className="rounded-2xl bg-white p-6 shadow-sm">
+    <section className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="rounded-[28px] bg-[#0B1320] p-6 text-white shadow-xl shadow-slate-300/40">
+        <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-200">
+          Sentinel Safety
+        </p>
+        <h1 className="mt-3 text-4xl font-black tracking-tight">
+          Create a secure safety intelligence workspace.
+        </h1>
+        <p className="mt-4 text-sm font-semibold leading-6 text-slate-300">
+          Build inspections, generate SafeScope intelligence, assign corrective actions, and maintain audit-ready safety records.
+        </p>
+
+        <div className="mt-6 space-y-3 text-sm font-bold text-slate-200">
+          <p>✓ Role-based workspace access</p>
+          <p>✓ Secure evidence and inspection workflow</p>
+          <p>✓ SafeScope decision-support intelligence</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleRegister} className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-3xl font-black text-slate-900">Create an Account</h1>
         <p className="mt-2 text-sm font-semibold text-slate-500">
           Create your Sentinel Safety workspace account.
@@ -114,8 +139,20 @@ export default function RegisterPage() {
             <p>{passwordsMatch ? "✓" : "○"} Passwords match</p>
           </div>
 
+          <label className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold leading-5 text-slate-600">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(event) => setAcceptedTerms(event.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0"
+            />
+            <span>
+              I understand Sentinel Safety and SafeScope provide decision-support only. Final safety, compliance, and corrective action decisions remain the responsibility of qualified personnel and the user organization.
+            </span>
+          </label>
+
           <button type="submit" disabled={loading} className="block w-full rounded-xl bg-[#102A43] px-5 py-3 text-center text-sm font-black text-white disabled:opacity-60">
-            {loading ? "Creating..." : "Create Account"}
+            {loading ? "Creating..." : "Create Secure Workspace"}
           </button>
 
           {status && (
