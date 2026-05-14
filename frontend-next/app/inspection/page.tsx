@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
 import { getOrganizationSettings, saveWorkspaceReport } from "@/lib/auth";
+import { getCoverPage, getReports, setLatestReport, setReports } from "@/lib/reportStorage";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
+import { deleteEncryptedPhoto, loadEncryptedPhoto, saveEncryptedPhoto } from "@/lib/evidenceStorage";
 
 const steps = [
   { title: "Step 1: Identify Hazards", desc: "Document the hazard observed." },
@@ -23,6 +25,24 @@ const severityScale = [
   { score: 3, label: "Serious", desc: "Lost time injury or significant equipment damage possible." },
   { score: 4, label: "Major", desc: "Permanent injury, major damage, or regulatory exposure." },
   { score: 5, label: "Critical", desc: "Fatality, catastrophic injury, or imminent danger." },
+];
+
+const hazardCategoryOptions = [
+  "Machine Guarding",
+  "Electrical",
+  "Fall Protection",
+  "Walking/Working Surfaces",
+  "Lockout/Tagout",
+  "PPE",
+  "Housekeeping",
+  "Mobile Equipment",
+  "Confined Space",
+  "Fire Protection",
+  "Hazard Communication",
+  "Ergonomics",
+  "Material Handling",
+  "Emergency Egress",
+  "Other",
 ];
 
 const likelihoodScale = [
@@ -85,6 +105,18 @@ export default function InspectionPage() {
   const [findings, setFindings] = useState<any[]>([]);
   const [editingFindingIndex, setEditingFindingIndex] = useState<number | null>(null);
   const [currentFindingSaved, setCurrentFindingSaved] = useState(false);
+  const [currentSavedFindingId, setCurrentSavedFindingId] = useState<string | number | null>(null);
+  const [findingSaveMessage, setFindingSaveMessage] = useState("");
+  const [manualActions, setManualActions] = useState<any[]>([]);
+  const [selectedGeneratedActions, setSelectedGeneratedActions] = useState<any[]>([]);
+  const [manualActionTitle, setManualActionTitle] = useState("");
+  const [manualActionPriority, setManualActionPriority] = useState("Medium");
+  const [manualActionDue, setManualActionDue] = useState("");
+  const [reportValidationMessage, setReportValidationMessage] = useState("");
+  const [includeStandardsInReport, setIncludeStandardsInReport] = useState(true);
+  const [includeActionsInReport, setIncludeActionsInReport] = useState(true);
+  const [includePhotosInReport, setIncludePhotosInReport] = useState(true);
+  const [includeSafeScopeNotesInReport, setIncludeSafeScopeNotesInReport] = useState(false);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
 
@@ -145,6 +177,31 @@ export default function InspectionPage() {
     ].join("\n");
   }
 
+  function getStandardKey(standard: any) {
+    return standard.citation || standard.id || standard.title || JSON.stringify(standard);
+  }
+
+  function toggleSelectedStandard(standard: any) {
+    const standardKey = getStandardKey(standard);
+
+    setSelectedStandards((current) => {
+      const selected = current.some((item) => getStandardKey(item) === standardKey);
+
+      if (selected) {
+        return current.filter((item) => getStandardKey(item) !== standardKey);
+      }
+
+      return [
+        ...current,
+        {
+          ...standard,
+          reviewStatus: "selected_for_report",
+          reviewedByUser: true,
+        },
+      ];
+    });
+  }
+
   async function handleFeedback(
     standard: any,
     action: "accepted" | "rejected" | "flagged"
@@ -186,15 +243,70 @@ export default function InspectionPage() {
     }
   }
 
+  function toggleGeneratedAction(action: any) {
+    const actionKey = action.title || action.description || JSON.stringify(action);
+
+    setSelectedGeneratedActions((current) => {
+      const alreadySelected = current.some(
+        (selected) => (selected.title || selected.description || JSON.stringify(selected)) === actionKey
+      );
+
+      if (alreadySelected) {
+        return current.filter(
+          (selected) => (selected.title || selected.description || JSON.stringify(selected)) !== actionKey
+        );
+      }
+
+      return [
+        ...current,
+        {
+          ...action,
+          source: "SafeScope",
+        },
+      ];
+    });
+  }
+
+  function addManualAction() {
+    if (!manualActionTitle.trim()) return;
+
+    setManualActions((current) => [
+      ...current,
+      {
+        title: manualActionTitle.trim(),
+        priority: manualActionPriority,
+        due: manualActionDue || "Not set",
+        source: "User",
+      },
+    ]);
+
+    setManualActionTitle("");
+    setManualActionPriority("Medium");
+    setManualActionDue("");
+  }
+
+  function removeManualAction(indexToRemove: number) {
+    setManualActions((current) => current.filter((_, index) => index !== indexToRemove));
+  }
+
   function buildCurrentFinding() {
+    const findingId =
+      editingFindingIndex !== null
+        ? findings[editingFindingIndex]?.id
+        : currentSavedFindingId || Date.now();
+
     return {
-      id: editingFindingIndex !== null ? findings[editingFindingIndex]?.id : Date.now(),
+      id: findingId,
       hazardCategory,
       description,
       location,
       evidenceNotes,
+      photos,
       safeScopeResult,
       selectedStandards,
+      selectedGeneratedActions,
+      manualActions,
+      correctiveActions: [...selectedGeneratedActions, ...manualActions],
       severity,
       likelihood,
       riskScore,
@@ -202,7 +314,19 @@ export default function InspectionPage() {
   }
 
   function hasCurrentFindingData() {
-    return !!(description || hazardCategory || location || evidenceNotes || safeScopeResult || selectedStandards.length || severity || likelihood);
+    return !!(
+      description ||
+      hazardCategory ||
+      location ||
+      evidenceNotes ||
+      photos.length ||
+      safeScopeResult ||
+      selectedStandards.length ||
+      selectedGeneratedActions.length ||
+      manualActions.length ||
+      severity ||
+      likelihood
+    );
   }
 
   function resetCurrentFinding() {
@@ -220,24 +344,48 @@ export default function InspectionPage() {
     setLikelihood(null);
     setEditingFindingIndex(null);
     setCurrentFindingSaved(false);
+    setCurrentSavedFindingId(null);
+    setFindingSaveMessage("");
+    setSelectedGeneratedActions([]);
+    setManualActions([]);
+    setManualActionTitle("");
+    setManualActionPriority("Medium");
+    setManualActionDue("");
   }
 
   function saveFinding() {
-    if (!hasCurrentFindingData()) return;
+    if (!hasCurrentFindingData()) {
+      setFindingSaveMessage("Enter finding details before saving.");
+      return;
+    }
 
     const current = buildCurrentFinding();
 
-    if (editingFindingIndex !== null) {
-      setFindings((prev) =>
-        prev.map((finding, index) =>
+    setFindings((prev) => {
+      if (editingFindingIndex !== null) {
+        return prev.map((finding, index) =>
           index === editingFindingIndex ? current : finding
-        )
-      );
-    } else if (!currentFindingSaved) {
-      setFindings((prev) => [...prev, current]);
-    }
+        );
+      }
 
+      const existingIndex = prev.findIndex((finding) => finding.id === current.id);
+
+      if (existingIndex >= 0) {
+        return prev.map((finding) =>
+          finding.id === current.id ? current : finding
+        );
+      }
+
+      return [...prev, current];
+    });
+
+    setCurrentSavedFindingId(current.id);
     setCurrentFindingSaved(true);
+    setFindingSaveMessage(
+      editingFindingIndex !== null || currentFindingSaved
+        ? "Saved finding updated."
+        : "Finding saved."
+    );
   }
 
   function addNewFinding() {
@@ -257,12 +405,16 @@ export default function InspectionPage() {
     setDescription(finding.description || "");
     setLocation(finding.location || "");
     setEvidenceNotes(finding.evidenceNotes || "");
-    setPhotos(finding.photos || []);
+    Promise.all((finding.photos || []).map((photo: any) => loadEncryptedPhoto(photo))).then(setPhotos);
     setSafeScopeResult(finding.safeScopeResult || null);
     setSelectedStandards(finding.selectedStandards || []);
+    setSelectedGeneratedActions(finding.selectedGeneratedActions || []);
+    setManualActions(finding.manualActions || []);
     setSeverity(finding.severity || null);
     setLikelihood(finding.likelihood || null);
     setEditingFindingIndex(index);
+    setCurrentSavedFindingId(finding.id || null);
+    setFindingSaveMessage("");
     setCurrentFindingSaved(true);
     setCurrentStep(1);
   }
@@ -305,20 +457,19 @@ export default function InspectionPage() {
     }
   }
 
-  function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files || []);
 
-    const nextPhotos = files.map((file) => ({
-      id: `${Date.now()}-${file.name}`,
-      name: file.name,
-      url: URL.createObjectURL(file),
-    }));
+    const nextPhotos = await Promise.all(
+      files.map((file) => saveEncryptedPhoto(file))
+    );
 
     setPhotos((prev) => [...prev, ...nextPhotos]);
     event.target.value = "";
   }
 
   function removePhoto(id: string) {
+    deleteEncryptedPhoto(id);
     setPhotos((prev) => prev.filter((photo) => photo.id !== id));
   }
 
@@ -326,32 +477,72 @@ export default function InspectionPage() {
 
   function generateReportId() {
     const year = new Date().getFullYear();
-
-    const existingReports = secureStorage.get("reports", [] as any[]);
-
-    const existingNumbers = existingReports
-      .map((report: any) => {
-        const match = String(report.id || "").match(/SSR-\d{4}-(\d+)/);
-        return match ? Number(match[1]) : 0;
-      })
-      .filter(Boolean);
-
-    const nextNumber =
-      existingNumbers.length > 0
-        ? Math.max(...existingNumbers) + 1
-        : 1;
-
-    return `SSR-${year}-${String(nextNumber).padStart(4, "0")}`;
+    const shortId = String(Date.now()).slice(-6);
+    return `SSR-${year}-${shortId}`;
   }
 
-  async function generateReport() {
+
+  function validateReportBeforeGenerate() {
     const finalizedFindings = [...findings];
 
     if (!currentFindingSaved && hasCurrentFindingData()) {
       finalizedFindings.push(buildCurrentFinding());
     }
 
-    const coverPage = secureStorage.get("cover_page", {} as any);
+    if (!finalizedFindings.length) {
+      return "Add at least one finding before generating the report.";
+    }
+
+    for (let index = 0; index < finalizedFindings.length; index++) {
+      const finding = finalizedFindings[index];
+      const label = `Finding ${index + 1}`;
+
+      if (!finding.description?.trim()) {
+        return `${label}: Add a hazard description.`;
+      }
+
+      if (!finding.severity || !finding.likelihood) {
+        return `${label}: Confirm severity and likelihood in Risk Assessment.`;
+      }
+
+      const selectedStandards = finding.selectedStandards || [];
+      if (!selectedStandards.length) {
+        return `${label}: Review and select at least one applicable standard.`;
+      }
+
+      const correctiveActions = finding.correctiveActions || [
+        ...(finding.selectedGeneratedActions || []),
+        ...(finding.manualActions || []),
+      ];
+
+      if (!correctiveActions.length) {
+        return `${label}: Select or add at least one corrective action.`;
+      }
+    }
+
+    return "";
+  }
+
+  async function generateReport() {
+    const validationMessage = validateReportBeforeGenerate();
+
+    if (validationMessage) {
+      setReportValidationMessage(validationMessage);
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      });
+      return;
+    }
+
+    setReportValidationMessage("");
+
+    const finalizedFindings = [...findings];
+
+    if (!currentFindingSaved && hasCurrentFindingData()) {
+      finalizedFindings.push(buildCurrentFinding());
+    }
+
+    const coverPage = await getCoverPage<any>() || {};
 
     const report = {
       id: generateReportId(),
@@ -365,6 +556,10 @@ export default function InspectionPage() {
       leadInspector: coverPage.leadInspector || "",
       additionalInspectors: coverPage.additionalInspectors || [],
       isConfidential: !!coverPage.isConfidential,
+      includeStandardsInReport,
+      includeActionsInReport,
+      includePhotosInReport,
+      includeSafeScopeNotesInReport,
       findings: finalizedFindings,
     };
 
@@ -384,15 +579,15 @@ export default function InspectionPage() {
     }
 
     if (shouldSaveLocal) {
-      const existingReports = secureStorage.get("reports", [] as any[]);
+      const existingReports = await getReports<any>();
 
       const nextReports = [
         report,
         ...existingReports.filter((existing: any) => existing.id !== report.id),
       ];
 
-      secureStorage.set("latest_report", JSON.stringify(report));
-      secureStorage.set("reports", JSON.stringify(nextReports));
+      await setLatestReport(report);
+      await setReports(nextReports);
     }
 
     if (storageMode === "cloud" || storageMode === "ask") {
@@ -406,15 +601,15 @@ export default function InspectionPage() {
       } catch {
         alert("Report could not be saved to the workspace database. It will be saved locally instead.");
 
-        const existingReports = secureStorage.get("reports", [] as any[]);
+        const existingReports = await getReports<any>();
 
         const nextReports = [
           report,
           ...existingReports.filter((existing: any) => existing.id !== report.id),
         ];
 
-        secureStorage.set("latest_report", JSON.stringify(report));
-        secureStorage.set("reports", JSON.stringify(nextReports));
+        await setLatestReport(report);
+        await setReports(nextReports);
       }
     }
 
@@ -423,7 +618,7 @@ export default function InspectionPage() {
 
   return (
     <>
-      <div className="sticky top-[73px] z-30 -mx-4 mb-5 border-b border-slate-200 bg-[#F6F8FB]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="sticky top-[73px] z-30 -mx-4 -mt-5 mb-5 border-b border-slate-300 bg-gradient-to-b from-[#16324F] to-[#1D4F7A] px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.10)] sm:-mx-6 sm:px-6">
         <div className="mb-3 flex items-center justify-between gap-3">
           <button
             type="button"
@@ -434,30 +629,23 @@ export default function InspectionPage() {
               }
               goToInspectionStep(currentStep - 1);
             }}
-            className="flex min-h-11 items-center rounded-2xl bg-white px-4 text-sm font-black text-[#1D72B8] shadow-sm"
+            className="flex min-h-11 items-center rounded-2xl border border-white/20 bg-white/15 px-4 text-sm font-black text-white backdrop-blur"
           >
             ← Back
           </button>
 
-          <div className="rounded-full bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm">
+          <div className="rounded-full bg-[#F97316] px-4 py-2 text-xs font-black text-white shadow-sm">
             Step {currentStep} of {steps.length}
           </div>
         </div>
 
         <div>
-          <h1 className="text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
+          <h1 className="text-2xl font-black leading-tight text-white sm:text-3xl">
             {steps[currentStep - 1].title.replace(/^Step \d+: /, "")}
           </h1>
-          <p className="mt-1 text-sm font-semibold text-slate-500">
+          <p className="mt-1 text-sm font-semibold text-blue-100">
             {steps[currentStep - 1].desc}
           </p>
-        </div>
-
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
-          <div
-            className="h-full rounded-full bg-[#1D72B8] transition-all"
-            style={{ width: `${(currentStep / steps.length) * 100}%` }}
-          />
         </div>
       </div>
 
@@ -470,7 +658,7 @@ export default function InspectionPage() {
           return (
             <div key={stepNumber} className="h-2 flex-1 rounded-full bg-slate-200">
               <div
-                className={`h-2 rounded-full ${
+                className={`h-2 rounded-full transition-all duration-300 ${
                   active || complete ? "bg-[#1D72B8]" : "bg-slate-200"
                 }`}
               />
@@ -517,7 +705,7 @@ export default function InspectionPage() {
             <div className="mb-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center">
               <div className="text-4xl">📷</div>
               <div className="mt-2 text-lg font-black text-slate-900">Evidence Photos</div>
-              <p className="mt-1 text-sm font-semibold text-slate-500">
+              <p className="mt-1 text-sm font-semibold text-blue-100">
                 Take photos in the field or upload existing evidence images.
               </p>
 
@@ -819,7 +1007,10 @@ export default function InspectionPage() {
 
             {!!safeScopeResult?.suggestedStandards?.length && (
               <div className="mb-4">
-                <h3 className="mb-2 font-black text-slate-900">Suggested Standards</h3>
+                <h3 className="mb-2 font-black text-slate-900">SafeScope Suggested Standards</h3>
+                <p className="mb-3 text-sm font-semibold text-slate-500">
+                  SafeScope suggestions are not final until selected by the user for the report.
+                </p>
 
                 <label className="mb-2 block text-sm font-black text-slate-700">
                   Feedback Notes
@@ -830,70 +1021,103 @@ export default function InspectionPage() {
                   placeholder="Optional notes for accepting, rejecting, or flagging a standard."
                   className="mb-3 min-h-24 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#1D72B8]"
                 />
-                {safeScopeResult.suggestedStandards.map((standard: any) => (
-                  <div key={standard.citation} className="mb-3 rounded-2xl border border-slate-200 bg-white p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-black text-[#1D72B8]">{standard.citation}</div>
-                      {(Array.isArray(standard.source) ? standard.source : [standard.source]).filter(Boolean).map((source: string) => (
-                        <span
-                          key={source}
-                          className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600"
+                {safeScopeResult.suggestedStandards.map((standard: any) => {
+                  const selected = selectedStandards.some(
+                    (item) => getStandardKey(item) === getStandardKey(standard)
+                  );
+
+                  return (
+                    <div
+                      key={standard.citation}
+                      className={`mb-3 rounded-2xl border p-4 ${
+                        selected
+                          ? "border-[#1D72B8] bg-[#E8F4FF]"
+                          : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-black text-[#1D72B8]">{standard.citation}</div>
+
+                        {selected && (
+                          <span className="rounded-full bg-[#1D72B8] px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+                            Selected for Report
+                          </span>
+                        )}
+
+                        {(Array.isArray(standard.source) ? standard.source : [standard.source]).filter(Boolean).map((source: string) => (
+                          <span
+                            key={source}
+                            className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600"
+                          >
+                            {source === "cfr_database" ? "CFR Database" : "Curated"}
+                          </span>
+                        ))}
+
+                        {standard.score !== undefined && (
+                          <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600">
+                            Score {standard.score}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
+
+                      {standard.workspaceLearningAdjustment !== undefined && standard.workspaceLearningAdjustment !== 0 && (
+                        <div className="mt-2 rounded-xl bg-emerald-50 p-3 text-xs font-black text-emerald-800">
+                          Workspace learning adjustment: {standard.workspaceLearningAdjustment > 0 ? "+" : ""}{standard.workspaceLearningAdjustment}
+                        </div>
+                      )}
+
+                      {!!standard.workspaceLearningWarnings?.length && (
+                        <div className="mt-2 rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-900">
+                          {standard.workspaceLearningWarnings.join(" • ")}
+                        </div>
+                      )}
+
+                      {!!standard.matchingReasons?.length && (
+                        <div className="mt-2 rounded-xl bg-slate-50 p-3">
+                          <p className="text-xs font-black uppercase tracking-wide text-slate-500">Why SafeScope matched this</p>
+                          <p className="mt-1 text-xs font-semibold text-slate-600">
+                            {standard.matchingReasons.slice(0, 6).join(" • ")}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleSelectedStandard(standard);
+                            if (!selected) handleFeedback(standard, "accepted");
+                          }}
+                          className={`rounded-full px-3 py-2 text-xs font-black ${
+                            selected
+                              ? "bg-[#1D72B8] text-white"
+                              : "bg-[#DCFCE7] text-[#166534]"
+                          }`}
                         >
-                          {source === "cfr_database" ? "CFR Database" : "Curated"}
-                        </span>
-                      ))}
+                          {selected ? "Remove from Report" : "Select for Report"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleFeedback(standard, "rejected")}
+                          className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"
+                        >
+                          Reject
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleFeedback(standard, "flagged")}
+                          className="rounded-full bg-[#FEF3C7] px-3 py-2 text-xs font-black text-[#92400E]"
+                        >
+                          Flag
+                        </button>
+                      </div>
                     </div>
-
-                    <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
-
-                    {standard.workspaceLearningAdjustment !== undefined && standard.workspaceLearningAdjustment !== 0 && (
-                      <div className="mt-2 rounded-xl bg-emerald-50 p-3 text-xs font-black text-emerald-800">
-                        Workspace learning adjustment: {standard.workspaceLearningAdjustment > 0 ? "+" : ""}{standard.workspaceLearningAdjustment}
-                      </div>
-                    )}
-
-                    {!!standard.workspaceLearningWarnings?.length && (
-                      <div className="mt-2 rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-900">
-                        {standard.workspaceLearningWarnings.join(" • ")}
-                      </div>
-                    )}
-
-                    {!!standard.matchingReasons?.length && (
-                      <div className="mt-2 rounded-xl bg-slate-50 p-3">
-                        <p className="text-xs font-black uppercase tracking-wide text-slate-500">Why SafeScope matched this</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-600">
-                          {standard.matchingReasons.slice(0, 6).join(" • ")}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleFeedback(standard, "accepted")}
-                        className="rounded-full bg-[#DCFCE7] px-3 py-2 text-xs font-black text-[#166534]"
-                      >
-                        Accept
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleFeedback(standard, "rejected")}
-                        className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"
-                      >
-                        Reject
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleFeedback(standard, "flagged")}
-                        className="rounded-full bg-[#FEF3C7] px-3 py-2 text-xs font-black text-[#92400E]"
-                      >
-                        Flag
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -1027,29 +1251,127 @@ export default function InspectionPage() {
 
             {safeScopeResult?.generatedActions?.length ? (
               <div className="space-y-3">
-                <h3 className="font-black text-slate-900">SafeScope Recommended Actions</h3>
-                {safeScopeResult.generatedActions.map((action: any, index: number) => (
-                  <div key={index} className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <h4 className="font-black text-slate-900">{action.title}</h4>
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">
-                        {action.priority}
-                      </span>
-                    </div>
+                <div>
+                  <h3 className="font-black text-slate-900">SafeScope Recommended Actions</h3>
+                  <p className="mt-1 text-sm font-semibold text-blue-100">
+                    Select any SafeScope action you want included in the final finding.
+                  </p>
+                </div>
+                {safeScopeResult.generatedActions.map((action: any, index: number) => {
+                  const actionKey = action.title || action.description || JSON.stringify(action);
+                  const selected = selectedGeneratedActions.some(
+                    (selectedAction) =>
+                      (selectedAction.title || selectedAction.description || JSON.stringify(selectedAction)) === actionKey
+                  );
 
-                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                      {action.suggestedFixes?.map((fix: string, i: number) => (
-                        <li key={i}>{fix}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => toggleGeneratedAction(action)}
+                      className={`w-full rounded-2xl border p-4 text-left ${
+                        selected
+                          ? "border-[#1D72B8] bg-[#E8F4FF]"
+                          : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex gap-3">
+                          <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-[#1D72B8] text-xs font-black text-white ${
+                            selected ? "bg-[#1D72B8]" : "bg-white"
+                          }`}>
+                            {selected ? "✓" : ""}
+                          </span>
+
+                          <h4 className="font-black text-slate-900">{action.title}</h4>
+                        </div>
+
+                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">
+                          {action.priority}
+                        </span>
+                      </div>
+
+                      <ul className="mt-3 list-disc space-y-1 pl-8 text-sm text-slate-700">
+                        {action.suggestedFixes?.map((fix: string, i: number) => (
+                          <li key={i}>{fix}</li>
+                        ))}
+                      </ul>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
                 Run SafeScope in Step 3 to generate recommended corrective actions.
               </div>
             )}
+
+            <div className="mt-6 border-t border-slate-300 pt-5">
+              <h3 className="font-black text-slate-900">User-Entered Corrective Action</h3>
+              <p className="mt-1 text-sm font-semibold text-blue-100">
+                Add the actual corrective action your team will assign, track, and verify.
+              </p>
+
+              <div className="mt-4 grid gap-3">
+                <input
+                  value={manualActionTitle}
+                  onChange={(event) => setManualActionTitle(event.target.value)}
+                  placeholder="Example: Install fixed guard and verify before restart"
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+                />
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <select
+                    value={manualActionPriority}
+                    onChange={(event) => setManualActionPriority(event.target.value)}
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+                  >
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                    <option>Critical</option>
+                  </select>
+
+                  <input
+                    type="date"
+                    value={manualActionDue}
+                    onChange={(event) => setManualActionDue(event.target.value)}
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addManualAction}
+                  className="rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
+                >
+                  Add Corrective Action
+                </button>
+              </div>
+
+              {!!manualActions.length && (
+                <div className="mt-4 divide-y divide-slate-200 border-t border-slate-200">
+                  {manualActions.map((action, index) => (
+                    <div key={`${action.title}-${index}`} className="flex items-start justify-between gap-3 py-3">
+                      <div>
+                        <p className="font-black text-slate-900">{action.title}</p>
+                        <p className="mt-1 text-xs font-bold text-slate-500">
+                          Priority: {action.priority} • Due: {action.due}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeManualAction(index)}
+                        className="rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         )}
 
@@ -1064,17 +1386,76 @@ export default function InspectionPage() {
               </p>
             </div>
 
+            {findingSaveMessage && (
+              <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-black text-emerald-700">
+                {findingSaveMessage}
+              </div>
+            )}
+
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+              <h3 className="font-black text-slate-900">Report Customization</h3>
+              <p className="mt-1 text-sm font-semibold text-slate-500">
+                Choose what appears in the final report.
+              </p>
+
+              {[
+                {
+                  label: "Include selected standards",
+                  desc: "Show regulatory citations selected by the user.",
+                  checked: includeStandardsInReport,
+                  toggle: () => setIncludeStandardsInReport(!includeStandardsInReport),
+                },
+                {
+                  label: "Include corrective actions",
+                  desc: "Show selected SafeScope actions and user-entered actions.",
+                  checked: includeActionsInReport,
+                  toggle: () => setIncludeActionsInReport(!includeActionsInReport),
+                },
+                {
+                  label: "Include evidence photos",
+                  desc: "Show uploaded/annotated photo evidence in the report.",
+                  checked: includePhotosInReport,
+                  toggle: () => setIncludePhotosInReport(!includePhotosInReport),
+                },
+                {
+                  label: "Include SafeScope notes",
+                  desc: "Show confidence and intelligence notes for internal review.",
+                  checked: includeSafeScopeNotesInReport,
+                  toggle: () => setIncludeSafeScopeNotesInReport(!includeSafeScopeNotesInReport),
+                },
+              ].map((option) => (
+                <button
+                  key={option.label}
+                  type="button"
+                  onClick={option.toggle}
+                  className="mt-3 flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-left"
+                >
+                  <span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded border-2 border-[#1D72B8] text-xs font-black text-white ${option.checked ? "bg-[#1D72B8]" : "bg-white"}`}>
+                    {option.checked ? "✓" : ""}
+                  </span>
+                  <span>
+                    <span className="block text-sm font-black text-slate-900">{option.label}</span>
+                    <span className="block text-xs font-semibold text-slate-500">{option.desc}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 onClick={saveFinding}
-                className="rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white"
+                className="rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white transition active:scale-[0.98] active:bg-[#155A93]"
               >
-                {editingFindingIndex !== null ? "Update Finding" : "Save Current Finding"}
+                {editingFindingIndex !== null
+                  ? "Update Finding"
+                  : currentFindingSaved
+                    ? "Update Saved Finding"
+                    : "Save Current Finding"}
               </button>
 
               <button
                 onClick={addNewFinding}
-                className="rounded-xl bg-slate-200 px-5 py-3 text-sm font-black text-slate-700"
+                className="rounded-xl bg-slate-200 px-5 py-3 text-sm font-black text-slate-700 transition active:scale-[0.98] active:bg-slate-300"
               >
                 Add New Finding
               </button>
@@ -1154,6 +1535,12 @@ export default function InspectionPage() {
           </div>
         )}
       </div>
+
+      {reportValidationMessage && (
+        <div className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-black text-red-700">
+          {reportValidationMessage}
+        </div>
+      )}
 
       <div className="sticky bottom-[76px] z-30 -mx-4 mt-4 flex gap-2 border-t border-slate-200 bg-[#F6F8FB]/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:bottom-0">
         <button

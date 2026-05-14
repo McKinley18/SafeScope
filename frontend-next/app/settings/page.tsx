@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/ui/PageHeader";
+import { Facility, getFacilities, setFacilities } from "@/lib/facilityStorage";
 import { useEffect, useMemo, useState } from "react";
 import {
   getOrganizationInvites,
@@ -91,6 +92,9 @@ export default function SettingsPage() {
   const [storageMode, setStorageMode] = useState<StorageMode>("local");
   const [requirePinUnlock, setRequirePinUnlock] = useState(false);
   const [autoLockMinutes, setAutoLockMinutes] = useState("off");
+  const [facilities, setFacilityList] = useState<Facility[]>([]);
+  const [facilityName, setFacilityName] = useState("");
+  const [facilityType, setFacilityType] = useState("");
   const [members, setMembers] = useState<any[]>([]);
   const [invites, setInvites] = useState<any[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -115,6 +119,7 @@ export default function SettingsPage() {
         setStorageMode((window.localStorage.getItem("sentinel_report_storage_mode") as StorageMode | null) || "local");
         setRequirePinUnlock(window.localStorage.getItem("sentinel_require_pin_unlock") === "true");
         setAutoLockMinutes(window.localStorage.getItem("sentinel_auto_lock_minutes") || "off");
+        setFacilityList(getFacilities());
 
         const [loadedMembers, loadedInvites] = await Promise.all([
           getOrganizationMembers(),
@@ -140,6 +145,31 @@ export default function SettingsPage() {
     const reader = new FileReader();
     reader.onload = () => setCompanyLogo(String(reader.result || ""));
     reader.readAsDataURL(file);
+  }
+
+
+  function addFacility() {
+    if (!facilityName.trim()) return;
+
+    const nextFacilities = [
+      ...facilities,
+      {
+        id: `facility-${Date.now()}`,
+        name: facilityName.trim(),
+        siteType: facilityType.trim(),
+      },
+    ];
+
+    setFacilityList(nextFacilities);
+    setFacilities(nextFacilities);
+    setFacilityName("");
+    setFacilityType("");
+  }
+
+  function removeFacility(id: string) {
+    const nextFacilities = facilities.filter((facility) => facility.id !== id);
+    setFacilityList(nextFacilities);
+    setFacilities(nextFacilities);
   }
 
   async function saveSettings() {
@@ -230,12 +260,27 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <input
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/svg+xml"
-          onChange={(event) => handleLogoUpload(event.target.files?.[0])}
-          className="mt-3 block w-full text-sm font-bold text-slate-700"
-        />
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white">
+            Choose Logo
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              onChange={(event) => handleLogoUpload(event.target.files?.[0])}
+              className="hidden"
+            />
+          </label>
+
+          {companyLogo && (
+            <button
+              type="button"
+              onClick={() => setCompanyLogo("")}
+              className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 transition-all duration-150 hover:bg-red-100"
+            >
+              Remove Logo
+            </button>
+          )}
+        </div>
 
         <button
           type="button"
@@ -318,6 +363,64 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+        )}
+      </section>
+
+      <section className="border-t border-slate-300 pt-6">
+        <h2 className="text-xl font-black text-slate-900">Facilities</h2>
+        <p className="mt-1 text-sm font-semibold text-slate-500">
+          Company accounts can save common facilities so inspectors can select locations quickly during inspections.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_180px_auto]">
+          <input
+            value={facilityName}
+            onChange={(event) => setFacilityName(event.target.value)}
+            placeholder="Facility name"
+            className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+          />
+
+          <input
+            value={facilityType}
+            onChange={(event) => setFacilityType(event.target.value)}
+            placeholder="Type / Area"
+            className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+          />
+
+          <button
+            type="button"
+            onClick={addFacility}
+            className="rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
+          >
+            Add Facility
+          </button>
+        </div>
+
+        {facilities.length ? (
+          <div className="mt-4 divide-y divide-slate-200 border-t border-slate-200">
+            {facilities.map((facility) => (
+              <div key={facility.id} className="flex items-center justify-between gap-3 py-3">
+                <div>
+                  <p className="font-black text-slate-900">{facility.name}</p>
+                  {facility.siteType && (
+                    <p className="text-sm font-semibold text-slate-500">{facility.siteType}</p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => removeFacility(facility.id)}
+                  className="rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm font-bold text-slate-500">
+            No facilities saved yet.
+          </p>
         )}
       </section>
 
