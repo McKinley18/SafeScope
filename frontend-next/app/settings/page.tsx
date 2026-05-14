@@ -89,6 +89,8 @@ export default function SettingsPage() {
   const [includeLogoOnCover, setIncludeLogoOnCover] = useState(true);
   const [riskProfileId, setRiskProfileId] = useState<RiskProfileId>("standard_5x5");
   const [storageMode, setStorageMode] = useState<StorageMode>("local");
+  const [requirePinUnlock, setRequirePinUnlock] = useState(false);
+  const [autoLockMinutes, setAutoLockMinutes] = useState("off");
   const [members, setMembers] = useState<any[]>([]);
   const [invites, setInvites] = useState<any[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -111,6 +113,8 @@ export default function SettingsPage() {
         setIncludeLogoOnCover(window.localStorage.getItem("sentinel_include_logo_on_cover") !== "false");
         setRiskProfileId((settings.riskProfileId || "standard_5x5") as RiskProfileId);
         setStorageMode((window.localStorage.getItem("sentinel_report_storage_mode") as StorageMode | null) || "local");
+        setRequirePinUnlock(window.localStorage.getItem("sentinel_require_pin_unlock") === "true");
+        setAutoLockMinutes(window.localStorage.getItem("sentinel_auto_lock_minutes") || "off");
 
         const [loadedMembers, loadedInvites] = await Promise.all([
           getOrganizationMembers(),
@@ -153,6 +157,8 @@ export default function SettingsPage() {
       window.localStorage.setItem("sentinel_company_logo", saved.logoPath || companyLogo || "");
       window.localStorage.setItem("sentinel_include_logo_on_cover", String(includeLogoOnCover));
       window.localStorage.setItem("sentinel_report_storage_mode", storageMode);
+      window.localStorage.setItem("sentinel_require_pin_unlock", String(requirePinUnlock));
+      window.localStorage.setItem("sentinel_auto_lock_minutes", autoLockMinutes);
 
       setStatusType("success");
       setStatus("Settings saved.");
@@ -372,6 +378,43 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="border-t border-slate-300 pt-6">
+        <h2 className="text-xl font-black text-slate-900">Local Security</h2>
+        <p className="mt-1 text-sm font-semibold text-slate-500">
+          Choose whether encrypted local reports open immediately or require an additional unlock step.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => setRequirePinUnlock(!requirePinUnlock)}
+          className="mt-4 flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left"
+        >
+          <span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded border-2 border-[#1D72B8] text-xs font-black text-white ${requirePinUnlock ? "bg-[#1D72B8]" : "bg-white"}`}>
+            {requirePinUnlock ? "✓" : ""}
+          </span>
+          <span>
+            <span className="block text-sm font-black text-slate-900">Require PIN to open local reports</span>
+            <span className="block text-xs font-semibold text-slate-500">
+              Standard Mode keeps access fast. Protected Mode adds another unlock step for sensitive work.
+            </span>
+          </span>
+        </button>
+
+        <label className="mt-4 block">
+          <span className="text-sm font-black text-slate-700">Auto-lock</span>
+          <select
+            value={autoLockMinutes}
+            onChange={(event) => setAutoLockMinutes(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+          >
+            <option value="off">Off</option>
+            <option value="5">After 5 minutes</option>
+            <option value="15">After 15 minutes</option>
+            <option value="30">After 30 minutes</option>
+          </select>
+        </label>
       </section>
 
       <section className="border-t border-slate-300 pt-6">
