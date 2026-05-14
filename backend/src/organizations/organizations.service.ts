@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { Invitation } from './entities/invitation.entity';
+import { User } from '../users/user.entity';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -12,6 +13,8 @@ export class OrganizationsService {
     private orgRepo: Repository<Organization>,
     @InjectRepository(Invitation)
     private inviteRepo: Repository<Invitation>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
 
   async create(data: { name: string; logoPath?: string }): Promise<Organization> {
@@ -45,6 +48,21 @@ export class OrganizationsService {
     }
 
     return this.orgRepo.save(org);
+  }
+
+  async getMembers(orgId: string) {
+    return this.userRepo.find({
+      where: { organizationId: orgId },
+      order: { id: 'ASC' },
+    });
+  }
+
+  async getInvitations(orgId: string) {
+    return this.inviteRepo.find({
+      where: { organizationId: orgId },
+      order: { createdAt: 'DESC' },
+      take: 100,
+    });
   }
 
   async createInvitation(orgId: string, email: string, role: string) {

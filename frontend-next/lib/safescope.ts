@@ -1,85 +1,54 @@
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
-import { authHeaders } from "./auth";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:4000";
 
 export async function runSafeScopeV2Classify(payload: {
-  text: string;
-  evidenceTexts?: string[];
+  text?: string;
+  hazardCategory?: string;
+  description?: string;
+  location?: string;
+  evidenceNotes?: string;
+  agencyMode?: string;
+  riskProfileId?: string;
   scopes?: string[];
-  riskProfileId?: "simple_4x4" | "standard_5x5" | "advanced_6x6";
-  workspaceId?: string;
+  evidenceTexts?: string[];
 }) {
+  const text = payload.text || [
+    payload.hazardCategory ? `Hazard Category: ${payload.hazardCategory}` : "",
+    payload.description ? `Description: ${payload.description}` : "",
+    payload.location ? `Location: ${payload.location}` : "",
+    payload.evidenceNotes ? `Evidence Notes: ${payload.evidenceNotes}` : "",
+    payload.agencyMode ? `Agency Mode: ${payload.agencyMode}` : "",
+    payload.riskProfileId ? `Risk Profile: ${payload.riskProfileId}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   const response = await fetch(`${API_BASE_URL}/safescope-v2/classify`, {
     method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify({
-      text: payload.text,
-      scopes: payload.scopes || ["msha", "osha_general", "osha_construction"],
-      evidenceTexts: payload.evidenceTexts || [],
-      riskProfileId: payload.riskProfileId || "standard_5x5",
-      ...(payload.workspaceId ? { workspaceId: payload.workspaceId } : {}),
-    }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
   });
 
   if (!response.ok) {
-    throw new Error(await response.text());
+    const errorText = await response.text();
+    throw new Error(errorText || "SafeScope classification failed.");
   }
 
   return response.json();
 }
 
-export async function sendSafeScopeFeedback(payload: {
-  text: string;
-  category: string;
-  mode: string;
-  citation: string;
-  action: "accepted" | "rejected" | "flagged" | "changed";
-  notes?: string;
-  replacementCitation?: string;
-  confidenceBefore?: number;
-  riskProfileId?: string;
-  reportId?: string;
-  findingId?: string;
-}) {
-  const recordPayload = {
-    workspaceId: undefined,
-    userId: undefined,
-    reportId: payload.reportId,
-    findingId: payload.findingId,
-    classification: payload.category,
-    citation: payload.citation,
-    action: payload.action,
-    replacementCitation: payload.replacementCitation,
-    reason: payload.notes || payload.text,
-    confidenceBefore: payload.confidenceBefore,
-    riskProfileId: payload.riskProfileId,
-    reviewerRole: "Safety Manager",
-  };
-
-  const response = await fetch(`${API_BASE_URL}/safescope-v2/feedback`, {
+export async function sendSafeScopeFeedback(payload: any) {
+  const response = await fetch(`${API_BASE_URL}/standards/feedback`, {
     method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(recordPayload),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    throw new Error(await response.text());
+    throw new Error("SafeScope feedback failed.");
   }
 
-  const saved = await response.json();
-
-  const existing =
-    typeof window !== "undefined"
-      ? JSON.parse(window.localStorage.getItem("sentinel_safescope_feedback") || "[]")
-      : [];
-
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(
-      "sentinel_safescope_feedback",
-      JSON.stringify([saved, ...existing])
-    );
-  }
-
-  return saved;
+  return response.json();
 }

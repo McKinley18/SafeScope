@@ -23,6 +23,27 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('me/members')
+  getMyMembers(@Req() req: Request & { user?: any }) {
+    return this.service.getMembers(req.user.organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me/invites')
+  getMyInvites(@Req() req: Request & { user?: any }) {
+    return this.service.getInvitations(req.user.organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('me/invite')
+  inviteToMyOrganization(
+    @Req() req: Request & { user?: any },
+    @Body() body: { email: string; role: string },
+  ) {
+    return this.service.createInvitation(req.user.organizationId, body.email, body.role || 'Auditor');
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);

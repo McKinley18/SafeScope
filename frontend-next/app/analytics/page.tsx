@@ -1,3 +1,4 @@
+import PageHeader from "@/components/ui/PageHeader";
 const morningBrief = [
   {
     rank: "01",
@@ -142,19 +143,16 @@ function ChartPlaceholder({
 export default function AnalyticsPage() {
   return (
     <section>
-      <div className="mb-[18px] border-l-4 border-[#F97316] pl-4">
-        <h1 className="text-[28px] font-black text-slate-900">
-          Safety Intelligence Dashboard
-        </h1>
-        <p className="mt-1.5 text-sm leading-[21px] text-slate-500">
-          Scientific decision-support environment validating organizational resilience.
-        </p>
-      </div>
+      <PageHeader
+        title="Insights"
+        description="Safety intelligence, trends, and decision-support explained in plain language."
+      />
 
-      <div className="mb-7 rounded-[24px] bg-slate-900 p-[22px]">
-        <p className="mb-[18px] text-[11px] font-black uppercase tracking-[1px] text-orange-500">
+      <section className="mb-7 rounded-[24px] bg-[#0B1320] p-[22px]">
+        <p className="mb-2 text-[11px] font-black uppercase tracking-[1px] text-[#F97316]">
           Morning Intelligence Brief
         </p>
+        <h2 className="mb-5 text-2xl font-black text-white">What should I look at first?</h2>
 
         {morningBrief.map((item) => (
           <div key={item.rank} className="mb-[18px] flex gap-3.5">
@@ -172,7 +170,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
         ))}
-      </div>
+      </section>
 
       {metrics.map((chapter) => (
         <div key={chapter.category} className="mb-[30px]">
@@ -186,51 +184,61 @@ export default function AnalyticsPage() {
             {chapter.desc}
           </p>
 
-          {chapter.items.map((item) => (
-            <div
-              key={item.label}
-              className="mb-3.5 rounded-[20px] border border-l-4 border-slate-200 border-l-slate-900 bg-white p-[18px]"
-            >
-              <div className="mb-2.5 flex justify-between gap-3">
-                <p className="flex-1 text-xs font-black uppercase text-slate-500">
-                  {item.label}
-                </p>
-                <p
-                  className="text-[11px] font-black"
-                  style={{ color: item.trendColor }}
-                >
-                  {item.trend}
-                </p>
-              </div>
+          <div className="space-y-4">
+            {chapter.items.map((item) => (
+              <section
+                key={item.label}
+                className="border-t border-slate-300 pt-4"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-[#F97316]">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-4xl font-black text-slate-900">
+                      {item.value}
+                    </p>
+                  </div>
 
-              <p className="mb-3.5 text-[38px] font-black text-slate-900">
-                {item.value}
-              </p>
+                  <p
+                    className="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-black shadow-sm"
+                    style={{ color: item.trendColor }}
+                  >
+                    {item.trend}
+                  </p>
+                </div>
 
-              <div className="mb-3 rounded-[14px] border border-slate-200 bg-slate-50 p-3">
-                <p className="mb-1 text-[10px] font-black uppercase text-slate-400">
-                  Formula
-                </p>
-                <p className="text-[13px] font-extrabold text-slate-900">
-                  {item.equation}
-                </p>
-              </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                      What it means
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                      {item.justification}
+                    </p>
+                  </div>
 
-              <p className="mb-1 mt-2 text-xs font-black text-slate-900">
-                Why it matters
-              </p>
-              <p className="text-[13px] leading-[19px] text-slate-500">
-                {item.justification}
-              </p>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                      How calculated
+                    </p>
+                    <p className="mt-1 text-sm font-extrabold leading-6 text-slate-700">
+                      {item.equation}
+                    </p>
+                  </div>
 
-              <p className="mb-1 mt-2 text-xs font-black text-slate-900">
-                Strategic impact
-              </p>
-              <p className="text-[13px] leading-[19px] text-slate-500">
-                {item.impact}
-              </p>
-            </div>
-          ))}
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                      Why it matters
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                      {item.impact}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            ))}
+          </div>
         </div>
       ))}
 

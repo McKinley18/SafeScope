@@ -674,11 +674,17 @@ export default function InspectionPage() {
 
             <label className="mb-2 block text-sm font-black text-slate-700">Hazard Category</label>
             <input
+              list="hazard-category-options"
               className="mb-4 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
-              placeholder="Example: Electrical, fall protection, guarding"
+              placeholder="Choose a category or type your own"
               value={hazardCategory}
               onChange={(e) => setHazardCategory(e.target.value)}
             />
+            <datalist id="hazard-category-options">
+              {hazardCategoryOptions.map((category) => (
+                <option key={category} value={category} />
+              ))}
+            </datalist>
 
             <label className="mb-2 block text-sm font-black text-slate-700">Description</label>
             <textarea

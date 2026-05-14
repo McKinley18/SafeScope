@@ -104,3 +104,15 @@ export async function saveWorkspaceReport(report: any) {
 
   return response.json();
 }
+
+export async function getWorkspaceReports() {
+  const response = await fetch(`${API_BASE_URL}/reports`, {
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to load workspace reports.");
+  }
+
+  return response.json();
+}

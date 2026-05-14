@@ -25,7 +25,7 @@ export default function PageHeader({ title, eyebrow, description }: PageHeaderPr
         )}
       </div>
 
-      <div className="mt-5 h-[3px] w-full max-w-[520px] rounded-full bg-gradient-to-r from-[#F97316] via-slate-300 to-transparent" />
+      <div className="mt-5 h-[3px] w-full rounded-full bg-[#1D72B8]" />
     </div>
   );
 }

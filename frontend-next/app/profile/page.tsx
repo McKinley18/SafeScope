@@ -1,17 +1,14 @@
 "use client";
 
+import PageHeader from "@/components/ui/PageHeader";
 export default function ProfilePage() {
   return (
     <section className="space-y-5">
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-          Account
-        </p>
-        <h1 className="mt-1 text-3xl font-black text-slate-900">User Profile</h1>
-        <p className="mt-2 text-sm font-semibold text-slate-500">
-          Manage your Sentinel Safety profile and workspace identity.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Account"
+        title="User Profile"
+        description="Manage your Sentinel Safety profile and workspace identity."
+      />
 
       <div className="rounded-2xl bg-white p-5 shadow-sm">
         <div className="grid gap-4 md:grid-cols-2">

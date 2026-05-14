@@ -94,9 +94,9 @@ export default function InspectionCoverPage() {
           Inspection Date
         </label>
         <input
+          type="date"
           value={inspectionDate}
           onChange={(e) => setInspectionDate(e.target.value)}
-          placeholder="MM/DD/YYYY"
           className="h-[50px] w-full rounded-[14px] border border-slate-200 bg-slate-50 px-3.5 text-slate-900 outline-none focus:border-[#1D72B8]"
         />
 

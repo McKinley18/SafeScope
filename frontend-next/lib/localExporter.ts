@@ -76,10 +76,18 @@ export const localExporter = {
     };
 
     // 1. COVER PAGE
+    if (adminInfo?.companyLogo) {
+      try {
+        doc.addImage(adminInfo.companyLogo, 'PNG', centerX - 30, 45, 60, 35);
+      } catch {
+        // Ignore logo rendering errors so export does not fail.
+      }
+    }
+
     doc.setTextColor(15, 23, 42); // Navy
     doc.setFontSize(32);
     doc.setFont('helvetica', 'bold');
-    doc.text('SAFETY INSPECTION', centerX, 120, { align: 'center' });
+    doc.text('SAFETY INSPECTION', centerX, adminInfo?.companyLogo ? 105 : 120, { align: 'center' });
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 116, 139);
@@ -255,19 +263,40 @@ export const localExporter = {
       doc.text(descLines, 20, currentY + 6);
       currentY += (descLines.length * 5) + 12;
 
-      // Standard
+      // Standards
+      const standards = Array.isArray(f.standards) ? f.standards : [];
+      const standardText = standards.length
+        ? standards
+            .map((standard: any) => standard.citation || standard.label || standard.title || String(standard))
+            .join('\n')
+        : 'No standard selected.';
+
       doc.setFont('helvetica', 'bold');
-      doc.text('REGULATORY STANDARD', 20, currentY);
+      doc.text('SELECTED REGULATORY STANDARD(S)', 20, currentY);
       doc.setTextColor(3, 105, 161);
       doc.setFont('helvetica', 'normal');
-      doc.text('MSHA 56.11002 - Handrails and toeboards', 20, currentY + 6);
-      currentY += 15;
+      const standardLines = doc.splitTextToSize(standardText, pageWidth - 40);
+      doc.text(standardLines, 20, currentY + 6);
+      currentY += (standardLines.length * 5) + 15;
 
-      // Action
-      const actionLines = doc.splitTextToSize(f.action || 'No action specified.', pageWidth - 40);
+      // Corrective Actions
+      const correctiveActions = Array.isArray(f.correctiveActions) ? f.correctiveActions : [];
+      const actionText = correctiveActions.length
+        ? correctiveActions
+            .map((action: any, actionIndex: number) => {
+              const title = action.title || action.description || `Corrective action ${actionIndex + 1}`;
+              const priority = action.priority ? `Priority: ${action.priority}` : '';
+              const due = action.due ? `Due: ${action.due}` : '';
+              const meta = [priority, due].filter(Boolean).join(' • ');
+              return `${actionIndex + 1}. ${title}${meta ? ` (${meta})` : ''}`;
+            })
+            .join('\n')
+        : (f.action || 'No action specified.');
+
+      const actionLines = doc.splitTextToSize(actionText, pageWidth - 40);
       doc.setTextColor(71, 85, 105);
       doc.setFont('helvetica', 'bold');
-      doc.text('CORRECTIVE ACTION', 20, currentY);
+      doc.text('CORRECTIVE ACTION(S)', 20, currentY);
       doc.setFont('helvetica', 'normal');
       doc.text(actionLines, 20, currentY + 6);
       currentY += (actionLines.length * 5) + 15;
@@ -279,7 +308,8 @@ export const localExporter = {
         currentY += 6;
         
         let photoX = 20;
-        for (const photoUrl of f.photos.slice(0, 2)) {
+        for (const photo of f.photos.slice(0, 2)) {
+          const photoUrl = typeof photo === 'string' ? photo : photo?.url;
           const base64 = await blobToBase64(photoUrl);
           if (base64) {
             try {

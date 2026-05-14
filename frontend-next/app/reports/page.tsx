@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import { localExporter } from "@/lib/localExporter";
+import { getReports, setReports as persistReports } from "@/lib/reportStorage";
 
 type Report = {
   id: string;
@@ -66,7 +67,12 @@ export default function ReportsPage() {
 
   useEffect(() => {
     async function loadReports() {
-      const parsedReports: Report[] = secureStorage.get("reports", [] as Report[]);
+      const rawReports = await getReports<any>();
+      const parsedReports: Report[] = Array.isArray(rawReports)
+        ? rawReports
+        : typeof rawReports === "string"
+          ? JSON.parse(rawReports || "[]")
+          : [];
 
       const localReports = parsedReports.map((report) => ({
         ...report,
