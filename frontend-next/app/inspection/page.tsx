@@ -1,5 +1,6 @@
 "use client";
 
+import { secureStorage } from "@/lib/secureStorage";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
@@ -88,7 +89,7 @@ export default function InspectionPage() {
   const riskScore = severity && likelihood ? severity * likelihood : null;
 
   useEffect(() => {
-    const existing = window.localStorage.getItem("sentinel_edit_report");
+    const existing = secureStorage.get("edit_report", null as any);
     if (!existing) return;
 
     try {
@@ -99,9 +100,9 @@ export default function InspectionPage() {
       }
 
       window.localStorage.setItem("sentinel_editing_report_id", report.id || "");
-      window.localStorage.removeItem("sentinel_edit_report");
+      secureStorage.remove("edit_report");
     } catch {
-      window.localStorage.removeItem("sentinel_edit_report");
+      secureStorage.remove("edit_report");
     }
   }, []);
 
@@ -266,6 +267,37 @@ export default function InspectionPage() {
     setCurrentStep(1);
   }
 
+
+
+  function getActiveRiskScale() {
+    const maxScore =
+      riskProfileId === "simple_4x4"
+        ? 4
+        : riskProfileId === "advanced_6x6"
+          ? 6
+          : 5;
+
+    return {
+      maxScore,
+      severity: severityScale.filter((item) => item.score <= maxScore),
+      likelihood: likelihoodScale.filter((item) => item.score <= maxScore),
+      label:
+        riskProfileId === "simple_4x4"
+          ? "Simple 4x4"
+          : riskProfileId === "advanced_6x6"
+            ? "Advanced 6x6"
+            : "Standard 5x5",
+    };
+  }
+
+  function goToInspectionStep(nextStep: number) {
+    setCurrentStep(Math.max(1, Math.min(steps.length, nextStep)));
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
   function deleteFinding(index: number) {
     setFindings((prev) => prev.filter((_, i) => i !== index));
     if (editingFindingIndex === index) {
@@ -291,6 +323,27 @@ export default function InspectionPage() {
   }
 
 
+
+  function generateReportId() {
+    const year = new Date().getFullYear();
+
+    const existingReports = secureStorage.get("reports", [] as any[]);
+
+    const existingNumbers = existingReports
+      .map((report: any) => {
+        const match = String(report.id || "").match(/SSR-\d{4}-(\d+)/);
+        return match ? Number(match[1]) : 0;
+      })
+      .filter(Boolean);
+
+    const nextNumber =
+      existingNumbers.length > 0
+        ? Math.max(...existingNumbers) + 1
+        : 1;
+
+    return `SSR-${year}-${String(nextNumber).padStart(4, "0")}`;
+  }
+
   async function generateReport() {
     const finalizedFindings = [...findings];
 
@@ -298,12 +351,10 @@ export default function InspectionPage() {
       finalizedFindings.push(buildCurrentFinding());
     }
 
-    const coverPage = JSON.parse(
-      window.localStorage.getItem("sentinel_cover_page") || "{}"
-    );
+    const coverPage = secureStorage.get("cover_page", {} as any);
 
     const report = {
-      id: `report-${Date.now()}`,
+      id: generateReportId(),
       createdAt: new Date().toISOString(),
       title: coverPage.organizationName
         ? `${coverPage.organizationName} Inspection Report`
@@ -333,17 +384,15 @@ export default function InspectionPage() {
     }
 
     if (shouldSaveLocal) {
-      const existingReports = JSON.parse(
-        window.localStorage.getItem("sentinel_reports") || "[]"
-      );
+      const existingReports = secureStorage.get("reports", [] as any[]);
 
       const nextReports = [
         report,
         ...existingReports.filter((existing: any) => existing.id !== report.id),
       ];
 
-      window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
-      window.localStorage.setItem("sentinel_reports", JSON.stringify(nextReports));
+      secureStorage.set("latest_report", JSON.stringify(report));
+      secureStorage.set("reports", JSON.stringify(nextReports));
     }
 
     if (storageMode === "cloud" || storageMode === "ask") {
@@ -357,17 +406,15 @@ export default function InspectionPage() {
       } catch {
         alert("Report could not be saved to the workspace database. It will be saved locally instead.");
 
-        const existingReports = JSON.parse(
-          window.localStorage.getItem("sentinel_reports") || "[]"
-        );
+        const existingReports = secureStorage.get("reports", [] as any[]);
 
         const nextReports = [
           report,
           ...existingReports.filter((existing: any) => existing.id !== report.id),
         ];
 
-        window.localStorage.setItem("sentinel_latest_report", JSON.stringify(report));
-        window.localStorage.setItem("sentinel_reports", JSON.stringify(nextReports));
+        secureStorage.set("latest_report", JSON.stringify(report));
+        secureStorage.set("reports", JSON.stringify(nextReports));
       }
     }
 
@@ -376,35 +423,45 @@ export default function InspectionPage() {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm">
-        <button
-          onClick={() => {
-            if (currentStep === 1) {
-              router.push("/inspection-cover");
-              return;
-            }
-            setCurrentStep((s) => Math.max(1, s - 1));
-          }}
-          className="text-sm font-black text-[#1D72B8]"
-        >
-          ← Back
-        </button>
+      <div className="sticky top-[73px] z-30 -mx-4 mb-5 border-b border-slate-200 bg-[#F6F8FB]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (currentStep === 1) {
+                router.push("/inspection-cover");
+                return;
+              }
+              goToInspectionStep(currentStep - 1);
+            }}
+            className="flex min-h-11 items-center rounded-2xl bg-white px-4 text-sm font-black text-[#1D72B8] shadow-sm"
+          >
+            ← Back
+          </button>
 
-        <div className="text-sm font-black text-slate-600">
-          Step {currentStep} of {steps.length}
+          <div className="rounded-full bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm">
+            Step {currentStep} of {steps.length}
+          </div>
+        </div>
+
+        <div>
+          <h1 className="text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
+            {steps[currentStep - 1].title.replace(/^Step \d+: /, "")}
+          </h1>
+          <p className="mt-1 text-sm font-semibold text-slate-500">
+            {steps[currentStep - 1].desc}
+          </p>
+        </div>
+
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
+          <div
+            className="h-full rounded-full bg-[#1D72B8] transition-all"
+            style={{ width: `${(currentStep / steps.length) * 100}%` }}
+          />
         </div>
       </div>
 
-      <div className="mb-5">
-        <h1 className="text-3xl font-black text-slate-900">
-          {steps[currentStep - 1].title}
-        </h1>
-        <p className="mt-1 text-sm font-semibold text-slate-500">
-          {steps[currentStep - 1].desc}
-        </p>
-      </div>
-
-      <div className="mb-5 flex gap-2">
+      <div className="mb-5 hidden gap-2 sm:flex">
         {steps.map((_, index) => {
           const stepNumber = index + 1;
           const active = currentStep === stepNumber;
@@ -881,59 +938,86 @@ export default function InspectionPage() {
 
         {currentStep === 4 && (
           <>
-            <h2 className="mb-2 text-xl font-black text-slate-900">Risk Assessment</h2>
-            <p className="mb-4 text-sm font-semibold text-slate-500">
-              Select 1–5 for severity and likelihood. Higher numbers mean greater risk.
-            </p>
+            {(() => {
+              const activeRiskScale = getActiveRiskScale();
 
-            <h3 className="mb-2 font-black text-slate-800">Severity: How bad could the outcome be?</h3>
-            {severityScale.map((item) => (
-              <button
-                key={item.score}
-                onClick={() => setSeverity(item.score)}
-                className={`mb-2 flex w-full items-center gap-3 rounded-xl border p-3 text-left ${
-                  severity === item.score
-                    ? "border-[#1D72B8] bg-[#E8F4FF]"
-                    : "border-slate-200 bg-white"
-                }`}
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 font-black">
-                  {item.score}
-                </span>
-                <span>
-                  <span className="block font-black">{item.label}</span>
-                  <span className="text-sm text-slate-500">{item.desc}</span>
-                </span>
-              </button>
-            ))}
+              return (
+                <>
+                  <h2 className="mb-2 text-xl font-black text-slate-900">Review / Confirm Risk Rating</h2>
+                  <p className="mb-3 text-sm font-semibold text-slate-500">
+                    Company matrix: <span className="font-black text-slate-700">{activeRiskScale.label}</span>. Select 1–{activeRiskScale.maxScore} for severity and likelihood.
+                  </p>
 
-            <h3 className="mb-2 mt-5 font-black text-slate-800">Likelihood: How likely is it to happen?</h3>
-            {likelihoodScale.map((item) => (
-              <button
-                key={item.score}
-                onClick={() => setLikelihood(item.score)}
-                className={`mb-2 flex w-full items-center gap-3 rounded-xl border p-3 text-left ${
-                  likelihood === item.score
-                    ? "border-[#1D72B8] bg-[#E8F4FF]"
-                    : "border-slate-200 bg-white"
-                }`}
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 font-black">
-                  {item.score}
-                </span>
-                <span>
-                  <span className="block font-black">{item.label}</span>
-                  <span className="text-sm text-slate-500">{item.desc}</span>
-                </span>
-              </button>
-            ))}
+                  {safeScopeResult?.risk?.operationalRisk && (
+                    <div className="mb-4 rounded-2xl bg-[#E8F4FF] p-4">
+                      <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                        SafeScope Suggested Risk
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-slate-700">
+                        Severity {safeScopeResult.risk.operationalRisk.severity} × Likelihood {safeScopeResult.risk.operationalRisk.likelihood} = {safeScopeResult.risk.operationalRisk.matrixScore} {safeScopeResult.risk.operationalRisk.matrixBand}
+                      </p>
+                    </div>
+                  )}
 
-            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-              <div className="text-sm font-black text-slate-500">Calculated Risk Score</div>
-              <div className="mt-1 text-3xl font-black text-slate-900">
-                {riskScore ? `${riskScore} / 25` : "Select severity and likelihood"}
-              </div>
-            </div>
+                  <h3 className="mb-2 font-black text-slate-800">Severity</h3>
+                  <div className="grid gap-1.5">
+                    {activeRiskScale.severity.map((item) => (
+                      <button
+                        key={item.score}
+                        type="button"
+                        onClick={() => setSeverity(item.score)}
+                        className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left ${
+                          severity === item.score
+                            ? "border-[#1D72B8] bg-[#E8F4FF]"
+                            : "border-slate-200 bg-white"
+                        }`}
+                      >
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black">
+                          {item.score}
+                        </span>
+                        <span>
+                          <span className="block text-sm font-black">{item.label}</span>
+                          <span className="line-clamp-1 text-[11px] font-semibold text-slate-500">{item.desc}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <h3 className="mb-2 mt-5 font-black text-slate-800">Likelihood</h3>
+                  <div className="grid gap-1.5">
+                    {activeRiskScale.likelihood.map((item) => (
+                      <button
+                        key={item.score}
+                        type="button"
+                        onClick={() => setLikelihood(item.score)}
+                        className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left ${
+                          likelihood === item.score
+                            ? "border-[#1D72B8] bg-[#E8F4FF]"
+                            : "border-slate-200 bg-white"
+                        }`}
+                      >
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black">
+                          {item.score}
+                        </span>
+                        <span>
+                          <span className="block text-sm font-black">{item.label}</span>
+                          <span className="line-clamp-1 text-[11px] font-semibold text-slate-500">{item.desc}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm font-black text-slate-900">User-Approved Risk</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-600">
+                      {severity && likelihood
+                        ? `Severity ${severity} × Likelihood ${likelihood} = ${severity * likelihood}`
+                        : "Select severity and likelihood to confirm the final risk rating."}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
           </>
         )}
 
@@ -1071,29 +1155,31 @@ export default function InspectionPage() {
         )}
       </div>
 
-      <div className="mt-5 flex justify-between">
+      <div className="sticky bottom-[76px] z-30 -mx-4 mt-4 flex gap-2 border-t border-slate-200 bg-[#F6F8FB]/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:bottom-0">
         <button
+          type="button"
           onClick={() => {
             if (currentStep === 1) {
               router.push("/inspection-cover");
               return;
             }
-            setCurrentStep((s) => Math.max(1, s - 1));
+            goToInspectionStep(currentStep - 1);
           }}
-          className="rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-700 shadow-sm"
+          className="h-9 flex-1 rounded-lg bg-white px-3 text-xs font-black text-slate-700 shadow-sm"
         >
           Back
         </button>
 
         <button
+          type="button"
           onClick={() => {
             if (currentStep === 6) {
               generateReport();
               return;
             }
-            setCurrentStep((s) => Math.min(6, s + 1));
+            goToInspectionStep(currentStep + 1);
           }}
-          className="rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
+          className="h-9 flex-[1.05] rounded-lg bg-[#102A43] px-3 text-xs font-black text-white shadow-md shadow-slate-900/10"
         >
           {currentStep === 6 ? "Generate Report" : "Next"}
         </button>

@@ -1,10 +1,13 @@
 "use client";
 
+import { secureStorage } from "@/lib/secureStorage";
+import PageHeader from "@/components/ui/PageHeader";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import { localExporter } from "@/lib/localExporter";
+import { getWorkspaceReports } from "@/lib/auth";
 
 type Report = {
   id: string;
@@ -12,6 +15,7 @@ type Report = {
   title?: string;
   location?: string;
   findings?: any[];
+  storageSource?: "local" | "cloud" | "seed";
 };
 
 const SEEDED_REPORTS: Report[] = [
@@ -62,31 +66,70 @@ export default function ReportsPage() {
   const [editLocation, setEditLocation] = useState("");
 
   useEffect(() => {
-    const storedReports = window.localStorage.getItem("sentinel_reports");
-    const parsedReports: Report[] = storedReports ? JSON.parse(storedReports) : [];
+    async function loadReports() {
+      const parsedReports: Report[] = secureStorage.get("reports", [] as Report[]);
 
-    const latest = window.localStorage.getItem("sentinel_latest_report");
-    const latestReport: Report | null = latest ? JSON.parse(latest) : null;
+      const localReports = parsedReports.map((report) => ({
+        ...report,
+        storageSource: report.storageSource || "local",
+      }));
 
-    const merged = [...parsedReports];
+      const latest = secureStorage.get("latest_report", null as any);
+      const latestReport: Report | null = latest ? JSON.parse(latest) : null;
 
-    if (latestReport && !merged.some((report) => report.id === latestReport.id)) {
-      merged.unshift({
-        ...latestReport,
-        title: latestReport.title || "Inspection Report",
-        location:
-          latestReport.location ||
-          latestReport.findings?.[0]?.location ||
-          "Field Inspection",
-      });
+      const merged: Report[] = [...localReports];
+
+      if (latestReport && !merged.some((report) => report.id === latestReport.id)) {
+        merged.unshift({
+          ...latestReport,
+          storageSource: latestReport.storageSource || "local",
+          title: latestReport.title || "Inspection Report",
+          location:
+            latestReport.location ||
+            latestReport.findings?.[0]?.location ||
+            "Field Inspection",
+        });
+      }
+
+      try {
+        const cloudRows = await getWorkspaceReports();
+
+        const cloudReports = (cloudRows || []).map((row: any) => {
+          const frontend = row.frontendReportJson || {};
+
+          return {
+            ...frontend,
+            id: frontend.id || row.id,
+            createdAt: frontend.createdAt || row.reportedDatetime,
+            title: frontend.title || row.company || "Inspection Report",
+            location: frontend.siteLocation || row.site || "Field Inspection",
+            findings: frontend.findings || row.findings || [],
+            storageSource: "cloud" as const,
+          };
+        });
+
+        for (const cloudReport of cloudReports) {
+          const index = merged.findIndex((report) => report.id === cloudReport.id);
+          if (index >= 0) {
+            merged[index] = cloudReport;
+          } else {
+            merged.push(cloudReport);
+          }
+        }
+      } catch {
+        // Cloud reports are optional; local reports still load.
+      }
+
+      if (merged.length === 0) {
+        setReports(SEEDED_REPORTS.map((report) => ({ ...report, storageSource: "seed" })));
+      } else {
+        setReports(merged);
+        const onlyLocal = merged.filter((report) => report.storageSource !== "cloud");
+        secureStorage.set("reports", JSON.stringify(onlyLocal));
+      }
     }
 
-    if (merged.length === 0) {
-      setReports(SEEDED_REPORTS);
-    } else {
-      setReports(merged);
-      window.localStorage.setItem("sentinel_reports", JSON.stringify(merged));
-    }
+    loadReports();
   }, []);
 
   const sortedReports = useMemo(() => {
@@ -98,11 +141,11 @@ export default function ReportsPage() {
 
   function persist(nextReports: Report[]) {
     setReports(nextReports);
-    window.localStorage.setItem("sentinel_reports", JSON.stringify(nextReports));
+    secureStorage.set("reports", JSON.stringify(nextReports));
   }
 
   function startEdit(report: Report) {
-    window.localStorage.setItem("sentinel_edit_report", JSON.stringify(report));
+    secureStorage.set("edit_report", JSON.stringify(report));
     router.push("/inspection-review");
   }
 
@@ -130,19 +173,17 @@ export default function ReportsPage() {
     const nextReports = reports.filter((report) => report.id !== reportId);
     persist(nextReports);
 
-    const latest = window.localStorage.getItem("sentinel_latest_report");
+    const latest = secureStorage.get("latest_report", null as any);
     if (latest) {
-      const latestReport = JSON.parse(latest);
+      const latestReport = latest;
       if (latestReport.id === reportId) {
-        window.localStorage.removeItem("sentinel_latest_report");
+        secureStorage.remove("latest_report");
       }
     }
   }
 
   async function exportReport(report: Report) {
-    const coverPage = JSON.parse(
-      window.localStorage.getItem("sentinel_cover_page") || "{}"
-    );
+    const coverPage = secureStorage.get("cover_page", {} as any);
 
     const normalizedFindings = (report.findings || []).map((finding: any) => ({
       category:
@@ -200,21 +241,11 @@ export default function ReportsPage() {
 
   return (
     <section className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900">Reports</h1>
-          <p className="mt-1 text-sm font-semibold text-slate-500">
-            Inspection reports, findings, evidence, and operational risk summaries.
-          </p>
-        </div>
+      <PageHeader
+        title="Reports"
+        description="Inspection reports, findings, evidence, and operational risk summaries."
+      />
 
-        <Link
-          href="/inspection-cover"
-          className="rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
-        >
-          New Inspection
-        </Link>
-      </div>
 
       {sortedReports.length === 0 ? (
         <div className="rounded-2xl bg-white p-5 shadow-sm">
@@ -269,6 +300,14 @@ export default function ReportsPage() {
                               )}`}
                             >
                               {risk}
+                            </span>
+
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+                              {report.storageSource === "cloud"
+                                ? "Workspace Database"
+                                : report.storageSource === "seed"
+                                  ? "Sample"
+                                  : "Local"}
                             </span>
                           </div>
 

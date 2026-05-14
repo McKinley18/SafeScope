@@ -1,5 +1,7 @@
 "use client";
 
+import { secureStorage } from "@/lib/secureStorage";
+import PageHeader from "@/components/ui/PageHeader";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -20,7 +22,7 @@ export default function InspectionCoverPage() {
     setCompanyLogo(savedLogo);
     setIncludeLogoOnCover(savedIncludeLogo);
 
-    const existing = localStorage.getItem("sentinel_cover_page");
+    const existing = secureStorage.get("cover_page", null as any);
     if (!existing) return;
 
     const parsed = JSON.parse(existing);
@@ -35,8 +37,8 @@ export default function InspectionCoverPage() {
   }, []);
 
   function saveCoverPage() {
-    localStorage.setItem(
-      "sentinel_cover_page",
+    secureStorage.set(
+      "cover_page",
       JSON.stringify({
         organizationName,
         siteLocation,
@@ -58,14 +60,10 @@ export default function InspectionCoverPage() {
         </div>
       )}
 
-      <div className="mb-[18px] border-l-4 border-[#1D72B8] pl-4">
-        <h1 className="text-[28px] font-black text-slate-900">
-          Inspection Cover Page
-        </h1>
-        <p className="mt-1.5 text-sm font-medium leading-[21px] text-slate-500">
-          Enter the administrative information that will appear on the final inspection report cover page.
-        </p>
-      </div>
+      <PageHeader
+        title="Inspection Cover Page"
+        description="Enter the administrative information that will appear on the final inspection report cover page."
+      />
 
       <div className="mb-4">
         <h2 className="mb-2.5 text-xl font-black text-slate-900">

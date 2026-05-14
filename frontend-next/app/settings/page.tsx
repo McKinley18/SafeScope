@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import PageHeader from "@/components/ui/PageHeader";
+import { useEffect, useMemo, useState } from "react";
 import {
   getOrganizationInvites,
   getOrganizationMembers,
@@ -12,40 +13,92 @@ import {
 type RiskProfileId = "simple_4x4" | "standard_5x5" | "advanced_6x6";
 type StorageMode = "local" | "cloud" | "ask";
 
-const riskProfiles: Array<{
-  id: RiskProfileId;
-  label: string;
-  description: string;
-}> = [
-  {
-    id: "simple_4x4",
-    label: "Simple 4x4",
-    description: "Simpler matrix for smaller teams or lower-complexity programs.",
-  },
-  {
-    id: "standard_5x5",
-    label: "Standard 5x5",
-    description: "Recommended default for most safety programs.",
-  },
-  {
-    id: "advanced_6x6",
-    label: "Advanced 6x6",
-    description: "More granular scoring for mature or enterprise programs.",
-  },
-];
+const riskProfiles = [
+  ["simple_4x4", "Simple 4x4", "Smaller teams or simpler programs."],
+  ["standard_5x5", "Standard 5x5", "Recommended default for most operations."],
+  ["advanced_6x6", "Advanced 6x6", "More detail for mature programs."],
+] as const;
+
+const storageModes = [
+  ["local", "Private Device Storage", "Recommended. Reports stay on this device unless exported or synced."],
+  ["cloud", "Encrypted Workspace Sync", "Optional. Reports save to the company workspace database."],
+  ["ask", "Ask Every Report", "Choose private device storage or workspace sync when finalizing."],
+] as const;
+
+const roleDefinitions = [
+  ["Owner", "Manage settings, users, reports, and workspace controls."],
+  ["Auditor", "Create inspections, review SafeScope results, and manage findings."],
+  ["Viewer", "View reports and actions without changing workspace settings."],
+] as const;
+
+function getMatrixSize(profile: RiskProfileId) {
+  if (profile === "simple_4x4") return 4;
+  if (profile === "advanced_6x6") return 6;
+  return 5;
+}
+
+function getRiskColor(score: number, maxScore: number) {
+  const ratio = score / (maxScore * maxScore);
+
+  if (ratio >= 0.72) return "bg-red-500";
+  if (ratio >= 0.45) return "bg-orange-400";
+  if (ratio >= 0.25) return "bg-yellow-300";
+  return "bg-emerald-400";
+}
+
+function RiskMatrixPreview({ riskProfileId }: { riskProfileId: RiskProfileId }) {
+  const size = getMatrixSize(riskProfileId);
+  const cells = [];
+
+  for (let severity = size; severity >= 1; severity--) {
+    for (let likelihood = 1; likelihood <= size; likelihood++) {
+      const score = severity * likelihood;
+      cells.push({ severity, likelihood, score });
+    }
+  }
+
+  return (
+    <div>
+      <div
+        className="grid overflow-hidden rounded-xl border border-slate-300 bg-white"
+        style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+      >
+        {cells.map((cell) => (
+          <div
+            key={`${cell.severity}-${cell.likelihood}`}
+            className={`aspect-square border border-white/60 ${getRiskColor(cell.score, size)} flex items-center justify-center text-[10px] font-black text-slate-900`}
+          >
+            {cell.score}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 grid grid-cols-4 gap-1 text-center text-[10px] font-black text-slate-600">
+        <span className="rounded bg-emerald-100 py-1">Low</span>
+        <span className="rounded bg-yellow-100 py-1">Moderate</span>
+        <span className="rounded bg-orange-100 py-1">High</span>
+        <span className="rounded bg-red-100 py-1">Critical</span>
+      </div>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const [organizationName, setOrganizationName] = useState("");
   const [companyLogo, setCompanyLogo] = useState("");
   const [includeLogoOnCover, setIncludeLogoOnCover] = useState(true);
-  const [storageMode, setStorageMode] = useState<StorageMode>("local");
   const [riskProfileId, setRiskProfileId] = useState<RiskProfileId>("standard_5x5");
+  const [storageMode, setStorageMode] = useState<StorageMode>("local");
   const [members, setMembers] = useState<any[]>([]);
   const [invites, setInvites] = useState<any[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("Auditor");
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState<"idle" | "success" | "error">("idle");
+
+  const selectedMatrixLabel = useMemo(() => {
+    return riskProfiles.find(([id]) => id === riskProfileId)?.[1] || "Standard 5x5";
+  }, [riskProfileId]);
 
   useEffect(() => {
     async function loadSettings() {
@@ -56,15 +109,8 @@ export default function SettingsPage() {
         setOrganizationName(settings.name || "");
         setCompanyLogo(settings.logoPath || window.localStorage.getItem("sentinel_company_logo") || "");
         setIncludeLogoOnCover(window.localStorage.getItem("sentinel_include_logo_on_cover") !== "false");
-        setStorageMode(
-          (window.localStorage.getItem("sentinel_report_storage_mode") as StorageMode | null)
-          || "local"
-        );
         setRiskProfileId((settings.riskProfileId || "standard_5x5") as RiskProfileId);
-        window.localStorage.setItem(
-          "sentinel_company_risk_profile",
-          settings.riskProfileId || "standard_5x5"
-        );
+        setStorageMode((window.localStorage.getItem("sentinel_report_storage_mode") as StorageMode | null) || "local");
 
         const [loadedMembers, loadedInvites] = await Promise.all([
           getOrganizationMembers(),
@@ -73,13 +119,9 @@ export default function SettingsPage() {
 
         setMembers(loadedMembers);
         setInvites(loadedInvites);
-
         setStatus("");
         setStatusType("idle");
       } catch {
-        const saved = window.localStorage.getItem("sentinel_company_risk_profile") as RiskProfileId | null;
-        if (saved) setRiskProfileId(saved);
-
         setStatusType("error");
         setStatus("Unable to load workspace settings. Please sign in again.");
       }
@@ -88,14 +130,11 @@ export default function SettingsPage() {
     loadSettings();
   }, []);
 
-
   function handleLogoUpload(file?: File) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
-      setCompanyLogo(String(reader.result || ""));
-    };
+    reader.onload = () => setCompanyLogo(String(reader.result || ""));
     reader.readAsDataURL(file);
   }
 
@@ -110,16 +149,13 @@ export default function SettingsPage() {
         logoPath: companyLogo,
       });
 
-      window.localStorage.setItem(
-        "sentinel_company_risk_profile",
-        saved.riskProfileId || riskProfileId
-      );
+      window.localStorage.setItem("sentinel_company_risk_profile", saved.riskProfileId || riskProfileId);
       window.localStorage.setItem("sentinel_company_logo", saved.logoPath || companyLogo || "");
       window.localStorage.setItem("sentinel_include_logo_on_cover", String(includeLogoOnCover));
       window.localStorage.setItem("sentinel_report_storage_mode", storageMode);
 
       setStatusType("success");
-      setStatus("Settings saved. New SafeScope runs will use this company risk matrix.");
+      setStatus("Settings saved.");
     } catch {
       setStatusType("error");
       setStatus("Settings could not be saved. Please make sure you are signed in.");
@@ -153,131 +189,93 @@ export default function SettingsPage() {
   }
 
   return (
-    <section className="space-y-5">
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-          Workspace
-        </p>
-        <h1 className="mt-1 text-3xl font-black text-slate-900">Settings</h1>
-        <p className="mt-2 text-sm font-semibold text-slate-500">
-          Configure workspace preferences, report defaults, and safety review behavior.
-        </p>
-      </div>
+    <section className="space-y-8">
+      <PageHeader
+        eyebrow="Workspace"
+        title="Settings"
+        description="Manage your organization profile, employees, risk matrix, and report storage preferences."
+      />
 
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <section>
         <h2 className="text-xl font-black text-slate-900">Workspace Profile</h2>
-        <label className="mt-4 block text-sm font-black text-slate-700">
-          Organization Name
-        </label>
+        <p className="mt-1 text-sm font-semibold text-slate-500">
+          Company information used across inspection reports and cover pages.
+        </p>
+
+        <div className="mt-4 grid gap-5 md:grid-cols-[1fr_220px]">
+          <label className="block">
+            <span className="text-sm font-black text-slate-700">Organization Name</span>
+            <input
+              value={organizationName}
+              onChange={(event) => setOrganizationName(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+            />
+          </label>
+
+          <div>
+            <p className="text-sm font-black text-slate-700">Logo</p>
+            <div className="mt-2 flex min-h-24 items-center justify-center rounded-xl border border-slate-200 bg-white p-3">
+              {companyLogo ? (
+                <img src={companyLogo} alt="Company logo preview" className="max-h-20 max-w-full object-contain" />
+              ) : (
+                <span className="text-xs font-bold text-slate-400">No logo uploaded</span>
+              )}
+            </div>
+          </div>
+        </div>
+
         <input
-          value={organizationName}
-          onChange={(event) => setOrganizationName(event.target.value)}
-          className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          onChange={(event) => handleLogoUpload(event.target.files?.[0])}
+          className="mt-3 block w-full text-sm font-bold text-slate-700"
         />
 
-        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <h3 className="font-black text-slate-900">Company Logo</h3>
-          <p className="mt-1 text-sm font-semibold text-slate-500">
-            Upload a logo to include on inspection report cover pages.
-          </p>
+        <button
+          type="button"
+          onClick={() => setIncludeLogoOnCover(!includeLogoOnCover)}
+          className="mt-4 flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left"
+        >
+          <span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded border-2 border-[#1D72B8] text-xs font-black text-white ${includeLogoOnCover ? "bg-[#1D72B8]" : "bg-white"}`}>
+            {includeLogoOnCover ? "✓" : ""}
+          </span>
+          <span>
+            <span className="block text-sm font-black text-slate-900">Include logo on inspection cover pages</span>
+            <span className="block text-xs font-semibold text-slate-500">This can still be changed for individual reports.</span>
+          </span>
+        </button>
+      </section>
 
-          {companyLogo && (
-            <div className="mt-4 rounded-xl bg-white p-4">
-              <img src={companyLogo} alt="Company logo preview" className="max-h-24 max-w-full object-contain" />
-            </div>
-          )}
-
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            onChange={(event) => handleLogoUpload(event.target.files?.[0])}
-            className="mt-4 block w-full text-sm font-bold text-slate-700"
-          />
-
-          <button
-            type="button"
-            onClick={() => setIncludeLogoOnCover(!includeLogoOnCover)}
-            className="mt-4 flex w-full gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left"
-          >
-            <span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded border-2 border-[#1D72B8] text-xs font-black text-white ${includeLogoOnCover ? "bg-[#1D72B8]" : "bg-white"}`}>
-              {includeLogoOnCover ? "✓" : ""}
-            </span>
-            <span>
-              <span className="block text-sm font-black text-slate-900">Include logo on report cover page</span>
-              <span className="block text-xs font-semibold text-slate-500">Users can still prepare reports without displaying the logo.</span>
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-black text-slate-900">Company Risk Matrix</h2>
+      <section className="border-t border-slate-300 pt-6">
+        <h2 className="text-xl font-black text-slate-900">Employees & Roles</h2>
         <p className="mt-1 text-sm font-semibold text-slate-500">
-          This controls the default SafeScope risk matrix for all new inspections in this workspace.
-        </p>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {riskProfiles.map((profile) => (
-            <button
-              key={profile.id}
-              type="button"
-              onClick={() => setRiskProfileId(profile.id)}
-              className={`rounded-2xl border p-4 text-left ${
-                riskProfileId === profile.id
-                  ? "border-[#1D72B8] bg-[#E8F4FF]"
-                  : "border-slate-200 bg-slate-50"
-              }`}
-            >
-              <p className="font-black text-slate-900">{profile.label}</p>
-              <p className="mt-2 text-sm font-semibold text-slate-600">{profile.description}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-black text-slate-900">Team Members</h2>
-        <p className="mt-1 text-sm font-semibold text-slate-500">
-          Manage who can access this Sentinel Safety workspace.
+          Add employees to the workspace and assign the right access level.
         </p>
 
         <div className="mt-4 space-y-3">
-          {members.length === 0 ? (
-            <p className="rounded-xl bg-slate-50 p-3 text-sm font-semibold text-slate-500">
-              No members loaded.
-            </p>
-          ) : (
-            members.map((member) => (
-              <div key={member.id} className="rounded-xl border border-slate-200 p-4">
+          {members.map((member) => (
+            <div key={member.id} className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
                 <p className="font-black text-slate-900">{member.name}</p>
                 <p className="text-sm font-semibold text-slate-500">{member.email}</p>
-                <p className="mt-1 text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                  {member.role}
-                </p>
               </div>
-            ))
-          )}
+              <span className="text-xs font-black uppercase tracking-wide text-[#F97316]">{member.role}</span>
+            </div>
+          ))}
         </div>
-      </div>
 
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-black text-slate-900">Invite Teammate</h2>
-        <p className="mt-1 text-sm font-semibold text-slate-500">
-          Create an invitation token for another user to join this workspace.
-        </p>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_180px_auto]">
+        <div className="mt-5 grid gap-3 md:grid-cols-[1fr_160px_auto]">
           <input
             value={inviteEmail}
             onChange={(event) => setInviteEmail(event.target.value)}
-            placeholder="teammate@example.com"
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+            placeholder="employee@example.com"
+            className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
           />
 
           <select
             value={inviteRole}
             onChange={(event) => setInviteRole(event.target.value)}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
+            className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1D72B8]"
           >
             <option value="Auditor">Auditor</option>
             <option value="Viewer">Viewer</option>
@@ -289,101 +287,98 @@ export default function SettingsPage() {
             onClick={sendInvite}
             className="rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
           >
-            Send Invite
+            Add Employee
           </button>
         </div>
 
-        {!!invites.length && (
-          <div className="mt-5">
-            <h3 className="mb-2 text-sm font-black text-slate-900">Pending Invites</h3>
-            <div className="space-y-2">
-              {invites.map((invite) => (
-                <div key={invite.id} className="rounded-xl bg-slate-50 p-3">
-                  <p className="text-sm font-black text-slate-900">{invite.email}</p>
-                  <p className="text-xs font-semibold text-slate-500">
-                    Role: {invite.role} • Used: {invite.isUsed ? "Yes" : "No"}
-                  </p>
-                  <p className="mt-1 break-all text-xs font-bold text-[#1D72B8]">
-                    Invite token: {invite.token}
-                  </p>
-                </div>
-              ))}
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {roleDefinitions.map(([role, description]) => (
+            <div key={role} className="border-l-4 border-[#F97316] bg-white p-3">
+              <p className="text-sm font-black text-slate-900">{role}</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">{description}</p>
             </div>
+          ))}
+        </div>
+
+        {!!invites.length && (
+          <div className="mt-5 space-y-2">
+            <h3 className="text-sm font-black text-slate-900">Pending Invites</h3>
+            {invites.map((invite) => (
+              <div key={invite.id} className="border-b border-slate-200 py-2">
+                <p className="text-sm font-black text-slate-900">{invite.email}</p>
+                <p className="break-all text-xs font-semibold text-slate-500">
+                  {invite.role} • Token: {invite.token}
+                </p>
+              </div>
+            ))}
           </div>
         )}
-      </div>
+      </section>
 
-
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-black text-slate-900">Data & Privacy</h2>
+      <section className="border-t border-slate-300 pt-6">
+        <h2 className="text-xl font-black text-slate-900">Risk Matrix</h2>
         <p className="mt-1 text-sm font-semibold text-slate-500">
-          Control where Sentinel Safety inspection reports are stored.
+          Sets the default severity and likelihood scale for new inspections.
         </p>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {[
-            {
-              id: "local",
-              label: "Local Only",
-              description: "Reports stay in this browser/device only."
-            },
-            {
-              id: "cloud",
-              label: "Workspace Database",
-              description: "Reports save to the Sentinel Safety workspace database."
-            },
-            {
-              id: "ask",
-              label: "Ask Each Time",
-              description: "Choose local or cloud storage when finalizing reports."
-            }
-          ].map((mode) => (
+        <div className="mt-4 grid gap-5 md:grid-cols-[1fr_220px]">
+          <div className="space-y-2">
+            {riskProfiles.map(([id, label, description]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setRiskProfileId(id)}
+                className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left ${
+                  riskProfileId === id ? "border-[#1D72B8] bg-[#E8F4FF]" : "border-slate-200 bg-white"
+                }`}
+              >
+                <span>
+                  <span className="block text-sm font-black text-slate-900">{label}</span>
+                  <span className="block text-xs font-semibold text-slate-500">{description}</span>
+                </span>
+                <span className="text-sm font-black text-[#1D72B8]">{riskProfileId === id ? "Selected" : ""}</span>
+              </button>
+            ))}
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-black text-slate-700">{selectedMatrixLabel}</p>
+            <RiskMatrixPreview riskProfileId={riskProfileId} />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-300 pt-6">
+        <h2 className="text-xl font-black text-slate-900">Data & Privacy</h2>
+        <p className="mt-1 text-sm font-semibold text-slate-500">
+          Sentinel Safety is local-first. Inspection reports stay private on the device unless workspace sync is selected.
+        </p>
+
+        <div className="mt-4 space-y-2">
+          {storageModes.map(([id, label, description]) => (
             <button
-              key={mode.id}
+              key={id}
               type="button"
-              onClick={() => setStorageMode(mode.id as StorageMode)}
-              className={`rounded-2xl border p-4 text-left ${
-                storageMode === mode.id
-                  ? "border-[#1D72B8] bg-[#E8F4FF]"
-                  : "border-slate-200 bg-slate-50"
+              onClick={() => setStorageMode(id)}
+              className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left ${
+                storageMode === id ? "border-[#1D72B8] bg-[#E8F4FF]" : "border-slate-200 bg-white"
               }`}
             >
-              <p className="font-black text-slate-900">{mode.label}</p>
-              <p className="mt-2 text-sm font-semibold text-slate-600">
-                {mode.description}
-              </p>
+              <span>
+                <span className="block text-sm font-black text-slate-900">{label}</span>
+                <span className="block text-xs font-semibold text-slate-500">{description}</span>
+              </span>
+              <span className="text-sm font-black text-[#1D72B8]">{storageMode === id ? "Selected" : ""}</span>
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <div className="space-y-4">
-          <label className="flex items-start gap-3">
-            <input type="checkbox" defaultChecked className="mt-1" />
-            <div>
-              <p className="font-black text-slate-900">Require human review before finalizing reports</p>
-              <p className="text-sm font-semibold text-slate-500">
-                Keeps SafeScope outputs advisory until reviewed by a qualified safety professional.
-              </p>
-            </div>
-          </label>
-
-          <label className="flex items-start gap-3">
-            <input type="checkbox" defaultChecked className="mt-1" />
-            <div>
-              <p className="font-black text-slate-900">Show privileged and confidential option</p>
-              <p className="text-sm font-semibold text-slate-500">
-                Allows confidential markings on generated inspection reports.
-              </p>
-            </div>
-          </label>
-        </div>
-
+      <section className="border-t border-slate-300 pt-6">
         <button
           type="button"
           onClick={saveSettings}
-          className="mt-5 rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
+          className="w-full rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white sm:w-auto"
         >
           Save Settings
         </button>
@@ -401,7 +396,7 @@ export default function SettingsPage() {
             {status}
           </p>
         )}
-      </div>
+      </section>
     </section>
   );
 }
