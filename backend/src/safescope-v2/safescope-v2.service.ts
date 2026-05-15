@@ -24,6 +24,7 @@ import { HumanFactorsService } from './human-factors/human-factors.service';
 import { ContradictionIntelligenceService } from './contradiction-intelligence/contradiction-intelligence.service';
 import { CounterfactualIntelligenceService } from './counterfactual-intelligence/counterfactual-intelligence.service';
 import { SiteMemoryService } from './site-memory/site-memory.service';
+import { HazardGraphService } from './hazard-graph/hazard-graph.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -46,6 +47,7 @@ export class SafescopeV2Service {
   private contradictionEngine = new ContradictionIntelligenceService();
   private counterfactualEngine = new CounterfactualIntelligenceService();
   private siteMemoryEngine = new SiteMemoryService();
+  private hazardGraphEngine = new HazardGraphService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -442,6 +444,15 @@ export class SafescopeV2Service {
           };
         }),
     );
+
+    const hazardGraph = this.hazardGraphEngine.evaluate({
+      classification: promotedPrimary.classification,
+      additionalHazards,
+      energyTransferIntelligence,
+      humanFactors,
+      operationalState,
+      barrierIntelligence,
+    });
 
     const correlationIntelligence = this.correlationEngine.evaluate({
       classification: promotedPrimary.classification,
