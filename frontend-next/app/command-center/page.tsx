@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { clearActiveInspectionDraft } from "@/lib/inspectionDraft";
 import { getReports } from "@/lib/reportStorage";
 import { getStoredActions, type StoredAction } from "@/lib/actionStorage";
+import { getActivityEvents, type ActivityEvent } from "@/lib/activityStorage";
 
 type DashboardReport = {
   id?: string;
@@ -15,14 +16,17 @@ type DashboardReport = {
 export default function DashboardPage() {
   const [reports, setReports] = useState<DashboardReport[]>([]);
   const [storedActions, setStoredActions] = useState<StoredAction[]>([]);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
     async function loadDashboardReports() {
       const savedReports = await getReports<DashboardReport>();
       const savedActions = await getStoredActions();
+      const savedActivity = await getActivityEvents();
 
       setReports(Array.isArray(savedReports) ? savedReports : []);
       setStoredActions(Array.isArray(savedActions) ? savedActions : []);
+      setActivityEvents(Array.isArray(savedActivity) ? savedActivity : []);
     }
 
     loadDashboardReports();
@@ -47,6 +51,15 @@ export default function DashboardPage() {
   }, [storedActions]);
 
   const activityItems = useMemo(() => {
+    if (activityEvents.length) {
+      return activityEvents.slice(0, 5).map((event) => ({
+        type: event.type,
+        title: event.title,
+        detail: event.detail || "",
+        time: new Date(event.createdAt).toLocaleDateString(),
+      }));
+    }
+
     return reports
       .map((report) => ({
         type: "Report",
@@ -55,6 +68,57 @@ export default function DashboardPage() {
         time: report.createdAt ? new Date(report.createdAt).toLocaleDateString() : "Saved",
       }))
       .slice(0, 5);
+  }, [activityEvents, reports]);
+
+  const safeScopeSignal = useMemo(() => {
+    const findings = reports.flatMap((report) => report.findings || []);
+
+    const categoryCounts = findings.reduce<Record<string, number>>((acc, finding) => {
+      const category =
+        finding.hazardCategory ||
+        finding.safeScopeResult?.classification ||
+        "Uncategorized";
+
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {});
+
+    const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+
+    const criticalActions = storedActions.filter(
+      (action) =>
+        String(action.priority || "").toLowerCase() === "critical" &&
+        String(action.status || "").toLowerCase() !== "completed"
+    );
+
+    const overdueActions = storedActions.filter((action) => {
+      if (!action.due) return false;
+      return new Date(action.due).getTime() < Date.now() &&
+        String(action.status || "").toLowerCase() !== "completed";
+    });
+
+    if (criticalActions.length) {
+      return {
+        title: `${criticalActions.length} critical corrective action${criticalActions.length === 1 ? "" : "s"} open.`,
+        detail: "SafeScope recommends prioritizing verification and closure of critical corrective work.",
+      };
+    }
+
+    if (overdueActions.length) {
+      return {
+        title: `${overdueActions.length} overdue corrective action${overdueActions.length === 1 ? "" : "s"} detected.`,
+        detail: "Review overdue work before adding additional low-risk observations.",
+      };
+    }
+
+    if (topCategory && topCategory[1] >= 2) {
+      return {
+        title: `${topCategory[0]} is recurring across findings.`,
+        detail: "Repeated categories may indicate weak controls, training gaps, or supervision drift.",
+      };
+    }
+
+    return null;
   }, [reports, storedActions]);
 
   const dashboardMetrics = useMemo(() => {
@@ -204,10 +268,10 @@ export default function DashboardPage() {
               SafeScope Signal
             </p>
             <h2 className="mt-2 text-xl font-black text-slate-900">
-              No active SafeScope signals.
+              {safeScopeSignal?.title || "No active SafeScope signals."}
             </h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
-              SafeScope intelligence will appear here as inspections, findings, and trends are analyzed.
+              {safeScopeSignal?.detail || "SafeScope intelligence will appear here as inspections, findings, and trends are analyzed."}
             </p>
           </section>
 
