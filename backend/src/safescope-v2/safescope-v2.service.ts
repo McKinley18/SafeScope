@@ -23,6 +23,7 @@ import { OperationalStateService } from './operational-state/operational-state.s
 import { HumanFactorsService } from './human-factors/human-factors.service';
 import { ContradictionIntelligenceService } from './contradiction-intelligence/contradiction-intelligence.service';
 import { CounterfactualIntelligenceService } from './counterfactual-intelligence/counterfactual-intelligence.service';
+import { SiteMemoryService } from './site-memory/site-memory.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -44,6 +45,7 @@ export class SafescopeV2Service {
   private humanFactorsEngine = new HumanFactorsService();
   private contradictionEngine = new ContradictionIntelligenceService();
   private counterfactualEngine = new CounterfactualIntelligenceService();
+  private siteMemoryEngine = new SiteMemoryService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -448,6 +450,14 @@ export class SafescopeV2Service {
       controlIntelligence,
       operationalReasoning,
       priorFindings: arguments[5] as any[],
+    });
+
+    const siteMemory = this.siteMemoryEngine.evaluate({
+      currentClassification: promotedPrimary.classification,
+      currentLocation: (expandedContext as any)?.area || (expandedContext as any)?.location,
+      priorFindings: arguments[5] as any[],
+      trendIntelligence,
+      correlationIntelligence,
     });
 
     const promotionWarning =
