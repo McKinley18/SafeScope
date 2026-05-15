@@ -12,6 +12,7 @@ import { TrendIntelligenceService } from './trend-intelligence/trend-intelligenc
 import { OperationalReasoningService } from './reasoning/operational-reasoning.service';
 import { ControlIntelligenceService } from './control-intelligence/control-intelligence.service';
 import { DecisionExplainabilityService } from './explainability/decision-explainability.service';
+import { EvidenceQualityService } from './evidence-quality/evidence-quality.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -22,6 +23,7 @@ export class SafescopeV2Service {
   private reasoningEngine = new OperationalReasoningService();
   private controlEngine = new ControlIntelligenceService();
   private explainabilityEngine = new DecisionExplainabilityService();
+  private evidenceQualityEngine = new EvidenceQualityService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -284,6 +286,16 @@ export class SafescopeV2Service {
       primaryStandardsResult.suggestedStandards,
       expandedContext,
     );
+
+    const evidenceQuality = this.evidenceQualityEngine.evaluate({
+      text: fusedText,
+      evidenceTexts,
+      photosAttached: (evidenceTexts || []).some((item) =>
+        String(item).toLowerCase().includes('photo')
+      ),
+      operationalReasoning,
+      confidenceIntelligence,
+    });
 
     const controlIntelligence = this.controlEngine.evaluate({
       classification: promotedPrimary.classification,
