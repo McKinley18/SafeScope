@@ -40,14 +40,14 @@ export default function DashboardPage() {
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          ["12", "Open Findings", "bg-blue-50 text-blue-700 border-blue-100"],
-          ["3", "Critical", "bg-red-50 text-red-700 border-red-100"],
-          ["5", "Overdue", "bg-orange-50 text-orange-700 border-orange-100"],
-          ["91%", "SafeScope Confidence", "bg-emerald-50 text-emerald-700 border-emerald-100"],
+          ["—", "Open Findings", "bg-blue-50 text-blue-700 border-blue-100"],
+          ["—", "Critical", "bg-red-50 text-red-700 border-red-100"],
+          ["—", "Overdue", "bg-orange-50 text-orange-700 border-orange-100"],
+          ["—", "SafeScope Confidence", "bg-emerald-50 text-emerald-700 border-emerald-100"],
         ].map(([value, label, tone]) => (
-          <div key={label} className={`rounded-2xl border px-4 py-4 text-center ${tone}`}>
-            <p className="text-3xl font-black tracking-tight">{value}</p>
-            <p className="mt-1 text-[11px] font-black uppercase tracking-wide opacity-75">
+          <div key={label} className={`rounded-xl border px-3 py-3 text-center ${tone}`}>
+            <p className="text-2xl font-black tracking-tight">{value}</p>
+            <p className="mt-1 text-[10px] font-black uppercase tracking-wide opacity-75">
               {label}
             </p>
           </div>
