@@ -1116,6 +1116,42 @@ export default function InspectionPage() {
                   </span>
                 </div>
 
+                {(safeScopeResult.reasoningSnapshotId || safeScopeResult.intelligenceMetadata) && (
+                  <div className="mb-4 rounded-xl bg-slate-50 px-3 py-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                      SafeScope Traceability
+                    </p>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
+                          Snapshot
+                        </p>
+                        <p className="mt-1 break-all text-xs font-bold text-slate-700">
+                          {safeScopeResult.reasoningSnapshotId || "Not saved"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
+                          Engine
+                        </p>
+                        <p className="mt-1 text-xs font-bold text-slate-700">
+                          {safeScopeResult.intelligenceMetadata?.engineVersion || "Not versioned"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
+                          Layers
+                        </p>
+                        <p className="mt-1 text-xs font-bold text-slate-700">
+                          {safeScopeResult.intelligenceMetadata?.layersExecuted?.length || 0} executed
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
                     <p className="text-xs font-black uppercase tracking-wide text-slate-400">
