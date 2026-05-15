@@ -17,6 +17,7 @@ import { CounterfactualIntelligenceService } from '../counterfactual-intelligenc
 import { SiteMemoryService } from '../site-memory/site-memory.service';
 import { HazardGraphService } from '../hazard-graph/hazard-graph.service';
 import { ExposurePathService } from '../exposure-path/exposure-path.service';
+import { ConfidenceCalibrationService } from '../validation/confidence-calibration.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -50,6 +51,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private siteMemoryEngine = new SiteMemoryService();
   private hazardGraphEngine = new HazardGraphService();
   private exposurePathEngine = new ExposurePathService();
+  private confidenceCalibrationEngine = new ConfidenceCalibrationService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -216,6 +218,15 @@ export class SafeScopeIntelligenceOrchestrator {
       confidenceIntelligence,
     });
 
+    const confidenceCalibration = this.confidenceCalibrationEngine.evaluate({
+      classification: promotedPrimary.classification,
+      confidenceIntelligence,
+      contradictionIntelligence,
+      evidenceQuality,
+      standardsReasoning,
+      actionEffectiveness,
+    });
+
     const decisionExplainability = this.explainabilityEngine.evaluate({
       classification: promotedPrimary.classification,
       confidenceIntelligence,
@@ -246,6 +257,7 @@ export class SafeScopeIntelligenceOrchestrator {
       exposurePathIntelligence,
       correlationIntelligence,
       siteMemory,
+      confidenceCalibration,
     };
   }
 }
