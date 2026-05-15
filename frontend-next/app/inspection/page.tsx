@@ -1133,7 +1133,10 @@ export default function InspectionPage() {
                       Review Needed
                     </p>
                     <p className="mt-1 text-sm font-black text-slate-800">
-                      {safeScopeResult.requiresHumanReview ? "Yes" : "No"}
+                      {safeScopeResult.confidenceIntelligence?.supervisorReviewRecommended ||
+                      safeScopeResult.requiresHumanReview
+                        ? "Yes"
+                        : "No"}
                     </p>
                   </div>
                 </div>
@@ -1148,6 +1151,41 @@ export default function InspectionPage() {
                         .slice(0, 3)
                         .join(" • ")}
                     </p>
+                  </div>
+                )}
+
+                {!!safeScopeResult.confidenceIntelligence?.reviewTriggers?.length && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-red-700">
+                      Supervisor review triggers
+                    </p>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.confidenceIntelligence.reviewTriggers
+                        .slice(0, 4)
+                        .map((trigger: string) => (
+                          <li key={trigger}>{trigger}</li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+
+                {!!safeScopeResult.confidenceIntelligence?.reasonCodes?.length && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                      Confidence reason codes
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {safeScopeResult.confidenceIntelligence.reasonCodes
+                        .slice(0, 6)
+                        .map((code: string) => (
+                          <span
+                            key={code}
+                            className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600"
+                          >
+                            {code.replaceAll("_", " ")}
+                          </span>
+                        ))}
+                    </div>
                   </div>
                 )}
 
