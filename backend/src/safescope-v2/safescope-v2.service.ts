@@ -16,6 +16,7 @@ import { EvidenceQualityService } from './evidence-quality/evidence-quality.serv
 import { StandardsReasoningService } from './standards-reasoning/standards-reasoning.service';
 import { CorrelationIntelligenceService } from './correlation-intelligence/correlation-intelligence.service';
 import { EnergyTransferIntelligenceService } from './energy-intelligence/energy-transfer-intelligence.service';
+import { BarrierIntelligenceService } from './barrier-intelligence/barrier-intelligence.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -30,6 +31,7 @@ export class SafescopeV2Service {
   private standardsReasoningEngine = new StandardsReasoningService();
   private correlationEngine = new CorrelationIntelligenceService();
   private energyEngine = new EnergyTransferIntelligenceService();
+  private barrierEngine = new BarrierIntelligenceService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -316,6 +318,14 @@ export class SafescopeV2Service {
       generatedActions,
       suggestedStandards: primaryStandardsResult.suggestedStandards,
       trendIntelligence,
+      operationalReasoning,
+    });
+
+    const barrierIntelligence = this.barrierEngine.evaluate({
+      text: fusedText,
+      classification: promotedPrimary.classification,
+      energyTransferIntelligence,
+      controlIntelligence,
       operationalReasoning,
     });
 
