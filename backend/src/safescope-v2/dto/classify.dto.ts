@@ -22,6 +22,10 @@ export class ClassifyDto {
   @IsOptional()
   @IsString()
   workspaceId?: string;
+
+  @IsOptional()
+  @IsArray()
+  priorFindings?: any[];
 }
 
 

@@ -208,6 +208,15 @@ export default function InspectionPage() {
           photos.length ? `${photos.length} evidence photo(s) attached` : "",
           ...photos.map((photo, index) => `Photo ${index + 1}: ${photo.name || "evidence photo"}`),
         ].filter(Boolean),
+        priorFindings: findings.map((finding) => ({
+          id: finding.id,
+          hazardCategory: finding.hazardCategory,
+          classification: finding.safeScopeResult?.classification,
+          description: finding.description,
+          location: finding.location,
+          riskScore: finding.riskScore,
+          createdAt: finding.createdAt,
+        })),
       });
 
       setSafeScopeResult(result);

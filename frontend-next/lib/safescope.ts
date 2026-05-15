@@ -13,6 +13,7 @@ export async function runSafeScopeV2Classify(payload: {
   riskProfileId?: string;
   scopes?: string[];
   evidenceTexts?: string[];
+  priorFindings?: any[];
 }) {
   const text = payload.text || [
     payload.hazardCategory ? `Hazard Category: ${payload.hazardCategory}` : "",
@@ -28,7 +29,13 @@ export async function runSafeScopeV2Classify(payload: {
   const response = await fetch(`${API_BASE_URL}/safescope-v2/classify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({
+      text,
+      scopes: payload.scopes,
+      evidenceTexts: payload.evidenceTexts,
+      riskProfileId: payload.riskProfileId,
+      priorFindings: payload.priorFindings,
+    }),
   });
 
   if (!response.ok) {
