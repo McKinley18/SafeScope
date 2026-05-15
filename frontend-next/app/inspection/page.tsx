@@ -1307,6 +1307,149 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.eventSequence && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Event Sequence Intelligence
+                    </p>
+                    <h4 className="mt-1 text-sm font-black text-slate-900">
+                      Sequence confidence: {safeScopeResult.eventSequence.sequenceConfidence || "low"}
+                    </h4>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.eventSequence.sequenceSummary}
+                    </p>
+                    <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                      {(safeScopeResult.eventSequence.likelySequence || []).map((item: string) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {safeScopeResult.operationalState && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Operational State
+                    </p>
+                    <h4 className="mt-1 text-sm font-black text-slate-900">
+                      {safeScopeResult.operationalState.primaryState?.replaceAll("_", " ") || "unknown"}
+                    </h4>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.operationalState.stateAwarenessSummary}
+                    </p>
+                    {!!safeScopeResult.operationalState.stateRisks?.length && (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.operationalState.stateRisks.slice(0, 3).map((risk: string) => (
+                          <li key={risk}>{risk}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {safeScopeResult.humanFactors?.humanFactorsPresent && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Human Factors Intelligence
+                    </p>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.humanFactors.humanFactorsSummary}
+                    </p>
+                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                      {[
+                        ...(safeScopeResult.humanFactors.behaviorRiskSignals || []),
+                        ...(safeScopeResult.humanFactors.visibilitySignals || []),
+                        ...(safeScopeResult.humanFactors.lineOfFireSignals || []),
+                        ...(safeScopeResult.humanFactors.humanFactorSignals || []),
+                      ].slice(0, 4).map((signal: string) => (
+                        <li key={signal}>{signal}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {safeScopeResult.contradictionIntelligence?.contradictionsDetected && (
+                  <div className="mt-4 border-l-4 border-red-300 bg-red-50 px-3 py-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-red-700">
+                      Contradiction Detection
+                    </p>
+                    <p className="mt-2 text-sm font-bold leading-6 text-red-900">
+                      {safeScopeResult.contradictionIntelligence.reviewImpact}
+                    </p>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-red-900">
+                      {safeScopeResult.contradictionIntelligence.contradictions
+                        .slice(0, 3)
+                        .map((item: string) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+
+                {safeScopeResult.correlationIntelligence && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                          Correlation Intelligence
+                        </p>
+                        <h4 className="mt-1 text-sm font-black text-slate-900">
+                          Cascade potential: {safeScopeResult.correlationIntelligence.cascadePotential || "low"}
+                        </h4>
+                      </div>
+                      {safeScopeResult.correlationIntelligence.escalationRecommended && (
+                        <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">
+                          Escalate
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.correlationIntelligence.recommendation}
+                    </p>
+                  </div>
+                )}
+
+                {safeScopeResult.counterfactualIntelligence && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Counterfactual Reasoning
+                    </p>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.counterfactualIntelligence.counterfactualSummary}
+                    </p>
+                    {!!safeScopeResult.counterfactualIntelligence.counterfactuals?.length && (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.counterfactualIntelligence.counterfactuals
+                          .slice(0, 3)
+                          .map((item: string) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {safeScopeResult.siteMemory && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Site Memory Intelligence
+                    </p>
+                    <h4 className="mt-1 text-sm font-black text-slate-900">
+                      Degradation risk: {safeScopeResult.siteMemory.degradationRisk || "low"}
+                    </h4>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.siteMemory.siteMemorySummary}
+                    </p>
+                    {!!safeScopeResult.siteMemory.operationalPatterns?.length && (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.siteMemory.operationalPatterns.slice(0, 4).map((item: string) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
                 {safeScopeResult.decisionExplainability && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
