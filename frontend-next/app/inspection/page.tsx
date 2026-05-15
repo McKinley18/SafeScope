@@ -1409,6 +1409,71 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.energyTransferIntelligence && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                          Energy Transfer Intelligence
+                        </p>
+                        <h4 className="mt-1 text-sm font-black text-slate-900">
+                          Dominant energy: {safeScopeResult.energyTransferIntelligence.dominantEnergySource || "undetermined"}
+                        </h4>
+                      </div>
+
+                      {safeScopeResult.energyTransferIntelligence.uncontrolledEnergyLikely && (
+                        <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">
+                          Uncontrolled Energy
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.energyTransferIntelligence.energyTransferSummary}
+                    </p>
+
+                    {!!safeScopeResult.energyTransferIntelligence.energySources?.length && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {safeScopeResult.energyTransferIntelligence.energySources.map((source: string) => (
+                          <span
+                            key={source}
+                            className="rounded-full bg-[#E8F4FF] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1D72B8]"
+                          >
+                            {source}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {!!safeScopeResult.energyTransferIntelligence.releaseMechanisms?.length && (
+                      <div className="mt-3">
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                          Release Mechanism
+                        </p>
+                        <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.energyTransferIntelligence.releaseMechanisms[0]}
+                        </p>
+                      </div>
+                    )}
+
+                    {!!safeScopeResult.energyTransferIntelligence.missingBarriers?.length && (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.energyTransferIntelligence.missingBarriers
+                          .slice(0, 3)
+                          .map((barrier: string) => (
+                            <li key={barrier}>{barrier}</li>
+                          ))}
+                      </ul>
+                    )}
+
+                    {!!safeScopeResult.energyTransferIntelligence.controlLogic?.length && (
+                      <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.energyTransferIntelligence.controlLogic[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {safeScopeResult.controlIntelligence && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
