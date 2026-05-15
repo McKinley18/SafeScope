@@ -21,6 +21,7 @@ import { ActionEffectivenessService } from './action-effectiveness/action-effect
 import { EventSequenceService } from './event-sequence/event-sequence.service';
 import { OperationalStateService } from './operational-state/operational-state.service';
 import { HumanFactorsService } from './human-factors/human-factors.service';
+import { ContradictionIntelligenceService } from './contradiction-intelligence/contradiction-intelligence.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -40,6 +41,7 @@ export class SafescopeV2Service {
   private eventSequenceEngine = new EventSequenceService();
   private operationalStateEngine = new OperationalStateService();
   private humanFactorsEngine = new HumanFactorsService();
+  private contradictionEngine = new ContradictionIntelligenceService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -358,6 +360,14 @@ export class SafescopeV2Service {
       operationalState,
       eventSequence,
       energyTransferIntelligence,
+    });
+
+    const contradictionIntelligence = this.contradictionEngine.evaluate({
+      text: fusedText,
+      operationalState,
+      energyTransferIntelligence,
+      barrierIntelligence,
+      humanFactors,
     });
 
     const actionEffectiveness = this.actionEffectivenessEngine.evaluate({
