@@ -8,12 +8,14 @@ import { EvidenceFusionService } from './evidence/evidence-fusion.service';
 import { ApplicableStandardsService } from '../applicable-standards/applicable-standards.service';
 import { ConfidenceIntelligenceService } from './confidence/confidence-intelligence.service';
 import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service';
+import { TrendIntelligenceService } from './trend-intelligence/trend-intelligence.service';
 
 @Injectable()
 export class SafescopeV2Service {
   private classifier = new WeightedClassifierService();
   private bridge = new StandardsBridgeService();
   private confidenceEngine = new ConfidenceIntelligenceService();
+  private trendEngine = new TrendIntelligenceService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
