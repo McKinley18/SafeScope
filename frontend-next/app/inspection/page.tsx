@@ -7,6 +7,7 @@ import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
 import { getOrganizationSettings, saveWorkspaceReport } from "@/lib/auth";
 import { getCoverPage, getReports, setLatestReport, setReports } from "@/lib/reportStorage";
 import { getStoredActions, saveStoredActions, type StoredAction } from "@/lib/actionStorage";
+import { addActivityEvent } from "@/lib/activityStorage";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
 import { deleteEncryptedPhoto, loadEncryptedPhoto, saveEncryptedPhoto } from "@/lib/evidenceStorage";
@@ -457,6 +458,11 @@ export default function InspectionPage() {
 
     const current = buildCurrentFinding();
     await persistFindingActions(current);
+    await addActivityEvent({
+      type: "Finding",
+      title: current.hazardCategory || current.safeScopeResult?.classification || "Finding saved",
+      detail: current.location || "Inspection finding updated",
+    });
 
     setFindings((prev) => {
       if (editingFindingIndex !== null) {
@@ -489,6 +495,11 @@ export default function InspectionPage() {
     if (!currentFindingSaved && hasCurrentFindingData()) {
       const current = buildCurrentFinding();
       await persistFindingActions(current);
+      await addActivityEvent({
+        type: "Finding",
+        title: current.hazardCategory || current.safeScopeResult?.classification || "Finding saved",
+        detail: current.location || "Inspection finding added",
+      });
       setFindings((prev) => [...prev, current]);
     }
 
@@ -710,6 +721,12 @@ export default function InspectionPage() {
         await setReports(nextReports);
       }
     }
+
+    await addActivityEvent({
+      type: "Report",
+      title: `Inspection report ${report.id} generated`,
+      detail: `${finalizedFindings.length} finding(s)`,
+    });
 
     router.push("/inspection-review");
   }
