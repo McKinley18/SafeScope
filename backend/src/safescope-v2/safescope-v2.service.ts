@@ -19,6 +19,7 @@ import { EnergyTransferIntelligenceService } from './energy-intelligence/energy-
 import { BarrierIntelligenceService } from './barrier-intelligence/barrier-intelligence.service';
 import { ActionEffectivenessService } from './action-effectiveness/action-effectiveness.service';
 import { EventSequenceService } from './event-sequence/event-sequence.service';
+import { OperationalStateService } from './operational-state/operational-state.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -36,6 +37,7 @@ export class SafescopeV2Service {
   private barrierEngine = new BarrierIntelligenceService();
   private actionEffectivenessEngine = new ActionEffectivenessService();
   private eventSequenceEngine = new EventSequenceService();
+  private operationalStateEngine = new OperationalStateService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -339,6 +341,13 @@ export class SafescopeV2Service {
       operationalReasoning,
       energyTransferIntelligence,
       barrierIntelligence,
+    });
+
+    const operationalState = this.operationalStateEngine.evaluate({
+      text: fusedText,
+      classification: promotedPrimary.classification,
+      eventSequence,
+      energyTransferIntelligence,
     });
 
     const actionEffectiveness = this.actionEffectivenessEngine.evaluate({
