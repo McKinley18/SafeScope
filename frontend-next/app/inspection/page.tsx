@@ -1198,6 +1198,70 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.trendIntelligence && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                          Trend Intelligence
+                        </p>
+                        <h4 className="mt-1 text-sm font-black text-slate-900">
+                          Recurrence risk: {safeScopeResult.trendIntelligence.recurrenceRisk || "low"}
+                        </h4>
+                      </div>
+
+                      {safeScopeResult.trendIntelligence.escalationRecommended && (
+                        <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">
+                          Escalate
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">Trend</p>
+                        <p className="mt-1 text-sm font-black text-slate-800">
+                          {safeScopeResult.trendIntelligence.trendDirection || "not established"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">Hotspot</p>
+                        <p className="mt-1 text-sm font-black text-slate-800">
+                          {safeScopeResult.trendIntelligence.hotspotArea || "None detected"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">Related</p>
+                        <p className="mt-1 text-sm font-black text-slate-800">
+                          {safeScopeResult.trendIntelligence.relatedFindingCount || 0} finding(s)
+                        </p>
+                      </div>
+                    </div>
+
+                    {!!safeScopeResult.trendIntelligence.controlFailureIndicators?.length && (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.trendIntelligence.controlFailureIndicators
+                          .slice(0, 3)
+                          .map((indicator: string) => (
+                            <li key={indicator}>{indicator}</li>
+                          ))}
+                      </ul>
+                    )}
+
+                    <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.trendIntelligence.recommendation}
+                    </p>
+                  </div>
+                )}
+
+                {safeScopeResult.duplicateIntelligence?.possibleDuplicate && (
+                  <div className="mt-4 border-l-4 border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold leading-6 text-amber-900">
+                    Possible duplicate or repeat finding detected. {safeScopeResult.duplicateIntelligence.recommendedSplitOrMergeAction}
+                  </div>
+                )}
+
                 {safeScopeResult.risk?.requiresShutdown && (
                   <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-black text-red-700">
                     Shutdown / immediate control recommended.
