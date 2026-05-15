@@ -1256,6 +1256,57 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.evidenceQuality && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Evidence Quality
+                    </p>
+                    <h4 className="mt-1 text-sm font-black text-slate-900">
+                      Defensibility score: {safeScopeResult.evidenceQuality.evidenceQualityScore}/100
+                    </h4>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.evidenceQuality.defensibilityStatement}
+                    </p>
+
+                    {!!safeScopeResult.evidenceQuality.gaps?.length && (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.evidenceQuality.gaps.slice(0, 4).map((gap: string) => (
+                          <li key={gap}>{gap}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {safeScopeResult.standardsReasoning?.topDefensible?.length && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Adaptive Standards Reasoning
+                    </p>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.standardsReasoning.summary}
+                    </p>
+
+                    <div className="mt-3 space-y-2">
+                      {safeScopeResult.standardsReasoning.topDefensible
+                        .slice(0, 3)
+                        .map((standard: any) => (
+                          <div key={standard.citation} className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-sm font-black text-slate-900">{standard.citation}</p>
+                              <span className="rounded-full bg-[#E8F4FF] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1D72B8]">
+                                {Math.round((standard.defensibilityScore || 0) * 100)}% defensible
+                              </span>
+                            </div>
+                            <p className="mt-1 text-xs font-semibold leading-5 text-slate-600">
+                              {standard.reasoning}
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
                 {safeScopeResult.decisionExplainability && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
