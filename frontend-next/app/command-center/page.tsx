@@ -60,6 +60,17 @@ export default function DashboardPage() {
       .slice(0, 5);
   }, [reports]);
 
+  const activityItems = useMemo(() => {
+    return reports
+      .map((report) => ({
+        type: "Report",
+        title: report.id ? `Inspection report ${report.id}` : "Inspection report saved",
+        detail: `${report.findings?.length || 0} finding(s)`,
+        time: report.createdAt ? new Date(report.createdAt).toLocaleDateString() : "Saved",
+      }))
+      .slice(0, 5);
+  }, [reports]);
+
   const dashboardMetrics = useMemo(() => {
     const findings = reports.flatMap((report) => report.findings || []);
 
@@ -222,10 +233,25 @@ export default function DashboardPage() {
             <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
               Activity
             </p>
-            <div className="mt-3 border-y border-slate-200 py-5">
-              <p className="text-sm font-semibold text-slate-500">
-                No recent workspace activity available yet.
-              </p>
+            <div className="mt-3 border-y border-slate-200">
+              {activityItems.length ? (
+                activityItems.map((item) => (
+                  <div key={`${item.title}-${item.time}`} className="border-b border-slate-200 py-3 last:border-b-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">{item.type}</p>
+                        <p className="mt-1 text-sm font-black text-slate-900">{item.title}</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">{item.detail}</p>
+                      </div>
+                      <span className="shrink-0 text-xs font-bold text-slate-400">{item.time}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="py-5 text-sm font-semibold text-slate-500">
+                  No recent workspace activity available yet.
+                </p>
+              )}
             </div>
           </section>
         </aside>
