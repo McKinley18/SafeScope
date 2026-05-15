@@ -11,6 +11,7 @@ import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service'
 import { TrendIntelligenceService } from './trend-intelligence/trend-intelligence.service';
 import { OperationalReasoningService } from './reasoning/operational-reasoning.service';
 import { ControlIntelligenceService } from './control-intelligence/control-intelligence.service';
+import { DecisionExplainabilityService } from './explainability/decision-explainability.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -20,6 +21,7 @@ export class SafescopeV2Service {
   private trendEngine = new TrendIntelligenceService();
   private reasoningEngine = new OperationalReasoningService();
   private controlEngine = new ControlIntelligenceService();
+  private explainabilityEngine = new DecisionExplainabilityService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -290,6 +292,16 @@ export class SafescopeV2Service {
       suggestedStandards: primaryStandardsResult.suggestedStandards,
       trendIntelligence,
       operationalReasoning,
+    });
+
+    const decisionExplainability = this.explainabilityEngine.evaluate({
+      classification: promotedPrimary.classification,
+      confidenceIntelligence,
+      risk: promotedPrimary.risk,
+      suggestedStandards: primaryStandardsResult.suggestedStandards,
+      operationalReasoning,
+      trendIntelligence,
+      controlIntelligence,
     });
 
     const additionalHazards = await Promise.all(
