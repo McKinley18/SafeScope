@@ -11,7 +11,8 @@
     "clean:cfr": "ts-node src/standards/ingestion/clean.cfr.ts",
     "test:safescope": "ts-node src/safescope-v2/tests/golden-hazard-tests.ts",
     "seed:safescope-standards": "ts-node src/safescope-v2/standards/safescope-standards.seed.ts",
-    "test:safescope-standards": "ts-node src/safescope-v2/tests/golden-standards-tests.ts"
+    "test:safescope-standards": "ts-node src/safescope-v2/tests/golden-standards-tests.ts",
+    "test:safescope-operational": "ts-node src/safescope-v2/tests/golden-operational-reasoning-tests.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
