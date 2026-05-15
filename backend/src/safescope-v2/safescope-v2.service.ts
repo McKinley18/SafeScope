@@ -7,6 +7,7 @@ import { ContextExpansionService } from './context/context-expansion.service';
 import { EvidenceFusionService } from './evidence/evidence-fusion.service';
 import { ApplicableStandardsService } from '../applicable-standards/applicable-standards.service';
 import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service';
+import { ReasoningSnapshotService } from './snapshots/reasoning-snapshot.service';
 import { SafeScopeIntelligenceOrchestrator } from './orchestration/intelligence-orchestrator.service';
 
 @Injectable()
@@ -21,6 +22,7 @@ export class SafescopeV2Service {
     private readonly evidenceFusion: EvidenceFusionService,
     private readonly applicableStandards: ApplicableStandardsService,
     private readonly feedbackService: SafeScopeFeedbackService,
+    private readonly reasoningSnapshotService: ReasoningSnapshotService,
   ) {}
 
 
@@ -296,6 +298,20 @@ export class SafescopeV2Service {
       workspaceId,
     });
 
+    let reasoningSnapshotId: string | null = null;
+
+    try {
+      const snapshot = await this.reasoningSnapshotService.createSnapshot({
+        workspaceId,
+        classification: promotedPrimary.classification,
+        intelligence,
+      });
+
+      reasoningSnapshotId = snapshot.id;
+    } catch (error) {
+      console.warn('SafeScope reasoning snapshot persistence failed:', error);
+    }
+
     const promotionWarning =
       promotedPrimary.classification !== result.classification
         ? [
@@ -321,6 +337,7 @@ export class SafescopeV2Service {
       evidenceFusion,
       expandedContext,
       ...intelligence,
+      reasoningSnapshotId,
       generatedActions,
       additionalHazards,
     };
