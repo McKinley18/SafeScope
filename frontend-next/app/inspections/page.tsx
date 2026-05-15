@@ -27,7 +27,7 @@ export default function InspectionsPage() {
         <div className="flex justify-center md:justify-end">
           <Link
             href="/inspection-cover" onClick={() => clearActiveInspectionDraft()}
-            className="min-w-[180px] rounded-xl border border-white/10 bg-[#1A2436] px-6 py-3 text-center text-sm font-black text-white"
+            className="min-w-[180px] rounded-xl bg-[#F97316] px-6 py-3 text-center text-sm font-black text-white shadow-lg shadow-orange-950/20 transition hover:bg-orange-500"
           >
             Start Inspection
           </Link>

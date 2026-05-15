@@ -198,6 +198,35 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </section>
+
+      <section className="border-t border-slate-200 pt-6">
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+          Calculations & Why It Matters
+        </p>
+        <h2 className="mt-2 text-xl font-black text-slate-900">
+          How Sentinel interprets workspace risk
+        </h2>
+
+        <div className="mt-4 border-y border-slate-200">
+          {[
+            ["Critical Findings", "Findings with a risk score of 20 or greater, or a SafeScope critical risk band.", "Highlights exposures that may require immediate control, leadership review, or verification before restart."],
+            ["Closure Rate", "Completed corrective actions divided by total corrective actions.", "Shows whether identified hazards are being converted into verified controls."],
+            ["Low Confidence", "SafeScope results below 70% confidence.", "Identifies findings that need stronger evidence, clearer descriptions, or supervisor review."],
+            ["Recurring Themes", "Repeated hazard categories or repeated locations across saved findings.", "Flags possible control weakness, training gaps, or supervision drift."]
+          ].map(([label, calc, why]) => (
+            <div key={label} className="border-b border-slate-200 py-4 last:border-b-0">
+              <p className="text-sm font-black text-slate-900">{label}</p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                <span className="font-black text-slate-700">Calculation:</span> {calc}
+              </p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                <span className="font-black text-slate-700">Why:</span> {why}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
     </section>
   );
 }
