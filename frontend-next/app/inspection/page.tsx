@@ -618,38 +618,56 @@ export default function InspectionPage() {
 
   return (
     <>
-      <div className="sticky top-[73px] z-30 -mx-4 -mt-5 mb-5 border-b border-slate-300 bg-gradient-to-b from-[#16324F] to-[#1D4F7A] px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.10)] sm:-mx-6 sm:px-6">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              if (currentStep === 1) {
-                router.push("/inspection-cover");
-                return;
-              }
-              goToInspectionStep(currentStep - 1);
-            }}
-            className="flex min-h-11 items-center rounded-2xl border border-white/20 bg-white/15 px-4 text-sm font-black text-white backdrop-blur"
-          >
-            ← Back
-          </button>
+      <div className="sticky top-[73px] z-30 -mx-4 -mt-5 mb-4 border-b border-white/10 bg-gradient-to-br from-[#0B1320] via-[#102A43] to-[#16324F] px-4 py-4 shadow-[0_14px_30px_rgba(15,23,42,0.18)] sm:-mx-6 sm:px-6">
+        <div className="mb-3 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-black leading-tight text-white sm:text-3xl">
+              {steps[currentStep - 1].title.replace(/^Step \d+: /, "")}
+            </h1>
+            <p className="mt-1 text-sm font-semibold text-blue-100">
+              {steps[currentStep - 1].desc}
+            </p>
+          </div>
 
-          <div className="rounded-full bg-[#F97316] px-4 py-2 text-xs font-black text-white shadow-sm">
+          <div className="shrink-0 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black text-white shadow-sm backdrop-blur">
             Step {currentStep} of {steps.length}
           </div>
         </div>
 
         <div>
-          <h1 className="text-2xl font-black leading-tight text-white sm:text-3xl">
-            {steps[currentStep - 1].title.replace(/^Step \d+: /, "")}
-          </h1>
-          <p className="mt-1 text-sm font-semibold text-blue-100">
-            {steps[currentStep - 1].desc}
-          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (currentStep === 1) {
+                  router.push("/inspection-cover");
+                  return;
+                }
+                goToInspectionStep(currentStep - 1);
+              }}
+              className="flex min-h-7 items-center rounded-xl border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-black text-white backdrop-blur transition hover:bg-white/20"
+            >
+              ← Back
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (currentStep === 6) {
+                  generateReport();
+                  return;
+                }
+                goToInspectionStep(currentStep + 1);
+              }}
+              className="flex min-h-7 items-center rounded-xl bg-[#F97316] px-4 py-1 text-[11px] font-black text-white shadow-sm transition hover:bg-orange-500"
+            >
+              {currentStep === 6 ? "Generate Report" : "Next →"}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mb-5 hidden gap-2 sm:flex">
+      <div className="mb-4 hidden gap-2 sm:flex">
         {steps.map((_, index) => {
           const stepNumber = index + 1;
           const active = currentStep === stepNumber;
@@ -667,15 +685,17 @@ export default function InspectionPage() {
         })}
       </div>
 
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5">
         {currentStep === 1 && (
           <>
-            <h2 className="mb-4 text-xl font-black text-slate-900">Hazard Identification</h2>
+            <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
+              Capture the hazard category, plain-language description, and exact location before running SafeScope.
+            </p>
 
             <label className="mb-2 block text-sm font-black text-slate-700">Hazard Category</label>
             <input
               list="hazard-category-options"
-              className="mb-4 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
+              className="mb-4 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
               placeholder="Choose a category or type your own"
               value={hazardCategory}
               onChange={(e) => setHazardCategory(e.target.value)}
@@ -688,7 +708,7 @@ export default function InspectionPage() {
 
             <label className="mb-2 block text-sm font-black text-slate-700">Description</label>
             <textarea
-              className="mb-4 min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
+              className="mb-4 min-h-28 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
               placeholder="Describe the hazard, where it was found, who may be exposed, and what condition exists."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -696,7 +716,7 @@ export default function InspectionPage() {
 
             <label className="mb-2 block text-sm font-black text-slate-700">Location</label>
             <input
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
               placeholder="Example: Conveyor 3, north catwalk"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
@@ -706,17 +726,19 @@ export default function InspectionPage() {
 
         {currentStep === 2 && (
           <>
-            <h2 className="mb-4 text-xl font-black text-slate-900">Evidence Capture</h2>
+            <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
+              Take field photos, upload evidence, and annotate key hazard areas before generating the report.
+            </p>
 
-            <div className="mb-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-              <div className="text-4xl">📷</div>
-              <div className="mt-2 text-lg font-black text-slate-900">Evidence Photos</div>
-              <p className="mt-1 text-sm font-semibold text-blue-100">
-                Take photos in the field or upload existing evidence images.
+            <div className="mb-4 rounded-[24px] border-2 border-dashed border-blue-200 bg-[#E8F4FF] p-5 text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">📷</div>
+              <div className="mt-3 text-lg font-black text-slate-900">Evidence Photos</div>
+              <p className="mt-1 text-sm font-semibold text-slate-600">
+                Capture conditions clearly enough for review, verification, and audit support.
               </p>
 
-              <div className="mt-5 flex justify-center gap-3">
-                <label className="cursor-pointer rounded-xl bg-[#1D72B8] px-4 py-3 text-sm font-black text-white">
+              <div className="mt-4 flex justify-center gap-3">
+                <label className="cursor-pointer rounded-2xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#155A93]">
                   Take Photo
                   <input
                     type="file"
@@ -727,7 +749,7 @@ export default function InspectionPage() {
                   />
                 </label>
 
-                <label className="cursor-pointer rounded-xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-700">
+                <label className="cursor-pointer rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-50">
                   Upload Photo
                   <input
                     type="file"
@@ -847,10 +869,22 @@ export default function InspectionPage() {
 
         {currentStep === 3 && (
           <>
-            <h2 className="mb-4 text-xl font-black text-slate-900">SafeScope Regulation Mapping</h2>
+            <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
+              SafeScope uses the hazard category, description, location, evidence notes, and agency mode to suggest likely standards. Suggestions must be reviewed by a qualified safety professional.
+            </p>
 
-            <div className="mb-4 rounded-xl bg-[#E8F4FF] p-4 text-sm font-semibold text-slate-700">
-              SafeScope uses the hazard category, description, location, evidence notes, and selected agency mode to suggest likely standards. Suggestions must be reviewed by a qualified safety professional.
+            <div className="mb-5 rounded-[20px] border border-blue-100 bg-[#E8F4FF] p-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-lg shadow-sm">
+                  🧠
+                </div>
+                <div>
+                  <p className="text-sm font-black text-slate-900">SafeScope decision-support mode</p>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                    Use the results as a review aid. Final standard selection and compliance decisions remain with qualified personnel.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <label className="mb-2 block text-sm font-black text-slate-700">Applicable Regulations</label>
@@ -866,8 +900,8 @@ export default function InspectionPage() {
                   onClick={() => setAgencyMode(value)}
                   className={`rounded-full px-4 py-2 text-sm font-black ${
                     agencyMode === value
-                      ? "bg-[#1D72B8] text-white"
-                      : "bg-slate-100 text-slate-600"
+                      ? "bg-[#1D72B8] text-white shadow-sm"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
                   {label}
@@ -876,7 +910,7 @@ export default function InspectionPage() {
             </div>
 
             <label className="mb-2 block text-sm font-black text-slate-700">Company Risk Matrix</label>
-            <div className="mb-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold text-slate-700">
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700">
               {riskProfileId === "simple_4x4"
                 ? "Simple 4x4"
                 : riskProfileId === "advanced_6x6"
@@ -886,7 +920,7 @@ export default function InspectionPage() {
 
             <button
               onClick={handleRunSafeScope}
-              className="mb-3 rounded-xl bg-[#102A43] px-5 py-3 text-sm font-black text-white"
+              className="mb-3 rounded-2xl bg-[#102A43] px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#0B1F33] active:scale-[0.98]"
             >
               Run SafeScope Match
             </button>
@@ -894,7 +928,7 @@ export default function InspectionPage() {
             {safeScopeStatus && <p className="mb-4 text-sm font-black text-slate-600">{safeScopeStatus}</p>}
 
             {safeScopeResult?.confidenceIntelligence && (
-              <div className="mb-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+              <div className="mb-4 rounded-[24px] border border-blue-100 bg-white px-4 py-3 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="font-black text-slate-900">SafeScope Confidence Intelligence</h3>
                   <span className="rounded-full bg-[#E8F4FF] px-3 py-1 text-xs font-black uppercase tracking-wide text-[#1D72B8]">
@@ -938,8 +972,9 @@ export default function InspectionPage() {
             )}
 
             {safeScopeResult?.risk && (
-              <div className="mb-4 rounded-2xl bg-slate-50 p-4">
-                <h3 className="mb-3 text-lg font-black text-slate-900">SafeScope Risk Intelligence</h3>
+              <div className="mb-4 rounded-[20px] border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">Risk Intelligence</p>
+                <h3 className="mb-3 mt-1 text-lg font-black text-slate-900">SafeScope Risk Assessment</h3>
 
                 <div className="mb-3 rounded-xl bg-white p-3">
                   <div className="text-sm font-black text-slate-900">
@@ -972,8 +1007,9 @@ export default function InspectionPage() {
             )}
 
             {safeScopeResult?.expandedContext && (
-              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <h3 className="font-black text-slate-900">SafeScope Inferred Context</h3>
+              <div className="mb-4 rounded-[24px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">Inferred Context</p>
+                <h3 className="mt-1 font-black text-slate-900">SafeScope Inferred Context</h3>
 
                 <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
                   <div>
@@ -1012,11 +1048,16 @@ export default function InspectionPage() {
             )}
 
             {!!safeScopeResult?.suggestedStandards?.length && (
-              <div className="mb-4">
-                <h3 className="mb-2 font-black text-slate-900">SafeScope Suggested Standards</h3>
-                <p className="mb-3 text-sm font-semibold text-slate-500">
-                  SafeScope suggestions are not final until selected by the user for the report.
-                </p>
+              <div className="mb-4 rounded-[24px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                <div className="mb-4">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+                    Standards Review
+                  </p>
+                  <h3 className="mt-1 text-xl font-black text-slate-900">SafeScope Suggested Standards</h3>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
+                    Select only the standards you want included in the final report. Suggestions are not final until reviewed.
+                  </p>
+                </div>
 
                 <label className="mb-2 block text-sm font-black text-slate-700">
                   Feedback Notes
@@ -1025,7 +1066,7 @@ export default function InspectionPage() {
                   value={feedbackNotes}
                   onChange={(e) => setFeedbackNotes(e.target.value)}
                   placeholder="Optional notes for accepting, rejecting, or flagging a standard."
-                  className="mb-3 min-h-24 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#1D72B8]"
+                  className="mb-3 min-h-24 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
                 />
                 {safeScopeResult.suggestedStandards.map((standard: any) => {
                   const selected = selectedStandards.some(
@@ -1035,10 +1076,10 @@ export default function InspectionPage() {
                   return (
                     <div
                       key={standard.citation}
-                      className={`mb-3 rounded-2xl border p-4 ${
+                      className={`mb-3 rounded-[18px] border p-3 transition ${
                         selected
-                          ? "border-[#1D72B8] bg-[#E8F4FF]"
-                          : "border-slate-200 bg-white"
+                          ? "border-[#1D72B8] bg-[#E8F4FF] shadow-sm"
+                          : "border-slate-200 bg-slate-50 hover:border-blue-200 hover:bg-white"
                       }`}
                     >
                       <div className="flex flex-wrap items-center gap-2">
@@ -1146,7 +1187,7 @@ export default function InspectionPage() {
             )}
 
             {!!safeScopeResult?.additionalHazards?.length && (
-              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-4 rounded-[24px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
                 <h3 className="font-black text-slate-900">Additional Hazards Detected</h3>
 
                 <div className="mt-3 space-y-2">
@@ -1173,13 +1214,12 @@ export default function InspectionPage() {
 
               return (
                 <>
-                  <h2 className="mb-2 text-xl font-black text-slate-900">Review / Confirm Risk Rating</h2>
-                  <p className="mb-3 text-sm font-semibold text-slate-500">
+                  <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
                     Company matrix: <span className="font-black text-slate-700">{activeRiskScale.label}</span>. Select 1–{activeRiskScale.maxScore} for severity and likelihood.
                   </p>
 
                   {safeScopeResult?.risk?.operationalRisk && (
-                    <div className="mb-4 rounded-2xl bg-[#E8F4FF] p-4">
+                    <div className="mb-5 rounded-[20px] border border-blue-100 bg-[#E8F4FF] p-3">
                       <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
                         SafeScope Suggested Risk
                       </p>
@@ -1189,17 +1229,17 @@ export default function InspectionPage() {
                     </div>
                   )}
 
-                  <h3 className="mb-2 font-black text-slate-800">Severity</h3>
-                  <div className="grid gap-1.5">
+                  <h3 className="mb-3 font-black text-slate-800">Severity</h3>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {activeRiskScale.severity.map((item) => (
                       <button
                         key={item.score}
                         type="button"
                         onClick={() => setSeverity(item.score)}
-                        className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left ${
+                        className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
                           severity === item.score
-                            ? "border-[#1D72B8] bg-[#E8F4FF]"
-                            : "border-slate-200 bg-white"
+                            ? "border-[#1D72B8] bg-[#E8F4FF] shadow-sm"
+                            : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
                         }`}
                       >
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black">
@@ -1213,17 +1253,17 @@ export default function InspectionPage() {
                     ))}
                   </div>
 
-                  <h3 className="mb-2 mt-5 font-black text-slate-800">Likelihood</h3>
-                  <div className="grid gap-1.5">
+                  <h3 className="mb-3 mt-6 font-black text-slate-800">Likelihood</h3>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {activeRiskScale.likelihood.map((item) => (
                       <button
                         key={item.score}
                         type="button"
                         onClick={() => setLikelihood(item.score)}
-                        className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left ${
+                        className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
                           likelihood === item.score
-                            ? "border-[#1D72B8] bg-[#E8F4FF]"
-                            : "border-slate-200 bg-white"
+                            ? "border-[#1D72B8] bg-[#E8F4FF] shadow-sm"
+                            : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
                         }`}
                       >
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black">
@@ -1237,8 +1277,8 @@ export default function InspectionPage() {
                     ))}
                   </div>
 
-                  <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-black text-slate-900">User-Approved Risk</p>
+                  <div className="mt-6 rounded-[20px] border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">User-Approved Risk</p>
                     <p className="mt-1 text-sm font-semibold text-slate-600">
                       {severity && likelihood
                         ? `Severity ${severity} × Likelihood ${likelihood} = ${severity * likelihood}`
@@ -1253,13 +1293,15 @@ export default function InspectionPage() {
 
         {currentStep === 5 && (
           <>
-            <h2 className="mb-4 text-xl font-black text-slate-900">Corrective Actions</h2>
+            <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
+              Select recommended actions when useful, then add the actual action your team will assign and verify.
+            </p>
 
             {safeScopeResult?.generatedActions?.length ? (
               <div className="space-y-3">
                 <div>
                   <h3 className="font-black text-slate-900">SafeScope Recommended Actions</h3>
-                  <p className="mt-1 text-sm font-semibold text-blue-100">
+                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
                     Select any SafeScope action you want included in the final finding.
                   </p>
                 </div>
@@ -1275,10 +1317,10 @@ export default function InspectionPage() {
                       key={index}
                       type="button"
                       onClick={() => toggleGeneratedAction(action)}
-                      className={`w-full rounded-2xl border p-4 text-left ${
+                      className={`w-full border-l-4 border-b border-slate-200 px-3 py-4 text-left transition ${
                         selected
-                          ? "border-[#1D72B8] bg-[#E8F4FF]"
-                          : "border-slate-200 bg-white"
+                          ? "border-l-[#1D72B8] bg-[#E8F4FF]"
+                          : "border-l-slate-200 bg-transparent hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -1307,14 +1349,14 @@ export default function InspectionPage() {
                 })}
               </div>
             ) : (
-              <div className="rounded-xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+              <p className="border-y border-slate-200 py-4 text-sm font-semibold text-slate-600">
                 Run SafeScope in Step 3 to generate recommended corrective actions.
-              </div>
+              </p>
             )}
 
-            <div className="mt-6 border-t border-slate-300 pt-5">
+            <div className="mt-7 border-t border-slate-200 pt-6">
               <h3 className="font-black text-slate-900">User-Entered Corrective Action</h3>
-              <p className="mt-1 text-sm font-semibold text-blue-100">
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
                 Add the actual corrective action your team will assign, track, and verify.
               </p>
 
