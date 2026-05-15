@@ -13,6 +13,7 @@ import { OperationalReasoningService } from './reasoning/operational-reasoning.s
 import { ControlIntelligenceService } from './control-intelligence/control-intelligence.service';
 import { DecisionExplainabilityService } from './explainability/decision-explainability.service';
 import { EvidenceQualityService } from './evidence-quality/evidence-quality.service';
+import { StandardsReasoningService } from './standards-reasoning/standards-reasoning.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -24,6 +25,7 @@ export class SafescopeV2Service {
   private controlEngine = new ControlIntelligenceService();
   private explainabilityEngine = new DecisionExplainabilityService();
   private evidenceQualityEngine = new EvidenceQualityService();
+  private standardsReasoningEngine = new StandardsReasoningService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -304,6 +306,14 @@ export class SafescopeV2Service {
       suggestedStandards: primaryStandardsResult.suggestedStandards,
       trendIntelligence,
       operationalReasoning,
+    });
+
+    const standardsReasoning = this.standardsReasoningEngine.evaluate({
+      classification: promotedPrimary.classification,
+      standards: primaryStandardsResult.suggestedStandards,
+      operationalReasoning,
+      expandedContext,
+      risk: promotedPrimary.risk,
     });
 
     const decisionExplainability = this.explainabilityEngine.evaluate({
