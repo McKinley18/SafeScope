@@ -23,6 +23,43 @@ export default function DashboardPage() {
     loadDashboardReports();
   }, []);
 
+  const priorityActions = useMemo(() => {
+    return reports
+      .flatMap((report) =>
+        (report.findings || []).flatMap((finding) =>
+          [
+            ...(finding.manualActions || []),
+            ...(finding.correctiveActions || []),
+            ...(finding.safeScopeResult?.generatedActions || []),
+          ].map((action) => ({
+            ...action,
+            findingTitle:
+              finding.hazardCategory ||
+              finding.safeScopeResult?.classification ||
+              finding.description ||
+              "Inspection Finding",
+            location: finding.location || "Field Inspection",
+          }))
+        )
+      )
+      .filter((action) => String(action.status || "").toLowerCase() !== "completed")
+      .sort((a, b) => {
+        const priorityRank: Record<string, number> = {
+          CRITICAL: 4,
+          Critical: 4,
+          HIGH: 3,
+          High: 3,
+          MEDIUM: 2,
+          Medium: 2,
+          LOW: 1,
+          Low: 1,
+        };
+
+        return (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0);
+      })
+      .slice(0, 5);
+  }, [reports]);
+
   const dashboardMetrics = useMemo(() => {
     const findings = reports.flatMap((report) => report.findings || []);
 
@@ -129,10 +166,42 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="border-y border-slate-200 py-5">
-            <p className="text-sm font-semibold text-slate-500">
-              No active priority work available yet.
-            </p>
+          <div className="border-y border-slate-200">
+            {priorityActions.length ? (
+              priorityActions.map((action, index) => (
+                <div key={`${action.title || action.description || index}`} className="border-b border-slate-200 py-3 last:border-b-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${
+                          String(action.priority).toLowerCase() === "critical"
+                            ? "bg-red-100 text-red-700"
+                            : String(action.priority).toLowerCase() === "high"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-slate-100 text-slate-700"
+                        }`}>
+                          {action.priority || "Priority"}
+                        </span>
+                        <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                          {action.location}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm font-black text-slate-900">
+                        {action.title || action.description || action.findingTitle}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                        {action.description || action.findingTitle}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="py-5 text-sm font-semibold text-slate-500">
+                No active priority work available yet.
+              </p>
+            )}
           </div>
         </div>
 
