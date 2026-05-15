@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { clearActiveInspectionDraft } from "@/lib/inspectionDraft";
 import { getReports } from "@/lib/reportStorage";
+import { getStoredActions, type StoredAction } from "@/lib/actionStorage";
 
 type DashboardReport = {
   id?: string;
@@ -13,52 +14,37 @@ type DashboardReport = {
 
 export default function DashboardPage() {
   const [reports, setReports] = useState<DashboardReport[]>([]);
+  const [storedActions, setStoredActions] = useState<StoredAction[]>([]);
 
   useEffect(() => {
     async function loadDashboardReports() {
       const savedReports = await getReports<DashboardReport>();
+      const savedActions = await getStoredActions();
+
       setReports(Array.isArray(savedReports) ? savedReports : []);
+      setStoredActions(Array.isArray(savedActions) ? savedActions : []);
     }
 
     loadDashboardReports();
   }, []);
 
   const priorityActions = useMemo(() => {
-    return reports
-      .flatMap((report) =>
-        (report.findings || []).flatMap((finding) =>
-          [
-            ...(finding.manualActions || []),
-            ...(finding.correctiveActions || []),
-            ...(finding.safeScopeResult?.generatedActions || []),
-          ].map((action) => ({
-            ...action,
-            findingTitle:
-              finding.hazardCategory ||
-              finding.safeScopeResult?.classification ||
-              finding.description ||
-              "Inspection Finding",
-            location: finding.location || "Field Inspection",
-          }))
-        )
-      )
-      .filter((action) => String(action.status || "").toLowerCase() !== "completed")
-      .sort((a, b) => {
-        const priorityRank: Record<string, number> = {
-          CRITICAL: 4,
-          Critical: 4,
-          HIGH: 3,
-          High: 3,
-          MEDIUM: 2,
-          Medium: 2,
-          LOW: 1,
-          Low: 1,
-        };
+    const priorityRank: Record<string, number> = {
+      critical: 4,
+      high: 3,
+      medium: 2,
+      low: 1,
+    };
 
-        return (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0);
-      })
+    return storedActions
+      .filter((action) => String(action.status || "").toLowerCase() !== "completed")
+      .sort(
+        (a, b) =>
+          (priorityRank[String(b.priority || "").toLowerCase()] || 0) -
+          (priorityRank[String(a.priority || "").toLowerCase()] || 0)
+      )
       .slice(0, 5);
-  }, [reports]);
+  }, [storedActions]);
 
   const activityItems = useMemo(() => {
     return reports
@@ -69,7 +55,7 @@ export default function DashboardPage() {
         time: report.createdAt ? new Date(report.createdAt).toLocaleDateString() : "Saved",
       }))
       .slice(0, 5);
-  }, [reports]);
+  }, [reports, storedActions]);
 
   const dashboardMetrics = useMemo(() => {
     const findings = reports.flatMap((report) => report.findings || []);
@@ -82,13 +68,9 @@ export default function DashboardPage() {
       return riskScore >= 20 || riskBand === "critical";
     }).length;
 
-    const overdueActions = findings.flatMap((finding) => [
-      ...(finding.manualActions || []),
-      ...(finding.correctiveActions || []),
-      ...(finding.safeScopeResult?.generatedActions || []),
-    ]).filter((action) => {
-      if (!action?.dueDate) return false;
-      return new Date(action.dueDate).getTime() < Date.now() && String(action.status || "").toLowerCase() !== "completed";
+    const overdueActions = storedActions.filter((action) => {
+      if (!action?.due) return false;
+      return new Date(action.due).getTime() < Date.now() && String(action.status || "").toLowerCase() !== "completed";
     }).length;
 
     const confidenceValues = findings
@@ -180,7 +162,7 @@ export default function DashboardPage() {
           <div className="border-y border-slate-200">
             {priorityActions.length ? (
               priorityActions.map((action, index) => (
-                <div key={`${action.title || action.description || index}`} className="border-b border-slate-200 py-3 last:border-b-0">
+                <div key={`${action.id || action.title || index}`} className="border-b border-slate-200 py-3 last:border-b-0">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -199,10 +181,10 @@ export default function DashboardPage() {
                       </div>
 
                       <p className="mt-2 text-sm font-black text-slate-900">
-                        {action.title || action.description || action.findingTitle}
+                        {action.title || action.findingTitle || "Corrective action"}
                       </p>
                       <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
-                        {action.description || action.findingTitle}
+                        {action.findingTitle || "Corrective action"}
                       </p>
                     </div>
                   </div>
