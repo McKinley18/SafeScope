@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { SafeScopeReasoningSnapshot } from './reasoning-snapshot.entity';
 
 @Injectable()
 export class ReasoningSnapshotService {
+  constructor(
+    @InjectRepository(SafeScopeReasoningSnapshot)
+    private readonly snapshotRepo: Repository<SafeScopeReasoningSnapshot>,
+  ) {}
+
   buildSnapshot(input: {
     reportId?: string;
     workspaceId?: string;
@@ -30,5 +37,15 @@ export class ReasoningSnapshotService {
           ? 'requires_review'
           : 'generated',
     };
+  }
+
+  async createSnapshot(input: {
+    reportId?: string;
+    workspaceId?: string;
+    classification?: string;
+    intelligence?: any;
+  }) {
+    const snapshot = this.snapshotRepo.create(this.buildSnapshot(input));
+    return this.snapshotRepo.save(snapshot);
   }
 }
