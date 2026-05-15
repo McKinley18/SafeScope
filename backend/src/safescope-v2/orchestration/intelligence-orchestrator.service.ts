@@ -18,6 +18,7 @@ import { SiteMemoryService } from '../site-memory/site-memory.service';
 import { HazardGraphService } from '../hazard-graph/hazard-graph.service';
 import { ExposurePathService } from '../exposure-path/exposure-path.service';
 import { ConfidenceCalibrationService } from '../validation/confidence-calibration.service';
+import { ReasoningDriftService } from '../validation/reasoning-drift.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -52,6 +53,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private hazardGraphEngine = new HazardGraphService();
   private exposurePathEngine = new ExposurePathService();
   private confidenceCalibrationEngine = new ConfidenceCalibrationService();
+  private reasoningDriftEngine = new ReasoningDriftService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -227,6 +229,15 @@ export class SafeScopeIntelligenceOrchestrator {
       actionEffectiveness,
     });
 
+    const reasoningDrift = this.reasoningDriftEngine.evaluate({
+      classification: promotedPrimary.classification,
+      confidenceCalibration,
+      contradictionIntelligence,
+      standardsReasoning,
+      operationalReasoning,
+      priorFindings,
+    });
+
     const decisionExplainability = this.explainabilityEngine.evaluate({
       classification: promotedPrimary.classification,
       confidenceIntelligence,
@@ -258,6 +269,7 @@ export class SafeScopeIntelligenceOrchestrator {
       correlationIntelligence,
       siteMemory,
       confidenceCalibration,
+      reasoningDrift,
     };
   }
 }
