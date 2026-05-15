@@ -9,6 +9,7 @@ import { ApplicableStandardsService } from '../applicable-standards/applicable-s
 import { ConfidenceIntelligenceService } from './confidence/confidence-intelligence.service';
 import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service';
 import { TrendIntelligenceService } from './trend-intelligence/trend-intelligence.service';
+import { OperationalReasoningService } from './reasoning/operational-reasoning.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -16,6 +17,7 @@ export class SafescopeV2Service {
   private bridge = new StandardsBridgeService();
   private confidenceEngine = new ConfidenceIntelligenceService();
   private trendEngine = new TrendIntelligenceService();
+  private reasoningEngine = new OperationalReasoningService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -255,6 +257,13 @@ export class SafescopeV2Service {
       photosAttached: (evidenceTexts || []).some((item) =>
         String(item).toLowerCase().includes('photo')
       ),
+    });
+
+    const operationalReasoning = this.reasoningEngine.evaluate({
+      text: fusedText,
+      classification: promotedPrimary.classification,
+      expandedContext,
+      risk: promotedPrimary.risk,
     });
 
     const generatedActions = await this.buildActionPreview(
