@@ -26,6 +26,7 @@ import { RegulatorySection } from '../regulatory/entities/regulatory-section.ent
 import { RegulatoryParagraph } from '../regulatory/entities/regulatory-paragraph.entity';
 import { HazardTaxonomy } from '../intelligence-framework/entities/hazard-taxonomy.entity';
 import { Notification } from '../notifications/notification.entity';
+import { SafeScopeReasoningSnapshot } from '../safescope-v2/snapshots/reasoning-snapshot.entity';
 
 export const dataSource = new DataSource({
   type: 'postgres',
@@ -62,6 +63,7 @@ export const dataSource = new DataSource({
     RegulatoryParagraph,
     HazardTaxonomy,
     Notification,
+    SafeScopeReasoningSnapshot,
   ],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: true,

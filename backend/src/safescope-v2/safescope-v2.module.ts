@@ -9,12 +9,14 @@ import { EvidenceFusionService } from './evidence/evidence-fusion.service';
 import { SafeScopeFeedback } from './feedback/safescope-feedback.entity';
 import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service';
 import { SafeScopeFeedbackController } from './feedback/safescope-feedback.controller';
+import { SafeScopeReasoningSnapshot } from './snapshots/reasoning-snapshot.entity';
+import { ReasoningSnapshotService } from './snapshots/reasoning-snapshot.service';
 
 @Module({
   imports: [
     ActionEngineModule,
     ApplicableStandardsModule,
-    TypeOrmModule.forFeature([SafeScopeFeedback]),
+    TypeOrmModule.forFeature([SafeScopeFeedback, SafeScopeReasoningSnapshot]),
   ],
   controllers: [
     SafescopeV2Controller,
@@ -25,6 +27,7 @@ import { SafeScopeFeedbackController } from './feedback/safescope-feedback.contr
     ContextExpansionService,
     EvidenceFusionService,
     SafeScopeFeedbackService,
+    ReasoningSnapshotService,
   ],
 })
 export class SafescopeV2Module {}
