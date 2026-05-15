@@ -93,7 +93,7 @@ export default function DashboardPage() {
       overdueActions,
       averageConfidence,
     };
-  }, [reports]);
+  }, [reports, storedActions]);
 
   return (
     <section className="space-y-5">
