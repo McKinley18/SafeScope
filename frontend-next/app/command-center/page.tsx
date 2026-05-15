@@ -1,9 +1,70 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { clearActiveInspectionDraft } from "@/lib/inspectionDraft";
+import { getReports } from "@/lib/reportStorage";
+
+type DashboardReport = {
+  id?: string;
+  createdAt?: string;
+  findings?: any[];
+};
 
 export default function DashboardPage() {
+  const [reports, setReports] = useState<DashboardReport[]>([]);
+
+  useEffect(() => {
+    async function loadDashboardReports() {
+      const savedReports = await getReports<DashboardReport>();
+      setReports(Array.isArray(savedReports) ? savedReports : []);
+    }
+
+    loadDashboardReports();
+  }, []);
+
+  const dashboardMetrics = useMemo(() => {
+    const findings = reports.flatMap((report) => report.findings || []);
+
+    const openFindings = findings.length;
+    const criticalFindings = findings.filter((finding) => {
+      const riskScore = Number(finding.riskScore || finding.safeScopeResult?.risk?.riskScore || 0);
+      const riskBand = String(finding.safeScopeResult?.risk?.riskBand || "").toLowerCase();
+
+      return riskScore >= 20 || riskBand === "critical";
+    }).length;
+
+    const overdueActions = findings.flatMap((finding) => [
+      ...(finding.manualActions || []),
+      ...(finding.correctiveActions || []),
+      ...(finding.safeScopeResult?.generatedActions || []),
+    ]).filter((action) => {
+      if (!action?.dueDate) return false;
+      return new Date(action.dueDate).getTime() < Date.now() && String(action.status || "").toLowerCase() !== "completed";
+    }).length;
+
+    const confidenceValues = findings
+      .map((finding) =>
+        Number(
+          finding.safeScopeResult?.confidenceIntelligence?.overallConfidence ??
+          finding.safeScopeResult?.confidence ??
+          NaN
+        )
+      )
+      .filter((value) => Number.isFinite(value));
+
+    const averageConfidence = confidenceValues.length
+      ? Math.round((confidenceValues.reduce((sum, value) => sum + value, 0) / confidenceValues.length) * 100)
+      : null;
+
+    return {
+      openFindings,
+      criticalFindings,
+      overdueActions,
+      averageConfidence,
+    };
+  }, [reports]);
+
   return (
     <section className="space-y-5">
       <section className="border-b border-slate-200 pb-4">
@@ -40,10 +101,10 @@ export default function DashboardPage() {
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          ["—", "Open Findings", "bg-blue-50 text-blue-700 border-blue-100"],
-          ["—", "Critical", "bg-red-50 text-red-700 border-red-100"],
-          ["—", "Overdue", "bg-orange-50 text-orange-700 border-orange-100"],
-          ["—", "SafeScope Confidence", "bg-emerald-50 text-emerald-700 border-emerald-100"],
+          [String(dashboardMetrics.openFindings), "Open Findings", "bg-blue-50 text-blue-700 border-blue-100"],
+          [String(dashboardMetrics.criticalFindings), "Critical", "bg-red-50 text-red-700 border-red-100"],
+          [String(dashboardMetrics.overdueActions), "Overdue", "bg-orange-50 text-orange-700 border-orange-100"],
+          [dashboardMetrics.averageConfidence === null ? "—" : `${dashboardMetrics.averageConfidence}%`, "SafeScope Confidence", "bg-emerald-50 text-emerald-700 border-emerald-100"],
         ].map(([value, label, tone]) => (
           <div key={label} className={`rounded-xl border px-3 py-3 text-center ${tone}`}>
             <p className="text-2xl font-black tracking-tight">{value}</p>
