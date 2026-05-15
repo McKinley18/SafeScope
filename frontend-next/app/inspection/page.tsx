@@ -118,6 +118,7 @@ export default function InspectionPage() {
   const [includePhotosInReport, setIncludePhotosInReport] = useState(true);
   const [includeSafeScopeNotesInReport, setIncludeSafeScopeNotesInReport] = useState(false);
   const [safeScopeHelpOpen, setSafeScopeHelpOpen] = useState(false);
+  const [safeScopeDetailsOpen, setSafeScopeDetailsOpen] = useState(false);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
 
@@ -690,41 +691,73 @@ export default function InspectionPage() {
         {currentStep === 1 && (
           <>
             <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
-              Capture the hazard category, plain-language description, and exact location before running SafeScope.
+              Capture the hazard, location, and exposure condition. Keep it concise now; SafeScope can expand the context later.
             </p>
 
-            <label className="mb-2 block text-sm font-black text-slate-700">Hazard Category</label>
-            <input
-              list="hazard-category-options"
-              className="mb-4 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
-              placeholder="Choose a category or type your own"
-              value={hazardCategory}
-              onChange={(e) => setHazardCategory(e.target.value)}
-            />
-            <datalist
-              id="hazard-category-options"
-              style={{ maxHeight: "120px" }}
-            >
-              {hazardCategoryOptions.map((category) => (
-                <option key={category} value={category} />
-              ))}
-            </datalist>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">
+                  Hazard Category
+                </label>
+                <input
+                  list="hazard-category-options"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
+                  placeholder="Choose or type"
+                  value={hazardCategory}
+                  onChange={(e) => setHazardCategory(e.target.value)}
+                />
+                <datalist
+                  id="hazard-category-options"
+                  style={{ maxHeight: "120px" }}
+                >
+                  {hazardCategoryOptions.map((category) => (
+                    <option key={category} value={category} />
+                  ))}
+                </datalist>
+              </div>
 
-            <label className="mb-2 block text-sm font-black text-slate-700">Description</label>
-            <textarea
-              className="mb-4 min-h-28 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
-              placeholder="Describe the hazard, where it was found, who may be exposed, and what condition exists."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
+              <div>
+                <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">
+                  Location
+                </label>
+                <input
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
+                  placeholder="Example: Conveyor 3, north catwalk"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              </div>
+            </div>
 
-            <label className="mb-2 block text-sm font-black text-slate-700">Location</label>
-            <input
-              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
-              placeholder="Example: Conveyor 3, north catwalk"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+            <div className="mt-4">
+              <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">
+                Observed Condition
+              </label>
+              <textarea
+                className="min-h-24 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
+                placeholder="Describe what is wrong, who may be exposed, and whether the condition is active."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2 text-xs font-black">
+              {hazardCategory && (
+                <span className="rounded-full bg-[#E8F4FF] px-3 py-1 text-[#1D72B8]">
+                  {hazardCategory}
+                </span>
+              )}
+              {location && (
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                  {location}
+                </span>
+              )}
+              {description && (
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+                  Description added
+                </span>
+              )}
+            </div>
           </>
         )}
 
@@ -1135,40 +1168,66 @@ export default function InspectionPage() {
               </div>
             )}
 
-            {!!safeScopeResult?.excludedStandards?.length && (
-              <div className="mb-3 border-y border-slate-200 bg-slate-50/70 py-3">
-                <h3 className="font-black text-slate-700">Excluded Standards</h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  These standards were considered but excluded based on selected regulatory scope or context.
-                </p>
-
-                <div className="mt-3 space-y-2">
-                  {safeScopeResult.excludedStandards.map((standard: any) => (
-                    <div key={standard.citation} className="border-t border-slate-200 py-3">
-                      <p className="font-black text-slate-700">{standard.citation}</p>
-                      <p className="mt-1 text-sm text-slate-500">{standard.reason}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {!!safeScopeResult?.additionalHazards?.length && (
+            {(!!safeScopeResult?.excludedStandards?.length || !!safeScopeResult?.additionalHazards?.length) && (
               <div className="mb-3 border-y border-slate-200 py-3">
-                <h3 className="font-black text-slate-900">Additional Hazards Detected</h3>
+                <button
+                  type="button"
+                  onClick={() => setSafeScopeDetailsOpen((open) => !open)}
+                  className="flex w-full items-center justify-between gap-3 text-left"
+                >
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+                      Supporting Intelligence
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-slate-600">
+                      {safeScopeDetailsOpen ? "Hide secondary SafeScope review details." : "Show excluded standards and additional hazard notes."}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
+                    {safeScopeDetailsOpen ? "Hide" : "Show"}
+                  </span>
+                </button>
 
-                <div className="mt-3 space-y-2">
-                  {safeScopeResult.additionalHazards.map((hazard: any, index: number) => (
-                    <div key={index} className="border-t border-slate-200 py-3">
-                      <p className="font-black text-slate-900">
-                        {hazard.name || hazard.hazard || `Additional Hazard ${index + 1}`}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {hazard.reason || hazard.rationale || "Review recommended."}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                {safeScopeDetailsOpen && (
+                  <div className="mt-3 space-y-4">
+                    {!!safeScopeResult?.excludedStandards?.length && (
+                      <div>
+                        <h3 className="font-black text-slate-700">Excluded Standards</h3>
+                        <p className="mt-1 text-sm text-slate-500">
+                          These standards were considered but excluded based on selected regulatory scope or context.
+                        </p>
+
+                        <div className="mt-2">
+                          {safeScopeResult.excludedStandards.map((standard: any) => (
+                            <div key={standard.citation} className="border-t border-slate-200 py-2">
+                              <p className="font-black text-slate-700">{standard.citation}</p>
+                              <p className="mt-1 text-sm text-slate-500">{standard.reason}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!!safeScopeResult?.additionalHazards?.length && (
+                      <div>
+                        <h3 className="font-black text-slate-900">Additional Hazards Detected</h3>
+
+                        <div className="mt-2">
+                          {safeScopeResult.additionalHazards.map((hazard: any, index: number) => (
+                            <div key={index} className="border-t border-slate-200 py-2">
+                              <p className="font-black text-slate-900">
+                                {hazard.name || hazard.hazard || `Additional Hazard ${index + 1}`}
+                              </p>
+                              <p className="mt-1 text-sm text-slate-500">
+                                {hazard.reason || hazard.rationale || "Review recommended."}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </>
