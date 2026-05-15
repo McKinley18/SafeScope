@@ -1474,6 +1474,54 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.barrierIntelligence && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                          Barrier Intelligence
+                        </p>
+                        <h4 className="mt-1 text-sm font-black text-slate-900">
+                          Barrier adequacy: {safeScopeResult.barrierIntelligence.barrierAdequacy?.replaceAll("_", " ") || "unknown"}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.barrierIntelligence.barrierReasoning}
+                    </p>
+
+                    {!!safeScopeResult.barrierIntelligence.barrierTypes?.length && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {safeScopeResult.barrierIntelligence.barrierTypes.map((type: string) => (
+                          <span
+                            key={type}
+                            className="rounded-full bg-[#E8F4FF] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1D72B8]"
+                          >
+                            {type.replaceAll("_", " ")}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {!!safeScopeResult.barrierIntelligence.failedOrMissingBarriers?.length && (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                        {safeScopeResult.barrierIntelligence.failedOrMissingBarriers
+                          .slice(0, 3)
+                          .map((barrier: string) => (
+                            <li key={barrier}>{barrier}</li>
+                          ))}
+                      </ul>
+                    )}
+
+                    {!!safeScopeResult.barrierIntelligence.verificationNeeds?.length && (
+                      <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold leading-6 text-amber-900">
+                        {safeScopeResult.barrierIntelligence.verificationNeeds[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {safeScopeResult.controlIntelligence && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
