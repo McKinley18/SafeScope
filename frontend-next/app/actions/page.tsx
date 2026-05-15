@@ -3,19 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/ui/PageHeader";
 import { getReports } from "@/lib/reportStorage";
+import { createActionId, getStoredActions, saveStoredActions } from "@/lib/actionStorage";
 
 type ActionItem = {
+  id: string;
   title: string;
   priority: string;
   status: string;
   due?: string;
-  source: "SafeScope" | "User";
+  source: string;
   location?: string;
   findingTitle?: string;
+  createdAt: string;
 };
 
 type Report = {
   id?: string;
+  createdAt?: string;
   findings?: any[];
 };
 
@@ -31,8 +35,8 @@ export default function ActionsPage() {
       const savedReports = await getReports<Report>();
       setReports(Array.isArray(savedReports) ? savedReports : []);
 
-      const savedManualActions = window.localStorage.getItem("sentinel_manual_actions");
-      setManualActions(savedManualActions ? JSON.parse(savedManualActions) : []);
+      const savedManualActions = await getStoredActions();
+      setManualActions(savedManualActions);
     }
 
     loadActions();
@@ -45,7 +49,8 @@ export default function ActionsPage() {
           ...(finding.manualActions || []),
           ...(finding.correctiveActions || []),
           ...(finding.safeScopeResult?.generatedActions || []),
-        ].map((action: any) => ({
+        ].map((action: any, actionIndex: number) => ({
+          id: action.id || `${report.id || "report"}-${finding.id || finding.hazardCategory || "finding"}-${actionIndex}`,
           title: action.title || action.description || "Corrective action",
           priority: action.priority || "Medium",
           status: action.status || "Open",
@@ -57,6 +62,7 @@ export default function ActionsPage() {
             finding.safeScopeResult?.classification ||
             finding.description ||
             "Inspection Finding",
+          createdAt: report.createdAt || new Date().toISOString(),
         }))
       )
     );
@@ -70,23 +76,25 @@ export default function ActionsPage() {
     );
 
     setManualActions(nextActions);
-    window.localStorage.setItem("sentinel_manual_actions", JSON.stringify(nextActions));
+    saveStoredActions(nextActions);
   }
 
   function addAction() {
     if (!title.trim()) return;
 
     const nextAction: ActionItem = {
+      id: createActionId(),
       title: title.trim(),
       priority,
       status: "Open",
       due,
       source: "User",
-    };
+      createdAt: new Date().toISOString(),
+    } as any;
 
     const nextActions = [nextAction, ...manualActions];
     setManualActions(nextActions);
-    window.localStorage.setItem("sentinel_manual_actions", JSON.stringify(nextActions));
+    saveStoredActions(nextActions);
 
     setTitle("");
     setPriority("Medium");
