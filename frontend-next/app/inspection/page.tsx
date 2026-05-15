@@ -1256,6 +1256,57 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.operationalReasoning && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Operational Reasoning
+                    </p>
+                    <h4 className="mt-1 text-sm font-black text-slate-900">
+                      Causal chain
+                    </h4>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.operationalReasoning.reasoningSummary}
+                    </p>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                          Exposure Pathway
+                        </p>
+                        <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.operationalReasoning.exposurePathways?.[0] ||
+                            "Exposure pathway requires confirmation."}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                          Injury Mechanism
+                        </p>
+                        <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.operationalReasoning.likelyInjuryMechanisms?.[0] ||
+                            "Injury mechanism requires review."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {!!safeScopeResult.operationalReasoning.supervisorQuestions?.length && (
+                      <div className="mt-3 rounded-xl bg-slate-50 px-3 py-2">
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                          Supervisor questions
+                        </p>
+                        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.operationalReasoning.supervisorQuestions
+                            .slice(0, 4)
+                            .map((question: string) => (
+                              <li key={question}>{question}</li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {safeScopeResult.duplicateIntelligence?.possibleDuplicate && (
                   <div className="mt-4 border-l-4 border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold leading-6 text-amber-900">
                     Possible duplicate or repeat finding detected. {safeScopeResult.duplicateIntelligence.recommendedSplitOrMergeAction}
