@@ -199,7 +199,7 @@ export class SafescopeV2Service {
     }));
   }
 
-  async classify(text: string, scopes?: string[], evidenceTexts?: string[], riskProfileId?: 'simple_4x4' | 'standard_5x5' | 'advanced_6x6', workspaceId?: string) {
+  async classify(text: string, scopes?: string[], evidenceTexts?: string[], riskProfileId?: 'simple_4x4' | 'standard_5x5' | 'advanced_6x6', workspaceId?: string, priorFindings?: any[]) {
     const evidenceFusion = this.evidenceFusion.synthesize([
       text,
       ...(evidenceTexts || []),
@@ -302,7 +302,7 @@ export class SafescopeV2Service {
       classification: promotedPrimary.classification,
       location: (expandedContext as any)?.location || undefined,
       riskScore: promotedPrimary.risk?.riskScore,
-      priorFindings: arguments[5] as any[],
+      priorFindings: priorFindings,
     });
 
     const generatedActions = await this.buildActionPreview(
@@ -470,13 +470,13 @@ export class SafescopeV2Service {
       trendIntelligence,
       controlIntelligence,
       operationalReasoning,
-      priorFindings: arguments[5] as any[],
+      priorFindings: priorFindings,
     });
 
     const siteMemory = this.siteMemoryEngine.evaluate({
       currentClassification: promotedPrimary.classification,
       currentLocation: (expandedContext as any)?.area || (expandedContext as any)?.location,
-      priorFindings: arguments[5] as any[],
+      priorFindings: priorFindings,
       trendIntelligence,
       correlationIntelligence,
     });
