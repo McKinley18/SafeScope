@@ -14,6 +14,7 @@ import { ControlIntelligenceService } from './control-intelligence/control-intel
 import { DecisionExplainabilityService } from './explainability/decision-explainability.service';
 import { EvidenceQualityService } from './evidence-quality/evidence-quality.service';
 import { StandardsReasoningService } from './standards-reasoning/standards-reasoning.service';
+import { CorrelationIntelligenceService } from './correlation-intelligence/correlation-intelligence.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -26,6 +27,7 @@ export class SafescopeV2Service {
   private explainabilityEngine = new DecisionExplainabilityService();
   private evidenceQualityEngine = new EvidenceQualityService();
   private standardsReasoningEngine = new StandardsReasoningService();
+  private correlationEngine = new CorrelationIntelligenceService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -359,6 +361,15 @@ export class SafescopeV2Service {
           };
         }),
     );
+
+    const correlationIntelligence = this.correlationEngine.evaluate({
+      classification: promotedPrimary.classification,
+      additionalHazards,
+      trendIntelligence,
+      controlIntelligence,
+      operationalReasoning,
+      priorFindings: arguments[5] as any[],
+    });
 
     const promotionWarning =
       promotedPrimary.classification !== result.classification
