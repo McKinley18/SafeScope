@@ -742,22 +742,22 @@ export default function InspectionPage() {
 
   return (
     <>
-      <div className="sticky top-[73px] z-30 -mx-4 -mt-5 mb-4 border-b border-white/10 bg-gradient-to-br from-[#0B1320] via-[#102A43] to-[#16324F] px-4 py-4 shadow-[0_14px_30px_rgba(15,23,42,0.18)] sm:-mx-6 sm:px-6">
+      <div className="sticky top-[73px] z-30 -mx-4 -mt-5 mb-4 border-b border-blue-100 bg-gradient-to-br from-white via-[#F4F9FF] to-[#E8F4FF] px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.10)] sm:-mx-6 sm:px-6">
         <div className="mb-3 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black leading-tight text-white sm:text-3xl">
+            <h1 className="text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
               {steps[currentStep - 1].title.replace(/^Step \d+: /, "")}
             </h1>
-            <p className="mt-1 text-sm font-semibold text-blue-100">
+            <p className="mt-1 text-sm font-semibold text-slate-600">
               {steps[currentStep - 1].desc}
             </p>
           </div>
 
           <div className="flex shrink-0 flex-col items-end gap-1">
-            <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black text-white shadow-sm backdrop-blur">
+            <div className="rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-black text-[#1D72B8] shadow-sm">
               Step {currentStep} of {steps.length}
             </div>
-            <p className="text-[11px] font-black text-blue-100">
+            <p className="text-[11px] font-black text-slate-500">
               {lastSavedAt ? `Saved ${lastSavedAt}` : "Autosave ready"}
             </p>
           </div>
@@ -774,7 +774,7 @@ export default function InspectionPage() {
                 }
                 goToInspectionStep(currentStep - 1);
               }}
-              className="flex min-h-7 items-center rounded-xl border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-black text-white backdrop-blur transition hover:bg-white/20"
+              className="flex min-h-7 items-center rounded-xl border border-slate-200 bg-white px-3 py-1 text-[11px] font-black text-slate-700 shadow-sm transition hover:bg-slate-50"
             >
               ← Back
             </button>
