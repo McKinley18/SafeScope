@@ -10,6 +10,7 @@ import { ConfidenceIntelligenceService } from './confidence/confidence-intellige
 import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service';
 import { TrendIntelligenceService } from './trend-intelligence/trend-intelligence.service';
 import { OperationalReasoningService } from './reasoning/operational-reasoning.service';
+import { ControlIntelligenceService } from './control-intelligence/control-intelligence.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -18,6 +19,7 @@ export class SafescopeV2Service {
   private confidenceEngine = new ConfidenceIntelligenceService();
   private trendEngine = new TrendIntelligenceService();
   private reasoningEngine = new OperationalReasoningService();
+  private controlEngine = new ControlIntelligenceService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -266,6 +268,13 @@ export class SafescopeV2Service {
       risk: promotedPrimary.risk,
     });
 
+    const trendIntelligence = this.trendEngine.evaluate({
+      classification: promotedPrimary.classification,
+      location: (expandedContext as any)?.location || undefined,
+      riskScore: promotedPrimary.risk?.riskScore,
+      priorFindings: arguments[5] as any[],
+    });
+
     const generatedActions = await this.buildActionPreview(
       promotedPrimary.classification,
       fusedText,
@@ -273,6 +282,15 @@ export class SafescopeV2Service {
       primaryStandardsResult.suggestedStandards,
       expandedContext,
     );
+
+    const controlIntelligence = this.controlEngine.evaluate({
+      classification: promotedPrimary.classification,
+      risk: promotedPrimary.risk,
+      generatedActions,
+      suggestedStandards: primaryStandardsResult.suggestedStandards,
+      trendIntelligence,
+      operationalReasoning,
+    });
 
     const additionalHazards = await Promise.all(
       allCandidates
