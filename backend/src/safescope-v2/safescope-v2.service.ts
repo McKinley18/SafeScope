@@ -15,6 +15,7 @@ import { DecisionExplainabilityService } from './explainability/decision-explain
 import { EvidenceQualityService } from './evidence-quality/evidence-quality.service';
 import { StandardsReasoningService } from './standards-reasoning/standards-reasoning.service';
 import { CorrelationIntelligenceService } from './correlation-intelligence/correlation-intelligence.service';
+import { EnergyTransferIntelligenceService } from './energy-intelligence/energy-transfer-intelligence.service';
 
 @Injectable()
 export class SafescopeV2Service {
@@ -28,6 +29,7 @@ export class SafescopeV2Service {
   private evidenceQualityEngine = new EvidenceQualityService();
   private standardsReasoningEngine = new StandardsReasoningService();
   private correlationEngine = new CorrelationIntelligenceService();
+  private energyEngine = new EnergyTransferIntelligenceService();
 
   constructor(
     private readonly actionEngine: ActionEngineService,
@@ -290,6 +292,13 @@ export class SafescopeV2Service {
       primaryStandardsResult.suggestedStandards,
       expandedContext,
     );
+
+    const energyTransferIntelligence = this.energyEngine.evaluate({
+      text: fusedText,
+      classification: promotedPrimary.classification,
+      operationalReasoning,
+      risk: promotedPrimary.risk,
+    });
 
     const evidenceQuality = this.evidenceQualityEngine.evaluate({
       text: fusedText,
