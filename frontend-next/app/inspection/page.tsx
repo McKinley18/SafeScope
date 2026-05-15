@@ -1256,6 +1256,108 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.decisionExplainability && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                          Decision Explainability
+                        </p>
+                        <h4 className="mt-1 text-sm font-black text-slate-900">
+                          Why SafeScope made this decision
+                        </h4>
+                      </div>
+
+                      {safeScopeResult.decisionExplainability.supervisorReviewRecommended && (
+                        <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">
+                          Supervisor Review
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-3 text-sm font-semibold leading-6 text-slate-700">
+                      {safeScopeResult.decisionExplainability.decisionSummary}
+                    </p>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                          Confidence
+                        </p>
+                        <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.decisionExplainability.confidenceStatement}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                          Risk Basis
+                        </p>
+                        <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.decisionExplainability.riskStatement}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                          Standards Basis
+                        </p>
+                        <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.decisionExplainability.standardsStatement}
+                        </p>
+                      </div>
+                    </div>
+
+                    {!!safeScopeResult.decisionExplainability.keyEvidence?.length && (
+                      <div className="mt-4">
+                        <p className="text-xs font-black uppercase tracking-wide text-emerald-700">
+                          Key Evidence
+                        </p>
+
+                        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.decisionExplainability.keyEvidence
+                            .slice(0, 5)
+                            .map((item: string) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {!!safeScopeResult.decisionExplainability.uncertainty?.length && (
+                      <div className="mt-4">
+                        <p className="text-xs font-black uppercase tracking-wide text-amber-700">
+                          Uncertainty Factors
+                        </p>
+
+                        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+                          {safeScopeResult.decisionExplainability.uncertainty
+                            .slice(0, 5)
+                            .map((item: string) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {!!safeScopeResult.decisionExplainability.escalationFactors?.length && (
+                      <div className="mt-4 rounded-xl bg-red-50 px-3 py-3">
+                        <p className="text-xs font-black uppercase tracking-wide text-red-700">
+                          Escalation Factors
+                        </p>
+
+                        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-red-900">
+                          {safeScopeResult.decisionExplainability.escalationFactors
+                            .slice(0, 5)
+                            .map((item: string) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {safeScopeResult.controlIntelligence && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
