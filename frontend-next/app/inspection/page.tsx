@@ -739,7 +739,7 @@ export default function InspectionPage() {
         })}
       </div>
 
-      <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5">
+      <div className="px-1 py-2 sm:px-2">
         {currentStep === 1 && (
           <>
             <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
