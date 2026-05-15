@@ -56,6 +56,22 @@ export default function AnalyticsPage() {
       ? Math.round((completedActions.length / actions.length) * 100)
       : null;
 
+    const locationThemes = findings.reduce<Record<string, number>>((acc, finding) => {
+      const key = finding.location || "Unspecified Location";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const lowConfidenceFindings = findings.filter((finding) => {
+      const confidence = Number(
+        finding.safeScopeResult?.confidenceIntelligence?.overallConfidence ??
+        finding.safeScopeResult?.confidence ??
+        NaN
+      );
+
+      return Number.isFinite(confidence) && confidence < 0.7;
+    }).length;
+
     const riskThemes = findings.reduce<Record<string, number>>((acc, finding) => {
       const key =
         finding.hazardCategory ||
@@ -72,6 +88,11 @@ export default function AnalyticsPage() {
       criticalFindings: criticalFindings.length,
       openActions: openActions.length,
       closureRate,
+      lowConfidenceFindings,
+      locationThemes: Object.entries(locationThemes)
+        .filter(([, value]) => value > 1)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6),
       riskThemes: Object.entries(riskThemes)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 6),
@@ -93,6 +114,7 @@ export default function AnalyticsPage() {
           [String(analytics.totalFindings), "Findings"],
           [String(analytics.criticalFindings), "Critical Findings"],
           [analytics.closureRate === null ? "—" : `${analytics.closureRate}%`, "Closure Rate"],
+          [String(analytics.lowConfidenceFindings), "Low Confidence"],
         ].map(([value, label]) => (
           <div key={label} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center">
             <p className="text-2xl font-black text-slate-900">{value}</p>
@@ -128,6 +150,27 @@ export default function AnalyticsPage() {
             ) : (
               <p className="text-sm font-semibold text-slate-500">
                 No finding themes available yet.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+            Recurring Locations
+          </p>
+          <h2 className="mt-2 text-xl font-black text-slate-900">
+            Repeat exposure areas
+          </h2>
+
+          <div className="mt-5 space-y-4">
+            {analytics.locationThemes.length ? (
+              analytics.locationThemes.map(([label, value]) => (
+                <ProgressRow key={label} label={label} value={value} />
+              ))
+            ) : (
+              <p className="text-sm font-semibold text-slate-500">
+                No recurring locations detected yet.
               </p>
             )}
           </div>
