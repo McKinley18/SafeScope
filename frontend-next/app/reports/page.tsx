@@ -18,22 +18,6 @@ type Report = {
   storageSource?: "local" | "cloud" | "seed";
 };
 
-const SEEDED_REPORTS: Report[] = [
-  {
-    id: "RPT-2026-001",
-    title: "Conveyor Guarding Inspection",
-    location: "Plant 3",
-    createdAt: "2026-05-12T09:00:00.000Z",
-    findings: [{ hazardCategory: "Machine Guarding", riskScore: 16 }],
-  },
-  {
-    id: "RPT-2026-002",
-    title: "Electrical Safety Audit",
-    location: "Substation A",
-    createdAt: "2026-05-10T09:00:00.000Z",
-    findings: [{ hazardCategory: "Electrical", riskScore: 25 }],
-  },
-];
 
 function getRiskLabel(report: Report) {
   const scores = report.findings?.map((f) => Number(f.riskScore || 0)) || [];
@@ -96,7 +80,7 @@ export default function ReportsPage() {
         });
       }
 
-
+      setReports(merged);
     }
 
     loadReports();
@@ -218,21 +202,21 @@ export default function ReportsPage() {
 
 
       {sortedReports.length === 0 ? (
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
+        <div className="border-y border-slate-200 py-6">
           <p className="font-semibold text-slate-600">No reports available.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="border-y border-slate-200">
           {sortedReports.map((report) => {
             const risk = getRiskLabel(report);
             const firstPhoto = report.findings?.flatMap((f) => f.photos || [])?.[0];
 
             return (
-              <div key={report.id} className="rounded-2xl bg-white p-5 shadow-sm">
+              <div key={report.id} className="border-b border-slate-200 py-4 last:border-b-0">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="flex min-w-0 flex-1 gap-4">
                     {firstPhoto && (
-                      <div className="hidden w-28 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 sm:block">
+                      <div className="hidden w-24 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 sm:block">
                         <AnnotationPreview
                           photoUrl={firstPhoto.url}
                           annotations={firstPhoto.annotations || []}
@@ -260,7 +244,7 @@ export default function ReportsPage() {
                       ) : (
                         <>
                           <div className="flex flex-wrap items-center gap-3">
-                            <h2 className="text-xl font-black text-slate-900">
+                            <h2 className="text-lg font-black text-slate-900">
                               {report.title || "Inspection Report"}
                             </h2>
 
@@ -281,11 +265,9 @@ export default function ReportsPage() {
                             </span>
                           </div>
 
-                          <p className="mt-2 text-sm font-semibold text-slate-500">
-                            {report.id} • {report.location || "Field Inspection"}
-                          </p>
-
-                          <div className="mt-3 flex flex-wrap gap-3 text-xs font-black text-slate-500">
+                          <div className="mt-2 flex flex-wrap gap-3 text-xs font-black text-slate-500">
+                            <span>{report.id}</span>
+                            <span>{report.location || "Field Inspection"}</span>
                             <span>{report.findings?.length || 0} Findings</span>
                             <span>{new Date(report.createdAt).toLocaleDateString()}</span>
                           </div>
@@ -294,19 +276,19 @@ export default function ReportsPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 md:justify-end">
                     {editingReportId === report.id ? (
                       <>
                         <button
                           onClick={() => saveEdit(report.id)}
-                          className="rounded-xl bg-[#1D72B8] px-4 py-2 text-sm font-black text-white"
+                          className="rounded-lg bg-[#1D72B8] px-3 py-2 text-xs font-black text-white"
                         >
                           Save
                         </button>
 
                         <button
                           onClick={() => setEditingReportId(null)}
-                          className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700"
+                          className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"
                         >
                           Cancel
                         </button>
@@ -315,21 +297,21 @@ export default function ReportsPage() {
                       <>
                         <button
                           onClick={() => startEdit(report)}
-                          className="rounded-xl bg-[#E8F4FF] px-4 py-2 text-sm font-black text-[#1D72B8]"
+                          className="rounded-lg bg-[#E8F4FF] px-3 py-2 text-xs font-black text-[#1D72B8]"
                         >
                           Edit
                         </button>
 
                         <button
                           onClick={() => exportReport(report)}
-                          className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700"
+                          className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"
                         >
                           Export
                         </button>
 
                         <button
                           onClick={() => deleteReport(report.id)}
-                          className="rounded-xl bg-red-50 px-4 py-2 text-sm font-black text-red-700"
+                          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-red-700"
                         >
                           Delete
                         </button>

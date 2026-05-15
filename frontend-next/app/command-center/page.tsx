@@ -2,43 +2,35 @@
 
 import Link from "next/link";
 import { clearActiveInspectionDraft } from "@/lib/inspectionDraft";
-import StatusBadge from "@/components/ui/StatusBadge";
-
-const priorityWork = [
-  ["Electrical exposure near conveyor", "Critical", "Conveyor Line 2", "Verify isolation and corrective action before restart."],
-  ["Missing guard on rotating shaft", "High", "Packaging Area", "Install guard and document supervisor verification."],
-  ["Blocked emergency exit", "High", "Warehouse North", "Clear access path and confirm emergency route availability."],
-];
 
 export default function DashboardPage() {
   return (
-    <section className="space-y-6">
-      <section className="rounded-[28px] bg-[#0B1320] px-5 py-5 text-white shadow-xl shadow-slate-300/40 sm:px-8">
-        <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-200">
-          Sentinel Command Center
-        </p>
-
-        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section className="space-y-5">
+      <section className="border-b border-slate-200 pb-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="max-w-2xl text-4xl font-black tracking-tight sm:text-5xl">
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-[#1D72B8]">
+              Sentinel Command Center
+            </p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
               Operational risk intelligence.
             </h1>
-            <p className="mt-4 max-w-2xl text-sm font-semibold leading-6 text-slate-300">
-              Monitor inspections, corrective actions, critical exposures, and SafeScope trends without crowding the workspace.
+            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-500">
+              Active inspections, risk signals, corrective work, and SafeScope activity in one workspace.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             <Link
               href="/inspection-cover"
               onClick={() => clearActiveInspectionDraft()}
-              className="rounded-2xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white transition hover:bg-[#155A93]"
+              className="rounded-xl bg-[#1D72B8] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#155A93]"
             >
               Start Inspection
             </Link>
             <Link
               href="/reports"
-              className="rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/15"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-black text-slate-700 transition hover:bg-slate-50"
             >
               Reports
             </Link>
@@ -46,94 +38,67 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 border-b border-slate-200 pb-7">
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
           ["12", "Open Findings", "bg-blue-50 text-blue-700 border-blue-100"],
           ["3", "Critical", "bg-red-50 text-red-700 border-red-100"],
           ["5", "Overdue", "bg-orange-50 text-orange-700 border-orange-100"],
           ["91%", "SafeScope Confidence", "bg-emerald-50 text-emerald-700 border-emerald-100"],
         ].map(([value, label, tone]) => (
-          <div
-            key={label}
-            className={`rounded-2xl border px-4 py-4 text-center ${tone}`}
-          >
-            <p className="text-4xl font-black tracking-tight">{value}</p>
-            <p className="mt-1 text-xs font-black uppercase tracking-wide opacity-75">
+          <div key={label} className={`rounded-2xl border px-4 py-4 text-center ${tone}`}>
+            <p className="text-3xl font-black tracking-tight">{value}</p>
+            <p className="mt-1 text-[11px] font-black uppercase tracking-wide opacity-75">
               {label}
             </p>
           </div>
         ))}
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid gap-7 lg:grid-cols-[1.2fr_0.8fr]">
         <div>
-          <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
                 Priority Work
               </p>
-              <h2 className="mt-1 text-2xl font-black text-slate-900">
-                Needs attention
-              </h2>
+              <h2 className="mt-1 text-xl font-black text-slate-900">Needs attention</h2>
             </div>
             <Link href="/actions" className="text-sm font-black text-[#1D72B8]">
               View All
             </Link>
           </div>
 
-          <div className="space-y-3">
-            {priorityWork.map(([title, priority, location, note]) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:border-blue-200 hover:shadow-md"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex gap-3">
-                    <span
-                      className={`mt-1 h-10 w-1.5 rounded-full ${
-                        priority === "Critical" ? "bg-red-500" : "bg-orange-400"
-                      }`}
-                    />
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusBadge tone={priority === "Critical" ? "critical" : "high"}>
-                          {priority}
-                        </StatusBadge>
-                        <span className="text-xs font-black uppercase tracking-wide text-slate-400">
-                          {location}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm font-black text-slate-900">{title}</p>
-                      <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">{note}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="border-y border-slate-200 py-5">
+            <p className="text-sm font-semibold text-slate-500">
+              No active priority work available yet.
+            </p>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[28px] border border-blue-100 bg-[#E8F4FF] shadow-sm">
-          <div className="bg-gradient-to-br from-[#0B1320] to-[#102A43] p-4 text-white">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-200">
-              SafeScope Intelligence
+        <aside className="space-y-5">
+          <section className="border-y border-slate-200 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+              SafeScope Signal
             </p>
-            <h2 className="mt-2 text-2xl font-black">
-              Recurring guarding and energy-control exposure detected.
+            <h2 className="mt-2 text-xl font-black text-slate-900">
+              No active SafeScope signals.
             </h2>
-            <p className="mt-3 text-sm font-semibold leading-6 text-slate-300">
-              SafeScope recommends prioritizing machine guarding, lockout verification, and supervisor sign-off for elevated-risk equipment.
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+              SafeScope intelligence will appear here as inspections, findings, and trends are analyzed.
             </p>
-          </div>
+          </section>
 
-          <div className="grid grid-cols-3 gap-2 p-3">
-            {["Guarding", "LOTO", "Verify"].map((item) => (
-              <div key={item} className="rounded-xl bg-white px-3 py-2 text-center shadow-sm">
-                <p className="text-xs font-black text-slate-700">{item}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+          <section>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+              Activity
+            </p>
+            <div className="mt-3 border-y border-slate-200 py-5">
+              <p className="text-sm font-semibold text-slate-500">
+                No recent workspace activity available yet.
+              </p>
+            </div>
+          </section>
+        </aside>
       </section>
     </section>
   );
