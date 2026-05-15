@@ -17,6 +17,20 @@ const COLORS = [
 const clamp = (v: number, min = 0, max = 1) =>
   Math.max(min, Math.min(max, v));
 
+function getArrowHeadPoints(x1: number, y1: number, x2: number, y2: number) {
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const size = 0.045;
+  const spread = Math.PI / 7;
+
+  const leftX = x2 - size * Math.cos(angle - spread);
+  const leftY = y2 - size * Math.sin(angle - spread);
+  const rightX = x2 - size * Math.cos(angle + spread);
+  const rightY = y2 - size * Math.sin(angle + spread);
+
+  return `${x2},${y2} ${leftX},${leftY} ${rightX},${rightY}`;
+}
+
+
 type DrawShape = AnnotationShape & {
   points?: { x: number; y: number }[];
 };
@@ -215,16 +229,16 @@ export default function AnnotationEditor({
         </button>
 
         <div className="relative">
-          <div className="flex h-8 overflow-hidden border border-slate-300 bg-white">
+          <div className="flex h-7 overflow-hidden rounded-lg border border-slate-300 bg-white">
             <button
               onClick={() => setColorOpen((v) => !v)}
-              className="h-8 w-8"
+              className="h-7 w-7"
               style={{ backgroundColor: selectedColor }}
               aria-label="Selected annotation color"
             />
             <button
               onClick={() => setColorOpen((v) => !v)}
-              className="flex w-6 items-center justify-center border-l border-slate-300 bg-slate-100 text-[9px] font-black text-slate-700"
+              className="flex w-5 items-center justify-center border-l border-slate-300 bg-slate-100 text-[8px] font-black text-slate-700"
               aria-label="Open color options"
             >
               ▼
@@ -232,12 +246,12 @@ export default function AnnotationEditor({
           </div>
 
           {colorOpen && (
-            <div className="absolute right-0 top-9 z-50 grid w-[108px] grid-cols-4 gap-1 rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl">
+            <div className="absolute right-0 top-8 z-50 grid w-[84px] grid-cols-4 gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-xl">
               {COLORS.map((color) => (
                 <button
                   key={color}
                   onClick={() => applyColor(color)}
-                  className="h-5 w-5 border border-slate-300"
+                  className="h-4 w-4 border border-slate-300"
                   style={{ backgroundColor: color }}
                   aria-label={`Select ${color}`}
                 />
@@ -310,8 +324,8 @@ export default function AnnotationEditor({
 
               return (
                 <g key={index}>
-                  <line x1={shape.x} y1={shape.y} x2={x2} y2={y2} stroke={color} strokeWidth="0.012" onPointerDown={(e) => startDrag(index, "move", e)} />
-                  <polygon points={`${x2},${y2} ${x2 - 0.04},${y2 - 0.025} ${x2 - 0.04},${y2 + 0.025}`} fill={color} onPointerDown={(e) => startDrag(index, "arrowEnd", e)} />
+                  <line x1={shape.x} y1={shape.y} x2={x2} y2={y2} stroke={color} strokeWidth="0.012" strokeLinecap="round" onPointerDown={(e) => startDrag(index, "move", e)} />
+                  <polygon points={getArrowHeadPoints(shape.x, shape.y, x2, y2)} fill={color} onPointerDown={(e) => startDrag(index, "arrowEnd", e)} />
                   {selected && (
                     <>
                       <circle cx={shape.x} cy={shape.y} r="0.025" fill={color} onPointerDown={(e) => startDrag(index, "arrowStart", e)} />

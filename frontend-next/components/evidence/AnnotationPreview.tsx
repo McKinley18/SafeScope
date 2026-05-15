@@ -10,6 +10,20 @@ export type AnnotationShape = {
   color: string;
 };
 
+
+function getArrowHeadPoints(x1: number, y1: number, x2: number, y2: number) {
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const size = 0.045;
+  const spread = Math.PI / 7;
+
+  const leftX = x2 - size * Math.cos(angle - spread);
+  const leftY = y2 - size * Math.sin(angle - spread);
+  const rightX = x2 - size * Math.cos(angle + spread);
+  const rightY = y2 - size * Math.sin(angle + spread);
+
+  return `${x2},${y2} ${leftX},${leftY} ${rightX},${rightY}`;
+}
+
 export default function AnnotationPreview({
   photoUrl,
   annotations = [],
@@ -74,9 +88,9 @@ export default function AnnotationPreview({
 
           return (
             <g key={index}>
-              <line x1={shape.x} y1={shape.y} x2={x2} y2={y2} stroke={color} strokeWidth="0.012" />
+              <line x1={shape.x} y1={shape.y} x2={x2} y2={y2} stroke={color} strokeWidth="0.012" strokeLinecap="round" />
               <polygon
-                points={`${x2},${y2} ${x2 - 0.04},${y2 - 0.025} ${x2 - 0.04},${y2 + 0.025}`}
+                points={getArrowHeadPoints(shape.x, shape.y, x2, y2)}
                 fill={color}
               />
             </g>
