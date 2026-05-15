@@ -117,6 +117,7 @@ export default function InspectionPage() {
   const [includeActionsInReport, setIncludeActionsInReport] = useState(true);
   const [includePhotosInReport, setIncludePhotosInReport] = useState(true);
   const [includeSafeScopeNotesInReport, setIncludeSafeScopeNotesInReport] = useState(false);
+  const [safeScopeHelpOpen, setSafeScopeHelpOpen] = useState(false);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
 
@@ -700,7 +701,10 @@ export default function InspectionPage() {
               value={hazardCategory}
               onChange={(e) => setHazardCategory(e.target.value)}
             />
-            <datalist id="hazard-category-options">
+            <datalist
+              id="hazard-category-options"
+              style={{ maxHeight: "120px" }}
+            >
               {hazardCategoryOptions.map((category) => (
                 <option key={category} value={category} />
               ))}
@@ -873,18 +877,28 @@ export default function InspectionPage() {
               SafeScope uses the hazard category, description, location, evidence notes, and agency mode to suggest likely standards. Suggestions must be reviewed by a qualified safety professional.
             </p>
 
-            <div className="mb-5 rounded-[20px] border border-blue-100 bg-[#E8F4FF] p-3">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-lg shadow-sm">
-                  🧠
-                </div>
-                <div>
-                  <p className="text-sm font-black text-slate-900">SafeScope decision-support mode</p>
-                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
-                    Use the results as a review aid. Final standard selection and compliance decisions remain with qualified personnel.
+            <div className="relative mb-4 flex items-center gap-2">
+              <p className="text-sm font-black text-slate-800">
+                SafeScope decision-support mode
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setSafeScopeHelpOpen((open) => !open)}
+                className="flex h-6 w-6 items-center justify-center rounded-full border border-blue-200 bg-[#E8F4FF] text-xs font-black text-[#1D72B8]"
+                aria-label="Explain SafeScope decision-support mode"
+              >
+                ?
+              </button>
+
+              {safeScopeHelpOpen && (
+                <div className="absolute left-0 top-8 z-20 max-w-sm rounded-2xl border border-blue-100 bg-white p-4 text-sm font-semibold leading-6 text-slate-600 shadow-xl">
+                  <p className="font-black text-slate-900">What this means</p>
+                  <p className="mt-1">
+                    SafeScope provides decision-support only. Use the results as a review aid. Final standard selection, compliance decisions, and corrective actions remain with qualified personnel.
                   </p>
                 </div>
-              </div>
+              )}
             </div>
 
             <label className="mb-2 block text-sm font-black text-slate-700">Applicable Regulations</label>
@@ -927,128 +941,81 @@ export default function InspectionPage() {
 
             {safeScopeStatus && <p className="mb-4 text-sm font-black text-slate-600">{safeScopeStatus}</p>}
 
-            {safeScopeResult?.confidenceIntelligence && (
-              <div className="mb-4 rounded-[24px] border border-blue-100 bg-white px-4 py-3 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="font-black text-slate-900">SafeScope Confidence Intelligence</h3>
+            {safeScopeResult && (
+              <div className="mb-4 border-y border-slate-200 py-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
+                      SafeScope Analysis
+                    </p>
+                    <h3 className="mt-1 text-lg font-black text-slate-900">
+                      {safeScopeResult.classification || "Review Required"}
+                    </h3>
+                  </div>
+
                   <span className="rounded-full bg-[#E8F4FF] px-3 py-1 text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                    {Math.round((safeScopeResult.confidenceIntelligence.overallConfidence || 0) * 100)}% {safeScopeResult.confidenceIntelligence.confidenceBand}
+                    {Math.round(
+                      ((safeScopeResult.confidenceIntelligence?.overallConfidence ??
+                        safeScopeResult.confidence ??
+                        0) || 0) * 100
+                    )}% confidence
                   </span>
                 </div>
 
-                {!!safeScopeResult.confidenceIntelligence.strengths?.length && (
-                  <div className="mt-3">
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-500">Strengths</p>
-                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm font-semibold text-slate-700">
-                      {safeScopeResult.confidenceIntelligence.strengths.map((item: string) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                      Risk
+                    </p>
+                    <p className="mt-1 text-sm font-black text-slate-800">
+                      {safeScopeResult.risk?.riskBand ||
+                        safeScopeResult.risk?.operationalRisk?.matrixBand ||
+                        "Not rated"}
+                    </p>
                   </div>
-                )}
 
-                {!!safeScopeResult.confidenceIntelligence.missingCriticalInformation?.length && (
-                  <div className="mt-3 rounded-xl bg-amber-50 p-3">
-                    <p className="text-xs font-black uppercase tracking-wide text-amber-700">Missing Critical Information</p>
-                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm font-semibold text-amber-900">
-                      {safeScopeResult.confidenceIntelligence.missingCriticalInformation.map((item: string) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                      Environment
+                    </p>
+                    <p className="mt-1 text-sm font-black text-slate-800">
+                      {safeScopeResult.expandedContext?.environment || "Not inferred"}
+                    </p>
                   </div>
-                )}
 
-                {!!safeScopeResult.confidenceIntelligence.recommendedFollowup?.length && (
-                  <div className="mt-3">
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-500">Recommended Follow-up</p>
-                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm font-semibold text-slate-700">
-                      {safeScopeResult.confidenceIntelligence.recommendedFollowup.map((item: string) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                      Review Needed
+                    </p>
+                    <p className="mt-1 text-sm font-black text-slate-800">
+                      {safeScopeResult.requiresHumanReview ? "Yes" : "No"}
+                    </p>
                   </div>
-                )}
-              </div>
-            )}
-
-            {safeScopeResult?.risk && (
-              <div className="mb-4 rounded-[20px] border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">Risk Intelligence</p>
-                <h3 className="mb-3 mt-1 text-lg font-black text-slate-900">SafeScope Risk Assessment</h3>
-
-                <div className="mb-3 rounded-xl bg-white p-3">
-                  <div className="text-sm font-black text-slate-900">
-                    Operational Matrix • {safeScopeResult.risk.operationalRisk?.profileLabel || "Standard 5x5"}
-                  </div>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Severity {safeScopeResult.risk.operationalRisk?.severity} × Likelihood {safeScopeResult.risk.operationalRisk?.likelihood}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    Score: {safeScopeResult.risk.operationalRisk?.matrixScore} / {safeScopeResult.risk.operationalRisk?.matrixSize ? safeScopeResult.risk.operationalRisk.matrixSize * safeScopeResult.risk.operationalRisk.matrixSize : 25} • {safeScopeResult.risk.operationalRisk?.matrixBand}
-                  </p>
                 </div>
 
-                <div className="mb-3 rounded-xl bg-white p-3">
-                  <div className="text-sm font-black text-slate-900">AI Escalation</div>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Score: {safeScopeResult.risk.aiRisk?.escalationScore ?? safeScopeResult.risk.riskScore} • {safeScopeResult.risk.aiRisk?.escalationBand ?? safeScopeResult.risk.riskBand}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    Fatality Potential: {safeScopeResult.risk.aiRisk?.fatalityPotential ?? safeScopeResult.risk.fatalityPotential}
-                  </p>
-                </div>
+                {!!safeScopeResult.confidenceIntelligence?.missingCriticalInformation?.length && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-amber-700">
+                      Missing information
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                      {safeScopeResult.confidenceIntelligence.missingCriticalInformation
+                        .slice(0, 3)
+                        .join(" • ")}
+                    </p>
+                  </div>
+                )}
 
-                {safeScopeResult.risk.requiresShutdown && (
-                  <p className="rounded-xl bg-red-100 p-3 text-sm font-black text-red-700">
+                {safeScopeResult.risk?.requiresShutdown && (
+                  <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-black text-red-700">
                     Shutdown / immediate control recommended.
                   </p>
                 )}
               </div>
             )}
 
-            {safeScopeResult?.expandedContext && (
-              <div className="mb-4 rounded-[24px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">Inferred Context</p>
-                <h3 className="mt-1 font-black text-slate-900">SafeScope Inferred Context</h3>
-
-                <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
-                  <div>
-                    <p className="font-black text-slate-500">Environment</p>
-                    <p className="font-semibold text-slate-700">
-                      {safeScopeResult.expandedContext.environment || "Not inferred"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="font-black text-slate-500">Confidence</p>
-                    <p className="font-semibold text-slate-700">
-                      {safeScopeResult.expandedContext.contextConfidence?.band || "Unknown"}
-                    </p>
-                  </div>
-                </div>
-
-                {!!safeScopeResult.expandedContext.probableConsequences?.length && (
-                  <div className="mt-3">
-                    <p className="font-black text-slate-500">Probable Consequences</p>
-                    <p className="text-sm font-semibold text-slate-700">
-                      {safeScopeResult.expandedContext.probableConsequences.join(", ")}
-                    </p>
-                  </div>
-                )}
-
-                {!!safeScopeResult.expandedContext.controlFailures?.length && (
-                  <div className="mt-3">
-                    <p className="font-black text-slate-500">Control Failures</p>
-                    <p className="text-sm font-semibold text-slate-700">
-                      {safeScopeResult.expandedContext.controlFailures.join(", ")}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
             {!!safeScopeResult?.suggestedStandards?.length && (
-              <div className="mb-4 rounded-[24px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <div className="mb-3 border-y border-slate-200 py-3">
                 <div className="mb-4">
                   <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
                     Standards Review
@@ -1076,10 +1043,10 @@ export default function InspectionPage() {
                   return (
                     <div
                       key={standard.citation}
-                      className={`mb-3 rounded-[18px] border p-3 transition ${
+                      className={`mb-3 border-b border-slate-200 py-3 transition ${
                         selected
-                          ? "border-[#1D72B8] bg-[#E8F4FF] shadow-sm"
-                          : "border-slate-200 bg-slate-50 hover:border-blue-200 hover:bg-white"
+                          ? "border-[#1D72B8] bg-[#E8F4FF]"
+                          : "border-slate-200 bg-transparent hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex flex-wrap items-center gap-2">
@@ -1110,19 +1077,19 @@ export default function InspectionPage() {
                       <p className="mt-1 text-sm text-slate-600">{standard.rationale}</p>
 
                       {standard.workspaceLearningAdjustment !== undefined && standard.workspaceLearningAdjustment !== 0 && (
-                        <div className="mt-2 rounded-xl bg-emerald-50 p-3 text-xs font-black text-emerald-800">
+                        <div className="mt-2 border-l-4 border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800">
                           Workspace learning adjustment: {standard.workspaceLearningAdjustment > 0 ? "+" : ""}{standard.workspaceLearningAdjustment}
                         </div>
                       )}
 
                       {!!standard.workspaceLearningWarnings?.length && (
-                        <div className="mt-2 rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-900">
+                        <div className="mt-2 border-l-4 border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">
                           {standard.workspaceLearningWarnings.join(" • ")}
                         </div>
                       )}
 
                       {!!standard.matchingReasons?.length && (
-                        <div className="mt-2 rounded-xl bg-slate-50 p-3">
+                        <div className="mt-2 border-l-4 border-slate-200 bg-slate-50 px-3 py-2">
                           <p className="text-xs font-black uppercase tracking-wide text-slate-500">Why SafeScope matched this</p>
                           <p className="mt-1 text-xs font-semibold text-slate-600">
                             {standard.matchingReasons.slice(0, 6).join(" • ")}
@@ -1137,7 +1104,7 @@ export default function InspectionPage() {
                             toggleSelectedStandard(standard);
                             if (!selected) handleFeedback(standard, "accepted");
                           }}
-                          className={`rounded-full px-3 py-2 text-xs font-black ${
+                          className={`rounded-full px-3 py-1.5 text-xs font-black ${
                             selected
                               ? "bg-[#1D72B8] text-white"
                               : "bg-[#DCFCE7] text-[#166534]"
@@ -1149,7 +1116,7 @@ export default function InspectionPage() {
                         <button
                           type="button"
                           onClick={() => handleFeedback(standard, "rejected")}
-                          className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"
+                          className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700"
                         >
                           Reject
                         </button>
@@ -1157,7 +1124,7 @@ export default function InspectionPage() {
                         <button
                           type="button"
                           onClick={() => handleFeedback(standard, "flagged")}
-                          className="rounded-full bg-[#FEF3C7] px-3 py-2 text-xs font-black text-[#92400E]"
+                          className="rounded-full bg-[#FEF3C7] px-3 py-1.5 text-xs font-black text-[#92400E]"
                         >
                           Flag
                         </button>
@@ -1169,7 +1136,7 @@ export default function InspectionPage() {
             )}
 
             {!!safeScopeResult?.excludedStandards?.length && (
-              <div className="mb-4 rounded-2xl border border-slate-300 bg-slate-50 p-4">
+              <div className="mb-3 border-y border-slate-200 bg-slate-50/70 py-3">
                 <h3 className="font-black text-slate-700">Excluded Standards</h3>
                 <p className="mt-1 text-sm text-slate-500">
                   These standards were considered but excluded based on selected regulatory scope or context.
@@ -1177,7 +1144,7 @@ export default function InspectionPage() {
 
                 <div className="mt-3 space-y-2">
                   {safeScopeResult.excludedStandards.map((standard: any) => (
-                    <div key={standard.citation} className="rounded-xl bg-white p-3">
+                    <div key={standard.citation} className="border-t border-slate-200 py-3">
                       <p className="font-black text-slate-700">{standard.citation}</p>
                       <p className="mt-1 text-sm text-slate-500">{standard.reason}</p>
                     </div>
@@ -1187,12 +1154,12 @@ export default function InspectionPage() {
             )}
 
             {!!safeScopeResult?.additionalHazards?.length && (
-              <div className="mb-4 rounded-[24px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <div className="mb-3 border-y border-slate-200 py-3">
                 <h3 className="font-black text-slate-900">Additional Hazards Detected</h3>
 
                 <div className="mt-3 space-y-2">
                   {safeScopeResult.additionalHazards.map((hazard: any, index: number) => (
-                    <div key={index} className="rounded-xl bg-white p-3">
+                    <div key={index} className="border-t border-slate-200 py-3">
                       <p className="font-black text-slate-900">
                         {hazard.name || hazard.hazard || `Additional Hazard ${index + 1}`}
                       </p>
@@ -1215,11 +1182,11 @@ export default function InspectionPage() {
               return (
                 <>
                   <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
-                    Company matrix: <span className="font-black text-slate-700">{activeRiskScale.label}</span>. Select 1–{activeRiskScale.maxScore} for severity and likelihood.
+                    Company matrix: <span className="font-black text-slate-700">{activeRiskScale.label}</span>. Select one cell to confirm severity and likelihood.
                   </p>
 
                   {safeScopeResult?.risk?.operationalRisk && (
-                    <div className="mb-5 rounded-[20px] border border-blue-100 bg-[#E8F4FF] p-3">
+                    <div className="mb-4 border-l-4 border-[#1D72B8] bg-[#E8F4FF] px-3 py-2">
                       <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
                         SafeScope Suggested Risk
                       </p>
@@ -1229,60 +1196,98 @@ export default function InspectionPage() {
                     </div>
                   )}
 
-                  <h3 className="mb-3 font-black text-slate-800">Severity</h3>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {activeRiskScale.severity.map((item) => (
-                      <button
-                        key={item.score}
-                        type="button"
-                        onClick={() => setSeverity(item.score)}
-                        className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
-                          severity === item.score
-                            ? "border-[#1D72B8] bg-[#E8F4FF] shadow-sm"
-                            : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
-                        }`}
-                      >
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black">
-                          {item.score}
-                        </span>
-                        <span>
-                          <span className="block text-sm font-black">{item.label}</span>
-                          <span className="line-clamp-1 text-[11px] font-semibold text-slate-500">{item.desc}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                  {(() => {
+                    const scoreBand = (score: number) => {
+                      const max = activeRiskScale.maxScore * activeRiskScale.maxScore;
+                      const ratio = score / max;
 
-                  <h3 className="mb-3 mt-6 font-black text-slate-800">Likelihood</h3>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {activeRiskScale.likelihood.map((item) => (
-                      <button
-                        key={item.score}
-                        type="button"
-                        onClick={() => setLikelihood(item.score)}
-                        className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
-                          likelihood === item.score
-                            ? "border-[#1D72B8] bg-[#E8F4FF] shadow-sm"
-                            : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
-                        }`}
-                      >
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black">
-                          {item.score}
-                        </span>
-                        <span>
-                          <span className="block text-sm font-black">{item.label}</span>
-                          <span className="line-clamp-1 text-[11px] font-semibold text-slate-500">{item.desc}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                      if (ratio >= 0.75) return { label: "Critical", cls: "bg-red-100 text-red-800 border-red-200" };
+                      if (ratio >= 0.5) return { label: "High", cls: "bg-orange-100 text-orange-800 border-orange-200" };
+                      if (ratio >= 0.25) return { label: "Medium", cls: "bg-amber-100 text-amber-800 border-amber-200" };
+                      return { label: "Low", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" };
+                    };
 
-                  <div className="mt-6 rounded-[20px] border border-slate-200 bg-slate-50 p-3">
+                    const likelihoodValues = [...activeRiskScale.likelihood].reverse();
+                    const severityValues = activeRiskScale.severity;
+
+                    return (
+                      <div>
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <h3 className="font-black text-slate-800">Risk Matrix</h3>
+                          <p className="text-xs font-bold text-slate-500">
+                            Likelihood ↑ / Severity →
+                          </p>
+                        </div>
+
+                        <div
+                          className="grid gap-1"
+                          style={{
+                            gridTemplateColumns: `44px repeat(${activeRiskScale.maxScore}, minmax(0, 1fr))`,
+                          }}
+                        >
+                          <div />
+                          {severityValues.map((s) => (
+                            <div key={`s-${s.score}`} className="text-center text-[11px] font-black text-slate-500">
+                              S{s.score}
+                            </div>
+                          ))}
+
+                          {likelihoodValues.map((l) => (
+                            <>
+                              <div key={`l-label-${l.score}`} className="flex items-center justify-center text-[11px] font-black text-slate-500">
+                                L{l.score}
+                              </div>
+
+                              {severityValues.map((s) => {
+                                const score = s.score * l.score;
+                                const band = scoreBand(score);
+                                const selected = severity === s.score && likelihood === l.score;
+
+                                return (
+                                  <button
+                                    key={`${s.score}-${l.score}`}
+                                    type="button"
+                                    onClick={() => {
+                                      setSeverity(s.score);
+                                      setLikelihood(l.score);
+                                    }}
+                                    className={`min-h-12 rounded-xl border px-2 py-2 text-center text-xs font-black transition ${band.cls} ${
+                                      selected ? "ring-2 ring-[#1D72B8] ring-offset-2" : "hover:scale-[1.02]"
+                                    }`}
+                                  >
+                                    {score}
+                                  </button>
+                                );
+                              })}
+                            </>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-wide text-slate-400">Selected Severity</p>
+                            <p className="mt-1 text-sm font-black text-slate-800">
+                              {severity ? `S${severity}` : "Not selected"}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-wide text-slate-400">Selected Likelihood</p>
+                            <p className="mt-1 text-sm font-black text-slate-800">
+                              {likelihood ? `L${likelihood}` : "Not selected"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="mt-4 border-t border-slate-200 pt-3">
                     <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">User-Approved Risk</p>
                     <p className="mt-1 text-sm font-semibold text-slate-600">
                       {severity && likelihood
                         ? `Severity ${severity} × Likelihood ${likelihood} = ${severity * likelihood}`
-                        : "Select severity and likelihood to confirm the final risk rating."}
+                        : "Select a matrix cell to confirm the final risk rating."}
                     </p>
                   </div>
                 </>
@@ -1590,35 +1595,6 @@ export default function InspectionPage() {
         </div>
       )}
 
-      <div className="sticky bottom-[76px] z-30 -mx-4 mt-4 flex gap-2 border-t border-slate-200 bg-[#F6F8FB]/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 md:bottom-0">
-        <button
-          type="button"
-          onClick={() => {
-            if (currentStep === 1) {
-              router.push("/inspection-cover");
-              return;
-            }
-            goToInspectionStep(currentStep - 1);
-          }}
-          className="h-9 flex-1 rounded-lg bg-white px-3 text-xs font-black text-slate-700 shadow-sm"
-        >
-          Back
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (currentStep === 6) {
-              generateReport();
-              return;
-            }
-            goToInspectionStep(currentStep + 1);
-          }}
-          className="h-9 flex-[1.05] rounded-lg bg-[#102A43] px-3 text-xs font-black text-white shadow-md shadow-slate-900/10"
-        >
-          {currentStep === 6 ? "Generate Report" : "Next"}
-        </button>
-      </div>
     </>
   );
 }
