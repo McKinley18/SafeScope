@@ -79,10 +79,33 @@ export class OperationalReasoningService {
       likelyInjuryMechanisms.push("Chemical exposure, inhalation, skin contact, or incompatible material handling.");
     }
 
+    const initiatingConditions: string[] = [];
+    const contributingFactors: string[] = [];
+    const controlFailures: string[] = [];
+    const possibleConsequences: string[] = [];
+
+    if (includesAny(text, ["missing", "removed", "damaged", "broken", "open", "unsecured", "blocked", "leaking"])) {
+      initiatingConditions.push("A physical condition appears degraded, missing, damaged, or uncontrolled.");
+    }
+
+    if (includesAny(text, ["bypassed", "disabled", "not locked", "not guarded", "not protected"])) {
+      controlFailures.push("A required protective control may be absent, bypassed, or ineffective.");
+    }
+
+    if (includesAny(text, ["production", "operating", "maintenance", "cleaning", "clearing", "adjusting"])) {
+      contributingFactors.push("The condition may occur during active work, maintenance, cleaning, adjustment, or production activity.");
+    }
+
+    if (likelyInjuryMechanisms.length) {
+      possibleConsequences.push(likelyInjuryMechanisms[0]);
+    }
+
     const causalChain = [
+      initiatingConditions[0] || "Initiating condition requires confirmation.",
       exposurePathways[0] || "Exposure pathway requires confirmation.",
       energyTransferSignals[0] || "Energy transfer mechanism requires confirmation.",
-      likelyInjuryMechanisms[0] || "Injury mechanism requires supervisor review.",
+      controlFailures[0] || "Control failure mechanism requires confirmation.",
+      possibleConsequences[0] || "Potential consequence requires supervisor review.",
     ];
 
     return {
@@ -91,10 +114,15 @@ export class OperationalReasoningService {
       operationalStateSignals,
       humanInteractionSignals,
       energyTransferSignals,
+      initiatingConditions,
+      contributingFactors,
+      controlFailures,
+      possibleConsequences,
       causalChain,
       assumptions,
       uncertainty,
       reasoningSummary: causalChain.filter(Boolean).join(" → "),
+      causalNarrative: `SafeScope causal model: ${causalChain.filter(Boolean).join(" → ")}.`,
       supervisorQuestions: [
         ...uncertainty.map((item) => `Confirm: ${item}`),
         ...assumptions.map((item) => `Verify: ${item}`),
