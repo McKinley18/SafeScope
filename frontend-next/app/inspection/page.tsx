@@ -119,8 +119,55 @@ export default function InspectionPage() {
   const [includeSafeScopeNotesInReport, setIncludeSafeScopeNotesInReport] = useState(false);
   const [safeScopeHelpOpen, setSafeScopeHelpOpen] = useState(false);
   const [safeScopeDetailsOpen, setSafeScopeDetailsOpen] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const timeout = window.setTimeout(() => {
+      window.localStorage.setItem(
+        "sentinel_inspection_autosave",
+        JSON.stringify({
+          currentStep,
+          hazardCategory,
+          description,
+          location,
+          evidenceNotes,
+          agencyMode,
+          riskProfileId,
+          severity,
+          likelihood,
+          manualActions,
+          selectedGeneratedActions,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+
+      setLastSavedAt(
+        new Date().toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      );
+    }, 600);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    currentStep,
+    hazardCategory,
+    description,
+    location,
+    evidenceNotes,
+    agencyMode,
+    riskProfileId,
+    severity,
+    likelihood,
+    manualActions,
+    selectedGeneratedActions,
+  ]);
+
 
   useEffect(() => {
     const existing = secureStorage.get("edit_report", null as any);
@@ -631,8 +678,13 @@ export default function InspectionPage() {
             </p>
           </div>
 
-          <div className="shrink-0 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black text-white shadow-sm backdrop-blur">
-            Step {currentStep} of {steps.length}
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black text-white shadow-sm backdrop-blur">
+              Step {currentStep} of {steps.length}
+            </div>
+            <p className="text-[11px] font-black text-blue-100">
+              {lastSavedAt ? `Saved ${lastSavedAt}` : "Autosave ready"}
+            </p>
           </div>
         </div>
 
@@ -763,19 +815,13 @@ export default function InspectionPage() {
 
         {currentStep === 2 && (
           <>
-            <p className="mb-4 text-sm font-semibold leading-6 text-slate-500">
-              Take field photos, upload evidence, and annotate key hazard areas before generating the report.
-            </p>
-
-            <div className="mb-4 rounded-[24px] border-2 border-dashed border-blue-200 bg-[#E8F4FF] p-5 text-center">
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">📷</div>
-              <div className="mt-3 text-lg font-black text-slate-900">Evidence Photos</div>
-              <p className="mt-1 text-sm font-semibold text-slate-600">
-                Capture conditions clearly enough for review, verification, and audit support.
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+              <p className="max-w-xl text-sm font-semibold leading-6 text-slate-500">
+                Capture clear visual evidence, then annotate key hazard areas for review and verification.
               </p>
 
-              <div className="mt-4 flex justify-center gap-3">
-                <label className="cursor-pointer rounded-2xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#155A93]">
+              <div className="flex flex-wrap gap-2">
+                <label className="cursor-pointer rounded-xl bg-[#1D72B8] px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-[#155A93]">
                   Take Photo
                   <input
                     type="file"
@@ -786,8 +832,8 @@ export default function InspectionPage() {
                   />
                 </label>
 
-                <label className="cursor-pointer rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-50">
-                  Upload Photo
+                <label className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-black text-slate-700 shadow-sm transition hover:bg-slate-50">
+                  Upload
                   <input
                     type="file"
                     accept="image/*"
@@ -800,12 +846,12 @@ export default function InspectionPage() {
             </div>
 
             {photos.length > 0 && (
-              <div className="mb-4 grid gap-3 md:grid-cols-3">
+              <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {photos.map((photo, index) => (
-                  <div key={photo.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <div key={photo.id} className="overflow-hidden border-b border-slate-200 bg-white pb-3">
                     <AnnotationPreview photoUrl={photo.url} annotations={photo.annotations || []} />
 
-                    <div className="space-y-2 p-3">
+                    <div className="space-y-2 pt-2">
                       <p className="truncate text-xs font-black text-slate-600">{photo.name}</p>
 
                       <div className="flex gap-2">
@@ -894,9 +940,9 @@ export default function InspectionPage() {
               </div>
             )}
 
-            <label className="mb-2 block text-sm font-black text-slate-700">Evidence Notes</label>
+            <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Evidence Notes</label>
             <textarea
-              className="min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-[#1D72B8]"
+              className="min-h-24 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#1D72B8] focus:bg-white"
               placeholder="Describe photos, documents, or evidence needed."
               value={evidenceNotes}
               onChange={(e) => setEvidenceNotes(e.target.value)}
@@ -1292,7 +1338,10 @@ export default function InspectionPage() {
                           ))}
 
                           {likelihoodValues.map((l) => (
-                            <>
+                            <div
+                              key={`likelihood-row-${l.score}`}
+                              className="contents"
+                            >
                               <div key={`l-label-${l.score}`} className="flex items-center justify-center text-[11px] font-black text-slate-500">
                                 L{l.score}
                               </div>
@@ -1318,7 +1367,7 @@ export default function InspectionPage() {
                                   </button>
                                 );
                               })}
-                            </>
+                            </div>
                           ))}
                         </div>
 
