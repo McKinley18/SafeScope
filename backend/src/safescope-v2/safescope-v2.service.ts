@@ -293,6 +293,7 @@ export class SafescopeV2Service {
       generatedActions,
       additionalHazards,
       priorFindings,
+      workspaceId,
     });
 
     const promotionWarning =

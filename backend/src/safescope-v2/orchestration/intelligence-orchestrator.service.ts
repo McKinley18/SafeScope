@@ -19,6 +19,7 @@ import { HazardGraphService } from '../hazard-graph/hazard-graph.service';
 import { ExposurePathService } from '../exposure-path/exposure-path.service';
 import { ConfidenceCalibrationService } from '../validation/confidence-calibration.service';
 import { ReasoningDriftService } from '../validation/reasoning-drift.service';
+import { WorkspaceLearningService } from '../learning/workspace-learning.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -30,6 +31,9 @@ export type SafeScopeIntelligenceOrchestratorInput = {
   generatedActions: any[];
   additionalHazards: any[];
   priorFindings?: any[];
+  workspaceId?: string;
+  standardsFeedback?: any[];
+  correctiveActionOutcomes?: any[];
 };
 
 export class SafeScopeIntelligenceOrchestrator {
@@ -54,6 +58,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private exposurePathEngine = new ExposurePathService();
   private confidenceCalibrationEngine = new ConfidenceCalibrationService();
   private reasoningDriftEngine = new ReasoningDriftService();
+  private workspaceLearningEngine = new WorkspaceLearningService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -66,6 +71,9 @@ export class SafeScopeIntelligenceOrchestrator {
       generatedActions,
       additionalHazards,
       priorFindings,
+      workspaceId,
+      standardsFeedback,
+      correctiveActionOutcomes,
     } = input;
 
     const photosAttached = (evidenceTexts || []).some((item) =>
@@ -220,6 +228,14 @@ export class SafeScopeIntelligenceOrchestrator {
       confidenceIntelligence,
     });
 
+    const workspaceLearning = this.workspaceLearningEngine.evaluate({
+      workspaceId,
+      classification: promotedPrimary.classification,
+      priorFindings,
+      standardsFeedback,
+      correctiveActionOutcomes,
+    });
+
     const confidenceCalibration = this.confidenceCalibrationEngine.evaluate({
       classification: promotedPrimary.classification,
       confidenceIntelligence,
@@ -275,8 +291,10 @@ export class SafeScopeIntelligenceOrchestrator {
           'site_memory',
           'confidence_calibration',
           'reasoning_drift',
+          'workspace_learning',
         ],
       },
+      workspaceLearning,
       confidenceIntelligence,
       operationalReasoning,
       trendIntelligence,
