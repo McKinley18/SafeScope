@@ -1,52 +1,92 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/ui/PageHeader";
+import { getReports } from "@/lib/reportStorage";
 
 type ActionItem = {
   title: string;
   priority: string;
   status: string;
-  due: string;
+  due?: string;
   source: "SafeScope" | "User";
+  location?: string;
+  findingTitle?: string;
 };
 
-const initialActions: ActionItem[] = [
-  {
-    title: "Verify guarding installed on conveyor drive",
-    priority: "Critical",
-    status: "Open",
-    due: "Today",
-    source: "SafeScope",
-  },
-  {
-    title: "Confirm electrical panel cover is secured",
-    priority: "High",
-    status: "In Progress",
-    due: "Tomorrow",
-    source: "SafeScope",
-  },
-];
+type Report = {
+  id?: string;
+  findings?: any[];
+};
 
 export default function ActionsPage() {
-  const [actions, setActions] = useState<ActionItem[]>(initialActions);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [manualActions, setManualActions] = useState<ActionItem[]>([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [due, setDue] = useState("");
 
+  useEffect(() => {
+    async function loadActions() {
+      const savedReports = await getReports<Report>();
+      setReports(Array.isArray(savedReports) ? savedReports : []);
+
+      const savedManualActions = window.localStorage.getItem("sentinel_manual_actions");
+      setManualActions(savedManualActions ? JSON.parse(savedManualActions) : []);
+    }
+
+    loadActions();
+  }, []);
+
+  const reportActions = useMemo(() => {
+    return reports.flatMap((report) =>
+      (report.findings || []).flatMap((finding) =>
+        [
+          ...(finding.manualActions || []),
+          ...(finding.correctiveActions || []),
+          ...(finding.safeScopeResult?.generatedActions || []),
+        ].map((action: any) => ({
+          title: action.title || action.description || "Corrective action",
+          priority: action.priority || "Medium",
+          status: action.status || "Open",
+          due: action.dueDate || action.due || "",
+          source: action.source || (action.generatedBy === "SafeScope" ? "SafeScope" : "User"),
+          location: finding.location || "Field Inspection",
+          findingTitle:
+            finding.hazardCategory ||
+            finding.safeScopeResult?.classification ||
+            finding.description ||
+            "Inspection Finding",
+        }))
+      )
+    );
+  }, [reports]);
+
+  const actions = [...manualActions, ...reportActions];
+
+  function updateManualActionStatus(index: number, status: string) {
+    const nextActions = manualActions.map((action, actionIndex) =>
+      actionIndex === index ? { ...action, status } : action
+    );
+
+    setManualActions(nextActions);
+    window.localStorage.setItem("sentinel_manual_actions", JSON.stringify(nextActions));
+  }
+
   function addAction() {
     if (!title.trim()) return;
 
-    setActions((current) => [
-      {
-        title: title.trim(),
-        priority,
-        status: "Open",
-        due: due || "Not set",
-        source: "User",
-      },
-      ...current,
-    ]);
+    const nextAction: ActionItem = {
+      title: title.trim(),
+      priority,
+      status: "Open",
+      due,
+      source: "User",
+    };
+
+    const nextActions = [nextAction, ...manualActions];
+    setManualActions(nextActions);
+    window.localStorage.setItem("sentinel_manual_actions", JSON.stringify(nextActions));
 
     setTitle("");
     setPriority("Medium");
@@ -54,14 +94,14 @@ export default function ActionsPage() {
   }
 
   return (
-    <section className="space-y-7">
+    <section className="space-y-6">
       <PageHeader
         title="Corrective Actions"
-        description="Track SafeScope recommendations and add your own assigned corrective actions."
+        description="Track corrective actions created from inspections, SafeScope recommendations, and user-entered work."
       />
 
-      <section className="rounded-[24px] bg-[#0B1320] p-5">
-        <p className="mb-2 text-[11px] font-black uppercase tracking-[1px] text-[#F97316]">
+      <section className="border-y border-slate-200 py-4">
+        <p className="mb-3 text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
           Add Action
         </p>
 
@@ -70,14 +110,14 @@ export default function ActionsPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Describe the corrective action"
-            className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-bold text-slate-900 outline-none"
+            className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-[#1D72B8]"
           />
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <select
               value={priority}
               onChange={(event) => setPriority(event.target.value)}
-              className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-bold text-slate-900 outline-none"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-[#1D72B8]"
             >
               <option>Low</option>
               <option>Medium</option>
@@ -89,43 +129,81 @@ export default function ActionsPage() {
               type="date"
               value={due}
               onChange={(event) => setDue(event.target.value)}
-              className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-bold text-slate-900 outline-none"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-[#1D72B8]"
             />
-          </div>
 
-          <button
-            type="button"
-            onClick={addAction}
-            className="rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white"
-          >
-            Add Corrective Action
-          </button>
+            <button
+              type="button"
+              onClick={addAction}
+              className="rounded-xl bg-[#1D72B8] px-5 py-3 text-sm font-black text-white"
+            >
+              Add Action
+            </button>
+          </div>
         </div>
       </section>
 
-      <section className="divide-y divide-slate-200 border-t border-slate-300">
-        {actions.map((action, index) => (
-          <div key={`${action.title}-${index}`} className="py-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-black text-slate-900">{action.title}</h2>
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase text-slate-600">
-                    {action.source}
-                  </span>
+      <section className="border-y border-slate-200">
+        {actions.length ? (
+          actions.map((action, index) => {
+            const isManualAction = index < manualActions.length;
+            const isComplete = String(action.status).toLowerCase() === "completed";
+
+            return (
+              <div key={`${action.title}-${index}`} className="border-b border-slate-200 py-4 last:border-b-0">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className={`font-black ${isComplete ? "text-slate-400 line-through" : "text-slate-900"}`}>
+                        {action.title}
+                      </h2>
+                      <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase text-slate-600">
+                        {action.source}
+                      </span>
+                    </div>
+
+                    <p className="mt-1 text-sm font-semibold text-slate-500">
+                      {action.location || "Workspace"} • Due: {action.due || "Not set"} • Status: {action.status}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                    <span className={`rounded-full px-3 py-1 text-xs font-black ${
+                      String(action.priority).toLowerCase() === "critical"
+                        ? "bg-red-100 text-red-700"
+                        : String(action.priority).toLowerCase() === "high"
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-slate-100 text-slate-700"
+                    }`}>
+                      {action.priority}
+                    </span>
+
+                    {isManualAction ? (
+                      <select
+                        value={action.status}
+                        onChange={(event) => updateManualActionStatus(index, event.target.value)}
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700 outline-none focus:border-[#1D72B8]"
+                      >
+                        <option>Open</option>
+                        <option>In Progress</option>
+                        <option>Blocked</option>
+                        <option>Completed</option>
+                      </select>
+                    ) : (
+                      <span className="rounded-full bg-slate-50 px-3 py-1 text-xs font-black text-slate-500">
+                        Report-linked
+                      </span>
+                    )}
+                  </div>
                 </div>
-
-                <p className="mt-1 text-sm font-semibold text-slate-500">
-                  Due: {action.due} • Status: {action.status}
-                </p>
               </div>
-
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
-                {action.priority}
-              </span>
-            </div>
-          </div>
-        ))}
+            );
+          })
+        ) : (
+          <p className="py-5 text-sm font-semibold text-slate-500">
+            No corrective actions available yet.
+          </p>
+        )}
       </section>
     </section>
   );
