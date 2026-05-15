@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback } from "@/lib/safescope";
 import { getOrganizationSettings, saveWorkspaceReport } from "@/lib/auth";
 import { getCoverPage, getReports, setLatestReport, setReports } from "@/lib/reportStorage";
+import { getStoredActions, saveStoredActions, type StoredAction } from "@/lib/actionStorage";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
 import { deleteEncryptedPhoto, loadEncryptedPhoto, saveEncryptedPhoto } from "@/lib/evidenceStorage";
@@ -344,6 +345,17 @@ export default function InspectionPage() {
         ? findings[editingFindingIndex]?.id
         : currentSavedFindingId || Date.now();
 
+    const correctiveActions = [...selectedGeneratedActions, ...manualActions].map((action, index) => ({
+      ...action,
+      id: action.id || `ACT-${findingId}-${index}`,
+      title: action.title || action.description || "Corrective action",
+      priority: action.priority || "Medium",
+      status: action.status || "Open",
+      due: action.due || action.dueDate || "",
+      source: action.source || (index < selectedGeneratedActions.length ? "SafeScope" : "User"),
+      createdAt: action.createdAt || new Date().toISOString(),
+    }));
+
     return {
       id: findingId,
       hazardCategory,
@@ -355,11 +367,46 @@ export default function InspectionPage() {
       selectedStandards,
       selectedGeneratedActions,
       manualActions,
-      correctiveActions: [...selectedGeneratedActions, ...manualActions],
+      correctiveActions,
+      correctiveActionIds: correctiveActions.map((action) => action.id),
       severity,
       likelihood,
       riskScore,
     };
+  }
+
+  async function persistFindingActions(finding: any) {
+    const correctiveActions = finding.correctiveActions || [];
+
+    if (!correctiveActions.length) return;
+
+    const storedActions = await getStoredActions();
+
+    const normalizedActions: StoredAction[] = correctiveActions.map((action: any, index: number) => ({
+      id: action.id || `ACT-${finding.id}-${index}`,
+      title: action.title || action.description || "Corrective action",
+      priority: action.priority || "Medium",
+      status: action.status || "Open",
+      due: action.due || action.dueDate || "",
+      source: action.source || "Inspection",
+      location: finding.location || "Field Inspection",
+      findingTitle:
+        finding.hazardCategory ||
+        finding.safeScopeResult?.classification ||
+        finding.description ||
+        "Inspection Finding",
+      createdAt: action.createdAt || new Date().toISOString(),
+    }));
+
+    const merged = [
+      ...normalizedActions,
+      ...storedActions.filter(
+        (storedAction) =>
+          !normalizedActions.some((action) => action.id === storedAction.id)
+      ),
+    ];
+
+    await saveStoredActions(merged);
   }
 
   function hasCurrentFindingData() {
@@ -402,13 +449,14 @@ export default function InspectionPage() {
     setManualActionDue("");
   }
 
-  function saveFinding() {
+  async function saveFinding() {
     if (!hasCurrentFindingData()) {
       setFindingSaveMessage("Enter finding details before saving.");
       return;
     }
 
     const current = buildCurrentFinding();
+    await persistFindingActions(current);
 
     setFindings((prev) => {
       if (editingFindingIndex !== null) {
@@ -437,9 +485,10 @@ export default function InspectionPage() {
     );
   }
 
-  function addNewFinding() {
+  async function addNewFinding() {
     if (!currentFindingSaved && hasCurrentFindingData()) {
       const current = buildCurrentFinding();
+      await persistFindingActions(current);
       setFindings((prev) => [...prev, current]);
     }
 
