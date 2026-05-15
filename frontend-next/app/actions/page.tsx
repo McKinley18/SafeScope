@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/ui/PageHeader";
 import { getReports } from "@/lib/reportStorage";
 import { createActionId, getStoredActions, saveStoredActions } from "@/lib/actionStorage";
+import { addActivityEvent } from "@/lib/activityStorage";
 
 type ActionItem = {
   id: string;
@@ -70,16 +71,24 @@ export default function ActionsPage() {
 
   const actions = [...manualActions, ...reportActions];
 
-  function updateManualActionStatus(index: number, status: string) {
+  async function updateManualActionStatus(index: number, status: string) {
     const nextActions = manualActions.map((action, actionIndex) =>
       actionIndex === index ? { ...action, status } : action
     );
 
     setManualActions(nextActions);
-    saveStoredActions(nextActions);
+    await saveStoredActions(nextActions);
+
+    const updatedAction = nextActions[index];
+
+    await addActivityEvent({
+      type: "Action",
+      title: status === "Completed" ? "Corrective action completed" : "Corrective action updated",
+      detail: updatedAction?.title || "Action status changed",
+    });
   }
 
-  function addAction() {
+  async function addAction() {
     if (!title.trim()) return;
 
     const nextAction: ActionItem = {
@@ -94,7 +103,13 @@ export default function ActionsPage() {
 
     const nextActions = [nextAction, ...manualActions];
     setManualActions(nextActions);
-    saveStoredActions(nextActions);
+    await saveStoredActions(nextActions);
+
+    await addActivityEvent({
+      type: "Action",
+      title: "Corrective action added",
+      detail: nextAction.title,
+    });
 
     setTitle("");
     setPriority("Medium");
