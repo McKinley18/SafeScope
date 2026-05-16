@@ -93,11 +93,11 @@ export default function MarketingPage() {
           SafeScope is being developed to reason across specialized safety domains and identify when multiple operational risks interact.
         </p>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {domains.map((domain) => (
-            <span key={domain} className="rounded-full bg-[#E8F4FF] px-3 py-2 text-xs font-black text-[#1D72B8]">
+            <div key={domain} className="border-l-4 border-[#1D72B8] bg-slate-50 px-4 py-3 text-sm font-black text-slate-800">
               {domain}
-            </span>
+            </div>
           ))}
         </div>
       </div>
@@ -110,10 +110,11 @@ export default function MarketingPage() {
           Explainable. Reviewable. Auditable.
         </h2>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
+        <div className="mt-5 divide-y divide-slate-200 border-y border-slate-200">
           {trust.map((item) => (
-            <div key={item} className="rounded-xl bg-slate-50 p-4 text-sm font-black text-slate-700">
-              {item}
+            <div key={item} className="flex items-start gap-3 py-3 text-sm font-bold text-slate-700">
+              <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#1D72B8]" />
+              <span>{item}</span>
             </div>
           ))}
         </div>
