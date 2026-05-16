@@ -21,6 +21,7 @@ import { ConfidenceCalibrationService } from '../validation/confidence-calibrati
 import { ReasoningDriftService } from '../validation/reasoning-drift.service';
 import { WorkspaceLearningService } from '../learning/workspace-learning.service';
 import { ConfinedSpaceIntelligenceService } from '../reference-intelligence/confined-space/confined-space-intelligence.service';
+import { LotoIntelligenceService } from '../reference-intelligence/loto/loto-intelligence.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -61,6 +62,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private reasoningDriftEngine = new ReasoningDriftService();
   private workspaceLearningEngine = new WorkspaceLearningService();
   private confinedSpaceEngine = new ConfinedSpaceIntelligenceService();
+  private lotoEngine = new LotoIntelligenceService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -232,6 +234,10 @@ export class SafeScopeIntelligenceOrchestrator {
 
     const domainIntelligence = {
       confinedSpace: this.confinedSpaceEngine.evaluate({
+        text: fusedText,
+        classification: promotedPrimary.classification,
+      }),
+      loto: this.lotoEngine.evaluate({
         text: fusedText,
         classification: promotedPrimary.classification,
       }),
