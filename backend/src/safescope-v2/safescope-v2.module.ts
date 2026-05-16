@@ -12,17 +12,25 @@ import { SafeScopeFeedbackController } from './feedback/safescope-feedback.contr
 import { SafeScopeReasoningSnapshot } from './snapshots/reasoning-snapshot.entity';
 import { ReasoningSnapshotService } from './snapshots/reasoning-snapshot.service';
 import { ReasoningSnapshotController } from './snapshots/reasoning-snapshot.controller';
+import { SafeScopeSupervisorValidation } from './validation/supervisor-validation.entity';
+import { SupervisorValidationService } from './validation/supervisor-validation.service';
+import { SupervisorValidationController } from './validation/supervisor-validation.controller';
 
 @Module({
   imports: [
     ActionEngineModule,
     ApplicableStandardsModule,
-    TypeOrmModule.forFeature([SafeScopeFeedback, SafeScopeReasoningSnapshot]),
+    TypeOrmModule.forFeature([
+      SafeScopeFeedback,
+      SafeScopeReasoningSnapshot,
+      SafeScopeSupervisorValidation,
+    ]),
   ],
   controllers: [
     SafescopeV2Controller,
     SafeScopeFeedbackController,
     ReasoningSnapshotController,
+    SupervisorValidationController,
   ],
   providers: [
     SafescopeV2Service,
@@ -30,6 +38,7 @@ import { ReasoningSnapshotController } from './snapshots/reasoning-snapshot.cont
     EvidenceFusionService,
     SafeScopeFeedbackService,
     ReasoningSnapshotService,
+    SupervisorValidationService,
   ],
 })
 export class SafescopeV2Module {}
