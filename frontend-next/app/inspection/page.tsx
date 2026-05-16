@@ -1483,14 +1483,11 @@ export default function InspectionPage() {
                 )}
 
                 {safeScopeResult.evidenceQuality && (
-                  <div className="mt-4 border-t border-slate-200 pt-3">
-                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                      Evidence Quality
-                    </p>
-                    <h4 className="mt-1 text-sm font-black text-slate-900">
-                      Defensibility score: {safeScopeResult.evidenceQuality.evidenceQualityScore}/100
-                    </h4>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                  <SafeScopeDrawer
+                    title="Evidence Quality"
+                    summary={`Defensibility score: ${safeScopeResult.evidenceQuality.evidenceQualityScore}/100`}
+                  >
+                    <p className="text-sm font-semibold leading-6 text-slate-600">
                       {safeScopeResult.evidenceQuality.defensibilityStatement}
                     </p>
 
@@ -1501,7 +1498,7 @@ export default function InspectionPage() {
                         ))}
                       </ul>
                     )}
-                  </div>
+                  </SafeScopeDrawer>
                 )}
 
                 {safeScopeResult.standardsReasoning?.topDefensible?.length && (
