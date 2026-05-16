@@ -36,8 +36,15 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
-      window.localStorage.setItem("sentinel_auth_token", data.token);
-      window.localStorage.setItem("token", data.token);
+
+      if (data.token) {
+        window.localStorage.setItem("sentinel_auth_token", data.token);
+        window.localStorage.setItem("token", data.token);
+      }
+
+      if (data.user) {
+        window.localStorage.setItem("sentinel_auth_user", JSON.stringify(data.user));
+      }
 
       setStatusType("success");
       setStatus("Signed in successfully.");
