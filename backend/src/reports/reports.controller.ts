@@ -43,6 +43,22 @@ export class ReportsController {
     return this.reportsService.findAll(req.user);
   }
 
+
+  @Post(':id/attachments')
+  async addAttachment(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Req() req: Request & { user?: any },
+  ) {
+    const attachment = await this.reportsService.addAttachment(id, body, req.user);
+
+    if (!attachment) {
+      throw new NotFoundException("Report not found");
+    }
+
+    return attachment;
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @Req() req: Request & { user?: any }) {
     return this.reportsService.findOne(id, req.user);

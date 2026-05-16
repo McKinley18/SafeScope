@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { Report } from './entities/report.entity';
 import { Finding } from './entities/finding.entity';
+import { ReportAttachment } from './entities/attachment.entity';
 import { StandardsService } from '../standards/standards.service';
 import { ActionEngineService } from '../action-engine/action-engine.service';
 
@@ -15,6 +16,9 @@ export class ReportsService {
 
     @InjectRepository(Finding)
     private findingRepo: Repository<Finding>,
+
+    @InjectRepository(ReportAttachment)
+    private attachmentRepo: Repository<ReportAttachment>,
 
     private standards: StandardsService,
 
@@ -79,6 +83,24 @@ export class ReportsService {
       findings,
       generatedActions: allActions,
     };
+  }
+
+
+  async addAttachment(reportId: string, body: any, user?: any) {
+    const report = await this.findOne(reportId, user);
+
+    if (!report) {
+      return null;
+    }
+
+    const attachment = this.attachmentRepo.create({
+      reportId,
+      imageUri: body.imageUri,
+      mimeType: body.mimeType,
+      fileName: body.fileName,
+    });
+
+    return this.attachmentRepo.save(attachment);
   }
 
   async findAll(user?: any) {
