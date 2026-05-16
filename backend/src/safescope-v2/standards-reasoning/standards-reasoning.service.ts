@@ -5,6 +5,8 @@ export class StandardsReasoningService {
     operationalReasoning?: any;
     expandedContext?: any;
     risk?: any;
+    domainIntelligence?: any;
+    crossDomainInteraction?: any;
   }) {
     const ranked = (input.standards || []).map((standard: any) => {
       let defensibilityScore = 0.5;
