@@ -1611,6 +1611,55 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                {safeScopeResult.domainIntelligence && (
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
+                      Domain Intelligence
+                    </p>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                      SafeScope checked specialized safety domains for deeper operational context.
+                    </p>
+
+                    <div className="mt-3 space-y-3">
+                      {Object.entries(safeScopeResult.domainIntelligence)
+                        .filter(([, value]: any) => Boolean(value))
+                        .map(([domain, value]: any) => (
+                          <div key={domain} className="rounded-xl bg-slate-50 px-3 py-3">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                                  {domain.replace(/([A-Z])/g, " $1").replaceAll("_", " ")}
+                                </p>
+                                <p className="mt-1 text-sm font-bold leading-6 text-slate-700">
+                                  {value.reasoningSummary || "Domain indicators detected."}
+                                </p>
+                              </div>
+                            </div>
+
+                            {!!value.detectedIndicators?.length && (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {value.detectedIndicators.slice(0, 6).map((indicator: string) => (
+                                  <span
+                                    key={indicator}
+                                    className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600"
+                                  >
+                                    {indicator}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {!!value.requiredControls?.length && (
+                              <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">
+                                Key controls: {value.requiredControls.slice(0, 4).join(" • ")}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
                 {(safeScopeResult.confidenceCalibration || safeScopeResult.reasoningDrift) && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
