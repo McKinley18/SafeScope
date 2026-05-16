@@ -1748,11 +1748,11 @@ export default function InspectionPage() {
                 )}
 
                 {safeScopeResult.domainIntelligence && (
-                  <div className="mt-4 border-t border-slate-200 pt-3">
-                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                      Domain Intelligence
-                    </p>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                  <SafeScopeDrawer
+                    title="Domain Intelligence"
+                    summary="Specialized operational domain analysis"
+                  >
+                    <p className="text-sm font-semibold leading-6 text-slate-600">
                       SafeScope checked specialized safety domains for deeper operational context.
                     </p>
 
@@ -1761,16 +1761,13 @@ export default function InspectionPage() {
                         .filter(([, value]: any) => Boolean(value))
                         .map(([domain, value]: any) => (
                           <div key={domain} className="rounded-xl bg-slate-50 px-3 py-3">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div>
-                                <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-                                  {domain.replace(/([A-Z])/g, " $1").replaceAll("_", " ")}
-                                </p>
-                                <p className="mt-1 text-sm font-bold leading-6 text-slate-700">
-                                  {value.reasoningSummary || "Domain indicators detected."}
-                                </p>
-                              </div>
-                            </div>
+                            <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                              {domain.replace(/([A-Z])/g, " $1").replaceAll("_", " ")}
+                            </p>
+
+                            <p className="mt-1 text-sm font-bold leading-6 text-slate-700">
+                              {value.reasoningSummary || "Domain indicators detected."}
+                            </p>
 
                             {!!value.detectedIndicators?.length && (
                               <div className="mt-2 flex flex-wrap gap-2">
@@ -1793,7 +1790,7 @@ export default function InspectionPage() {
                           </div>
                         ))}
                     </div>
-                  </div>
+                  </SafeScopeDrawer>
                 )}
 
                 {safeScopeResult.crossDomainInteraction?.interactions?.length > 0 && (
