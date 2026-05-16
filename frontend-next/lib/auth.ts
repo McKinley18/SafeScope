@@ -134,3 +134,23 @@ export async function addReportAttachment(reportId: string, payload: {
 
   return response.json();
 }
+
+export async function uploadReportAttachment(reportId: string, file: File) {
+  const token = getAuthToken();
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE_URL}/reports/${reportId}/attachments/upload`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to upload report attachment.");
+  }
+
+  return response.json();
+}
