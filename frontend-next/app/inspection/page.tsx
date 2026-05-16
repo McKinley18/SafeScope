@@ -10,6 +10,7 @@ import { getStoredActions, saveStoredActions, type StoredAction } from "@/lib/ac
 import { addActivityEvent } from "@/lib/activityStorage";
 import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
+import SafeScopeDrawer from "@/components/safescope/SafeScopeDrawer";
 import { deleteEncryptedPhoto, loadEncryptedPhoto, saveEncryptedPhoto } from "@/lib/evidenceStorage";
 
 const steps = [
