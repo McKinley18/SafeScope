@@ -80,6 +80,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
     if (isPublicPage || pathname === "/unlock") return;
 
+    const token =
+      window.localStorage.getItem("sentinel_auth_token") ||
+      window.localStorage.getItem("token");
+
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
     if (isPinRequired() && (!hasPinSet() || !isSessionUnlocked())) {
       router.push("/unlock");
     }
@@ -214,6 +223,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       onClick={() => {
                         window.localStorage.removeItem("token");
                         window.localStorage.removeItem("sentinel_auth_token");
+                        window.localStorage.removeItem("sentinel_auth_user");
                         window.location.href = "/login";
                       }}
                       className="block w-full px-4 py-4 text-left text-sm font-black text-red-700 hover:bg-red-50"
