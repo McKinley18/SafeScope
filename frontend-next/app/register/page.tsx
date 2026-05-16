@@ -94,8 +94,15 @@ export default function RegisterPage() {
       }
 
       setStatusType("success");
-      setStatus("Account created. Redirecting to your command center...");
-      router.push("/command-center");
+      setStatus("Account created successfully. Redirecting to sign in...");
+
+      window.localStorage.removeItem("sentinel_auth_token");
+      window.localStorage.removeItem("token");
+      window.localStorage.removeItem("sentinel_auth_user");
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1200);
     } catch {
       setStatusType("error");
       setStatus("Server unavailable. Please try again.");
