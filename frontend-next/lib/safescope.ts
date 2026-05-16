@@ -70,3 +70,52 @@ export async function getSafeScopeReasoningSnapshot(snapshotId: string) {
 
   return response.json();
 }
+
+
+export async function submitSupervisorValidation(payload: {
+  reasoningSnapshotId: string;
+  reportId?: string;
+  workspaceId?: string;
+  reviewerName?: string;
+  validationDecision:
+    | "accepted"
+    | "modified"
+    | "rejected"
+    | "escalated"
+    | "insufficient_evidence";
+  reviewerNotes?: string;
+  modifiedClassification?: any;
+  modifiedStandards?: any;
+  modifiedRiskAssessment?: any;
+}) {
+  const response = await fetch(
+    `${API_BASE_URL}/safescope-v2/supervisor-validations`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Supervisor validation submission failed.");
+  }
+
+  return response.json();
+}
+
+export async function getSupervisorValidationHistory(
+  reasoningSnapshotId: string
+) {
+  const response = await fetch(
+    `${API_BASE_URL}/safescope-v2/supervisor-validations/${reasoningSnapshotId}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Supervisor validation history could not be loaded.");
+  }
+
+  return response.json();
+}
