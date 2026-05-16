@@ -56,7 +56,7 @@ export class EnergyTransferIntelligenceService {
       controlLogic.push("Verify hot-work controls, isolation, fire protection, cooling, shielding, and ignition-source control.");
     }
 
-    if (includesAny(text, ["chemical", "acid", "caustic", "dust", "silica", "vapor", "gas", "fume"])) {
+    if (includesAny(text, ["chemical", "acid", "caustic", "dust", "silica", "vapor", "gas", "fume", "oxygen deficiency", "oxygen deficient", "atmosphere", "atmospheric", "ventilation", "confined space"])) {
       energySources.push("chemical/industrial hygiene");
       releaseMechanisms.push("Inhalation, skin contact, eye contact, or chemical reaction exposure.");
       controlLogic.push("Verify labeling, containment, ventilation, SDS availability, exposure controls, and PPE compatibility.");
