@@ -26,6 +26,7 @@ import { MobileEquipmentIntelligenceService } from '../reference-intelligence/mo
 import { TrenchingIntelligenceService } from '../reference-intelligence/trenching/trenching-intelligence.service';
 import { ElectricalIntelligenceService } from '../reference-intelligence/electrical/electrical-intelligence.service';
 import { LiftingRiggingIntelligenceService } from '../reference-intelligence/lifting-rigging/lifting-rigging-intelligence.service';
+import { HazcomGhsIntelligenceService } from '../reference-intelligence/hazcom-ghs/hazcom-ghs-intelligence.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -71,6 +72,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private trenchingEngine = new TrenchingIntelligenceService();
   private electricalEngine = new ElectricalIntelligenceService();
   private liftingRiggingEngine = new LiftingRiggingIntelligenceService();
+  private hazcomGhsEngine = new HazcomGhsIntelligenceService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -262,6 +264,10 @@ export class SafeScopeIntelligenceOrchestrator {
         classification: promotedPrimary.classification,
       }),
       liftingRigging: this.liftingRiggingEngine.evaluate({
+        text: fusedText,
+        classification: promotedPrimary.classification,
+      }),
+      hazcomGhs: this.hazcomGhsEngine.evaluate({
         text: fusedText,
         classification: promotedPrimary.classification,
       }),
