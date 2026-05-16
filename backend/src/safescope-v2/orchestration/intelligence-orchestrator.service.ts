@@ -20,6 +20,7 @@ import { ExposurePathService } from '../exposure-path/exposure-path.service';
 import { ConfidenceCalibrationService } from '../validation/confidence-calibration.service';
 import { ReasoningDriftService } from '../validation/reasoning-drift.service';
 import { WorkspaceLearningService } from '../learning/workspace-learning.service';
+import { ConfinedSpaceIntelligenceService } from '../reference-intelligence/confined-space/confined-space-intelligence.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -59,6 +60,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private confidenceCalibrationEngine = new ConfidenceCalibrationService();
   private reasoningDriftEngine = new ReasoningDriftService();
   private workspaceLearningEngine = new WorkspaceLearningService();
+  private confinedSpaceEngine = new ConfinedSpaceIntelligenceService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -228,6 +230,13 @@ export class SafeScopeIntelligenceOrchestrator {
       confidenceIntelligence,
     });
 
+    const domainIntelligence = {
+      confinedSpace: this.confinedSpaceEngine.evaluate({
+        text: fusedText,
+        classification: promotedPrimary.classification,
+      }),
+    };
+
     const workspaceLearning = this.workspaceLearningEngine.evaluate({
       workspaceId,
       classification: promotedPrimary.classification,
@@ -292,8 +301,10 @@ export class SafeScopeIntelligenceOrchestrator {
           'confidence_calibration',
           'reasoning_drift',
           'workspace_learning',
+          'domain_intelligence',
         ],
       },
+      domainIntelligence,
       workspaceLearning,
       confidenceIntelligence,
       operationalReasoning,
