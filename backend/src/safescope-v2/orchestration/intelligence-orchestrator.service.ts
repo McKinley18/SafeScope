@@ -24,6 +24,7 @@ import { ConfinedSpaceIntelligenceService } from '../reference-intelligence/conf
 import { LotoIntelligenceService } from '../reference-intelligence/loto/loto-intelligence.service';
 import { MobileEquipmentIntelligenceService } from '../reference-intelligence/mobile-equipment/mobile-equipment-intelligence.service';
 import { TrenchingIntelligenceService } from '../reference-intelligence/trenching/trenching-intelligence.service';
+import { ElectricalIntelligenceService } from '../reference-intelligence/electrical/electrical-intelligence.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -67,6 +68,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private lotoEngine = new LotoIntelligenceService();
   private mobileEquipmentEngine = new MobileEquipmentIntelligenceService();
   private trenchingEngine = new TrenchingIntelligenceService();
+  private electricalEngine = new ElectricalIntelligenceService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -250,6 +252,10 @@ export class SafeScopeIntelligenceOrchestrator {
         classification: promotedPrimary.classification,
       }),
       trenching: this.trenchingEngine.evaluate({
+        text: fusedText,
+        classification: promotedPrimary.classification,
+      }),
+      electrical: this.electricalEngine.evaluate({
         text: fusedText,
         classification: promotedPrimary.classification,
       }),
