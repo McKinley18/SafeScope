@@ -319,13 +319,20 @@ export class SafescopeV2Service {
           ]
         : [];
 
+    const intelligenceRequiresReview =
+      Boolean(intelligence.confidenceIntelligence?.reviewTriggers?.length) ||
+      Boolean(intelligence.decisionExplainability?.supervisorReviewRecommended) ||
+      ["moderate", "high"].includes(String(intelligence.reasoningDrift?.driftBand || "")) ||
+      String(intelligence.confidenceCalibration?.calibrationBand || "") !== "reliable" ||
+      Boolean(intelligence.contradictionIntelligence?.contradictionsDetected);
+
     return {
       classification: promotedPrimary.classification,
       confidence: promotedPrimary.confidence,
       confidenceBand: promotedPrimary.confidenceBand,
       evidenceTokens: promotedPrimary.evidenceTokens,
       ambiguityWarnings: [...result.ambiguityWarnings, ...promotionWarning],
-      requiresHumanReview: result.requiresHumanReview || promotionWarning.length > 0,
+      requiresHumanReview: result.requiresHumanReview || promotionWarning.length > 0 || intelligenceRequiresReview,
       explanation: promotedPrimary.explanation,
       commonConsequences: promotedPrimary.commonConsequences || [],
       requiredControls: promotedPrimary.requiredControls || [],
