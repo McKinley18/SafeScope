@@ -24,6 +24,19 @@ const orchestrator = new SafeScopeIntelligenceOrchestrator();
 
 const scenarios: GoldenScenario[] = [
   {
+    name: 'permit required confined space tank entry',
+    input: {
+      text: 'Worker preparing to enter tank with limited egress, possible oxygen deficiency, ventilation needed, attendant not assigned.',
+      classification: 'Confined Space',
+      confidence: 0.84,
+      risk: { riskScore: 22, riskBand: 'Critical', requiresShutdown: true },
+      standards: [{ citation: '29 CFR 1910.146', source: ['curated', 'cfr_database'] }],
+    },
+    expect: {
+      energySource: 'chemical/industrial hygiene',
+    },
+  },
+  {
     name: 'unguarded conveyor during operation',
     input: {
       text: 'Employee working near an unguarded moving conveyor belt and exposed pinch point while production was operating.',
