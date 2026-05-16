@@ -116,3 +116,21 @@ export async function getWorkspaceReports() {
 
   return response.json();
 }
+
+export async function addReportAttachment(reportId: string, payload: {
+  imageUri: string;
+  mimeType?: string;
+  fileName?: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/reports/${reportId}/attachments`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to save report attachment.");
+  }
+
+  return response.json();
+}
