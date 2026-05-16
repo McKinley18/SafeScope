@@ -4,7 +4,7 @@ import { secureStorage } from "@/lib/secureStorage";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback, submitSupervisorValidation } from "@/lib/safescope";
-import { addReportAttachment, getOrganizationSettings, saveWorkspaceReport } from "@/lib/auth";
+import { addReportAttachment, getOrganizationSettings, saveWorkspaceReport, uploadReportAttachment } from "@/lib/auth";
 import { getCoverPage, getReports, setLatestReport, setReports } from "@/lib/reportStorage";
 import { getStoredActions, saveStoredActions, type StoredAction } from "@/lib/actionStorage";
 import { addActivityEvent } from "@/lib/activityStorage";
@@ -741,8 +741,22 @@ export default function InspectionPage() {
           }))
         );
 
+        const uploadedPhotoFiles = finalizedFindings.flatMap((finding: any) =>
+          (finding.photos || []).filter((photo: any) => photo.file)
+        );
+
         await Promise.allSettled(
-          attachmentPayloads.map((attachment: any) =>
+          uploadedPhotoFiles.map((photo: any) =>
+            uploadReportAttachment(savedCloudReport.id, photo.file)
+          )
+        );
+
+        const metadataOnlyAttachments = attachmentPayloads.filter(
+          (attachment: any) => !String(attachment.imageUri || "").startsWith("data:")
+        );
+
+        await Promise.allSettled(
+          metadataOnlyAttachments.map((attachment: any) =>
             addReportAttachment(savedCloudReport.id, attachment)
           )
         );

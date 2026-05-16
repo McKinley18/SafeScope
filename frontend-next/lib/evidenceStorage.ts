@@ -23,7 +23,7 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-export async function saveEncryptedPhoto(file: File): Promise<StoredEvidencePhoto & { url: string }> {
+export async function saveEncryptedPhoto(file: File): Promise<StoredEvidencePhoto & { url: string; file?: File; mimeType?: string }> {
   const id = `photo-${Date.now()}-${crypto.randomUUID()}`;
   const dataUrl = await fileToDataUrl(file);
   const encrypted = await encryptJson({
@@ -39,6 +39,8 @@ export async function saveEncryptedPhoto(file: File): Promise<StoredEvidencePhot
     id,
     name: file.name,
     url: dataUrl,
+    file,
+    mimeType: file.type,
     encryptedAt: new Date().toISOString(),
     annotations: [],
   };
