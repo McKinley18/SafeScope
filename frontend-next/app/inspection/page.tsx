@@ -1842,23 +1842,12 @@ export default function InspectionPage() {
                 )}
 
                 {(safeScopeResult.confidenceCalibration || safeScopeResult.reasoningDrift) && (
-                  <div className="mt-4 border-t border-slate-200 pt-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                          Reliability Intelligence
-                        </p>
-                        <h4 className="mt-1 text-sm font-black text-slate-900">
-                          Calibrated confidence: {Math.round((safeScopeResult.confidenceCalibration?.calibratedConfidence || 0) * 100)}%
-                        </h4>
-                      </div>
-
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase text-slate-700">
-                        {safeScopeResult.confidenceCalibration?.calibrationBand?.replaceAll("_", " ") || "not rated"}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                  <SafeScopeDrawer
+                    title="Reliability Intelligence"
+                    summary={`Calibrated confidence: ${Math.round((safeScopeResult.confidenceCalibration?.calibratedConfidence || 0) * 100)}%`}
+                    badge={safeScopeResult.confidenceCalibration?.calibrationBand?.replaceAll("_", " ")}
+                  >
+                    <p className="text-sm font-semibold leading-6 text-slate-600">
                       {safeScopeResult.confidenceCalibration?.reliabilityStatement}
                     </p>
 
@@ -1882,17 +1871,7 @@ export default function InspectionPage() {
                         </p>
                       </div>
                     )}
-
-                    {!!safeScopeResult.reasoningDrift?.driftSignals?.length && (
-                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
-                        {safeScopeResult.reasoningDrift.driftSignals
-                          .slice(0, 3)
-                          .map((signal: string) => (
-                            <li key={signal}>{signal}</li>
-                          ))}
-                      </ul>
-                    )}
-                  </div>
+                  </SafeScopeDrawer>
                 )}
 
                 {safeScopeResult.decisionExplainability && (
