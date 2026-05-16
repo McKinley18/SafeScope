@@ -649,10 +649,7 @@ export default function InspectionPage() {
         return `${label}: Confirm severity and likelihood in Risk Assessment.`;
       }
 
-      const selectedStandards = finding.selectedStandards || [];
-      if (!selectedStandards.length) {
-        return `${label}: Review and select at least one applicable standard.`;
-      }
+      // Standards are optional. Reports can be generated before final standard selection.
 
       const correctiveActions = finding.correctiveActions || [
         ...(finding.selectedGeneratedActions || []),
@@ -2429,9 +2426,45 @@ export default function InspectionPage() {
 
                         <div className="mt-2">
                           {safeScopeResult.excludedStandards.map((standard: any) => (
-                            <div key={standard.citation} className="border-t border-slate-200 py-2">
-                              <p className="font-black text-slate-700">{standard.citation}</p>
-                              <p className="mt-1 text-sm text-slate-500">{standard.reason}</p>
+                            <div key={standard.citation} className="border-t border-slate-200 py-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-black text-slate-800">{standard.citation}</p>
+
+                                <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600">
+                                  Excluded
+                                </span>
+                              </div>
+
+                              <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">
+                                {standard.heading ||
+                                  standard.title ||
+                                  standard.rationale ||
+                                  standard.summary ||
+                                  "This standard was evaluated during SafeScope review."}
+                              </p>
+
+                              {!!standard.text && (
+                                <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2">
+                                  <p className="text-xs font-semibold leading-5 text-slate-600">
+                                    {String(standard.text).slice(0, 500)}
+                                    {String(standard.text).length > 500 ? "..." : ""}
+                                  </p>
+                                </div>
+                              )}
+
+                              <p className="mt-2 text-xs font-bold uppercase tracking-wide text-amber-700">
+                                Exclusion Reason
+                              </p>
+
+                              <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                {standard.reason || "Lower contextual match confidence."}
+                              </p>
+
+                              {!!standard.matchingReasons?.length && (
+                                <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">
+                                  Match indicators: {standard.matchingReasons.slice(0, 5).join(" • ")}
+                                </p>
+                              )}
                             </div>
                           ))}
                         </div>
