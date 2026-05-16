@@ -121,6 +121,7 @@ export default function InspectionPage() {
   const [includeSafeScopeNotesInReport, setIncludeSafeScopeNotesInReport] = useState(false);
   const [safeScopeHelpOpen, setSafeScopeHelpOpen] = useState(false);
   const [safeScopeDetailsOpen, setSafeScopeDetailsOpen] = useState(false);
+  const [safeScopeCompactDetailsOpen, setSafeScopeCompactDetailsOpen] = useState(false);
   const [safeScopeAdvancedOpen, setSafeScopeAdvancedOpen] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
@@ -221,6 +222,7 @@ export default function InspectionPage() {
       });
 
       setSafeScopeResult(result);
+      setSafeScopeCompactDetailsOpen(false);
       setSafeScopeAdvancedOpen(false);
       setSelectedStandards([]);
       setSafeScopeStatus(`SafeScope v2: ${result.classification} (${result.confidenceBand} confidence)`);
@@ -1268,6 +1270,51 @@ export default function InspectionPage() {
                   </div>
                 </div>
 
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
+                        Top Concern
+                      </p>
+                      <p className="mt-1 text-sm font-black text-slate-800">
+                        {safeScopeResult.decisionExplainability?.decisionSummary ||
+                          safeScopeResult.explanation ||
+                          "SafeScope identified a condition requiring review."}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
+                        Recommended Focus
+                      </p>
+                      <p className="mt-1 text-sm font-black text-slate-800">
+                        {safeScopeResult.generatedActions?.[0]?.title ||
+                          safeScopeResult.controlIntelligence?.verificationRecommendation ||
+                          "Verify controls before closure."}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
+                        Top Standard
+                      </p>
+                      <p className="mt-1 text-sm font-black text-slate-800">
+                        {safeScopeResult.suggestedStandards?.[0]?.citation || "Not selected"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSafeScopeCompactDetailsOpen((open) => !open)}
+                    className="mt-4 text-sm font-black text-[#1D72B8] hover:underline"
+                  >
+                    {safeScopeCompactDetailsOpen ? "Hide detailed reasoning" : "Show detailed reasoning"}
+                  </button>
+                </div>
+
+                {safeScopeCompactDetailsOpen && (
+                  <div className="mt-3">
                 {!!safeScopeResult.confidenceIntelligence?.missingCriticalInformation?.length && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <p className="text-xs font-black uppercase tracking-wide text-amber-700">
@@ -2162,6 +2209,9 @@ export default function InspectionPage() {
                 )}
 
                   </>
+                )}
+
+                  </div>
                 )}
 
                 {safeScopeResult.duplicateIntelligence?.possibleDuplicate && (
