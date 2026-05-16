@@ -22,6 +22,7 @@ import { ReasoningDriftService } from '../validation/reasoning-drift.service';
 import { WorkspaceLearningService } from '../learning/workspace-learning.service';
 import { ConfinedSpaceIntelligenceService } from '../reference-intelligence/confined-space/confined-space-intelligence.service';
 import { LotoIntelligenceService } from '../reference-intelligence/loto/loto-intelligence.service';
+import { MobileEquipmentIntelligenceService } from '../reference-intelligence/mobile-equipment/mobile-equipment-intelligence.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -63,6 +64,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private workspaceLearningEngine = new WorkspaceLearningService();
   private confinedSpaceEngine = new ConfinedSpaceIntelligenceService();
   private lotoEngine = new LotoIntelligenceService();
+  private mobileEquipmentEngine = new MobileEquipmentIntelligenceService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -238,6 +240,10 @@ export class SafeScopeIntelligenceOrchestrator {
         classification: promotedPrimary.classification,
       }),
       loto: this.lotoEngine.evaluate({
+        text: fusedText,
+        classification: promotedPrimary.classification,
+      }),
+      mobileEquipment: this.mobileEquipmentEngine.evaluate({
         text: fusedText,
         classification: promotedPrimary.classification,
       }),
