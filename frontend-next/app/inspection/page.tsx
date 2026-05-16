@@ -121,6 +121,7 @@ export default function InspectionPage() {
   const [includeSafeScopeNotesInReport, setIncludeSafeScopeNotesInReport] = useState(false);
   const [safeScopeHelpOpen, setSafeScopeHelpOpen] = useState(false);
   const [safeScopeDetailsOpen, setSafeScopeDetailsOpen] = useState(false);
+  const [safeScopeAdvancedOpen, setSafeScopeAdvancedOpen] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
   const riskScore = severity && likelihood ? severity * likelihood : null;
@@ -220,6 +221,7 @@ export default function InspectionPage() {
       });
 
       setSafeScopeResult(result);
+      setSafeScopeAdvancedOpen(false);
       setSelectedStandards([]);
       setSafeScopeStatus(`SafeScope v2: ${result.classification} (${result.confidenceBand} confidence)`);
     } catch (error) {
@@ -1294,6 +1296,21 @@ export default function InspectionPage() {
                   </div>
                 )}
 
+                <div className="mt-4 border-t border-slate-200 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setSafeScopeAdvancedOpen((open) => !open)}
+                    className="text-sm font-black text-[#1D72B8] hover:underline"
+                  >
+                    {safeScopeAdvancedOpen ? "Hide detailed SafeScope reasoning" : "Show detailed SafeScope reasoning"}
+                  </button>
+                  <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                    Expand for domain intelligence, traceability, evidence quality, reasoning layers, and reliability checks.
+                  </p>
+                </div>
+
+                {safeScopeAdvancedOpen && (
+                  <>
                 {!!safeScopeResult.confidenceIntelligence?.reasonCodes?.length && (
                   <div className="mt-4 border-t border-slate-200 pt-3">
                     <p className="text-xs font-black uppercase tracking-wide text-slate-500">
@@ -2142,6 +2159,9 @@ export default function InspectionPage() {
                       </div>
                     )}
                   </div>
+                )}
+
+                  </>
                 )}
 
                 {safeScopeResult.duplicateIntelligence?.possibleDuplicate && (
