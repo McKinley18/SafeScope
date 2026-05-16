@@ -1610,14 +1610,11 @@ export default function InspectionPage() {
                 )}
 
                 {safeScopeResult.exposurePathIntelligence && (
-                  <div className="mt-4 border-t border-slate-200 pt-3">
-                    <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                      Exposure Path Intelligence
-                    </p>
-                    <h4 className="mt-1 text-sm font-black text-slate-900">
-                      Exposure complexity: {safeScopeResult.exposurePathIntelligence.exposureComplexity || "low"}
-                    </h4>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                  <SafeScopeDrawer
+                    title="Exposure Path Intelligence"
+                    summary={`Exposure complexity: ${safeScopeResult.exposurePathIntelligence.exposureComplexity || "low"}`}
+                  >
+                    <p className="text-sm font-semibold leading-6 text-slate-600">
                       {safeScopeResult.exposurePathIntelligence.exposureSummary}
                     </p>
 
@@ -1643,7 +1640,7 @@ export default function InspectionPage() {
                           ))}
                       </ul>
                     )}
-                  </div>
+                  </SafeScopeDrawer>
                 )}
 
                 {safeScopeResult.hazardGraph && (
