@@ -1438,25 +1438,12 @@ export default function InspectionPage() {
                 )}
 
                 {safeScopeResult.trendIntelligence && (
-                  <div className="mt-4 border-t border-slate-200 pt-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                          Trend Intelligence
-                        </p>
-                        <h4 className="mt-1 text-sm font-black text-slate-900">
-                          Recurrence risk: {safeScopeResult.trendIntelligence.recurrenceRisk || "low"}
-                        </h4>
-                      </div>
-
-                      {safeScopeResult.trendIntelligence.escalationRecommended && (
-                        <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">
-                          Escalate
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <SafeScopeDrawer
+                    title="Trend Intelligence"
+                    summary={`Recurrence risk: ${safeScopeResult.trendIntelligence.recurrenceRisk || "low"}`}
+                    badge={safeScopeResult.trendIntelligence.escalationRecommended ? "Escalate" : undefined}
+                  >
+                    <div className="grid gap-3 sm:grid-cols-3">
                       <div>
                         <p className="text-xs font-black uppercase tracking-wide text-slate-400">Trend</p>
                         <p className="mt-1 text-sm font-black text-slate-800">
@@ -1492,7 +1479,7 @@ export default function InspectionPage() {
                     <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">
                       {safeScopeResult.trendIntelligence.recommendation}
                     </p>
-                  </div>
+                  </SafeScopeDrawer>
                 )}
 
                 {safeScopeResult.evidenceQuality && (
