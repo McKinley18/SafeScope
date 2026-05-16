@@ -4,7 +4,7 @@ import { secureStorage } from "@/lib/secureStorage";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { runSafeScopeV2Classify, sendSafeScopeFeedback, submitSupervisorValidation } from "@/lib/safescope";
-import { getOrganizationSettings, saveWorkspaceReport } from "@/lib/auth";
+import { addReportAttachment, getOrganizationSettings, saveWorkspaceReport } from "@/lib/auth";
 import { getCoverPage, getReports, setLatestReport, setReports } from "@/lib/reportStorage";
 import { getStoredActions, saveStoredActions, type StoredAction } from "@/lib/actionStorage";
 import { addActivityEvent } from "@/lib/activityStorage";
@@ -732,6 +732,21 @@ export default function InspectionPage() {
     if (storageMode === "cloud" || storageMode === "ask") {
       try {
         const savedCloudReport = await saveWorkspaceReport(report);
+
+        const attachmentPayloads = finalizedFindings.flatMap((finding: any) =>
+          (finding.photos || []).map((photo: any) => ({
+            imageUri: photo.url || photo.imageUri || photo.id,
+            mimeType: photo.mimeType || photo.type || "image/jpeg",
+            fileName: photo.name || "evidence-photo",
+          }))
+        );
+
+        await Promise.allSettled(
+          attachmentPayloads.map((attachment: any) =>
+            addReportAttachment(savedCloudReport.id, attachment)
+          )
+        );
+
         window.localStorage.setItem("sentinel_latest_cloud_report_id", savedCloudReport.id);
         window.localStorage.setItem(
           "sentinel_latest_report",
