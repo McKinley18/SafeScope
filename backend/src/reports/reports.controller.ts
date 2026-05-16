@@ -8,8 +8,15 @@ import {
   Param,
   UseGuards,
   Req,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import * as fs from 'fs';
 
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -43,6 +50,57 @@ export class ReportsController {
     return this.reportsService.findAll(req.user);
   }
 
+
+
+  @Post(':id/attachments/upload')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: (_req: any, _file: Express.Multer.File, callback: any) => {
+        const uploadPath = 'uploads/evidence';
+        fs.mkdirSync(uploadPath, { recursive: true });
+        callback(null, uploadPath);
+      },
+      filename: (_req: any, file: Express.Multer.File, callback: any) => {
+        const safeName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+        callback(null, safeName);
+      },
+    }),
+    limits: {
+      fileSize: 10 * 1024 * 1024,
+    },
+    fileFilter: (_req, file, callback) => {
+      if (!file.mimetype.startsWith('image/')) {
+        return callback(new BadRequestException('Only image uploads are allowed.') as any, false);
+      }
+
+      callback(null, true);
+    },
+  }))
+  async uploadAttachment(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request & { user?: any },
+  ) {
+    if (!file) {
+      throw new BadRequestException('No evidence file uploaded.');
+    }
+
+    const attachment = await this.reportsService.addAttachment(
+      id,
+      {
+        imageUri: `/uploads/evidence/${file.filename}`,
+        mimeType: file.mimetype,
+        fileName: file.originalname,
+      },
+      req.user,
+    );
+
+    if (!attachment) {
+      throw new NotFoundException("Report not found");
+    }
+
+    return attachment;
+  }
 
   @Post(':id/attachments')
   async addAttachment(
