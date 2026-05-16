@@ -14,9 +14,11 @@ import { Request } from 'express';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { JwtGuard } from '../auth/guards/jwt.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { SubscriptionGuard } from '../auth/guards/subscription.guard';
 import { RecommendationsService } from '../recommendations/recommendations.service';
 
-@UseGuards(JwtGuard)
+@UseGuards(JwtGuard, SubscriptionGuard, RolesGuard)
 @Controller('reports')
 export class ReportsController {
   constructor(
