@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/safescope";
 
 function validatePassword(password: string) {
@@ -15,6 +16,7 @@ function validatePassword(password: string) {
 }
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,8 +82,20 @@ export default function RegisterPage() {
         return;
       }
 
+      const data = await response.json();
+
+      if (data.token) {
+        window.localStorage.setItem("sentinel_auth_token", data.token);
+        window.localStorage.setItem("token", data.token);
+      }
+
+      if (data.user) {
+        window.localStorage.setItem("sentinel_auth_user", JSON.stringify(data.user));
+      }
+
       setStatusType("success");
-      setStatus("Account created. You can now sign in.");
+      setStatus("Account created. Redirecting to your command center...");
+      router.push("/command-center");
     } catch {
       setStatusType("error");
       setStatus("Server unavailable. Please try again.");
