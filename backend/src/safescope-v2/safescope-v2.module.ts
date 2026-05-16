@@ -11,6 +11,7 @@ import { SafeScopeFeedbackService } from './feedback/safescope-feedback.service'
 import { SafeScopeFeedbackController } from './feedback/safescope-feedback.controller';
 import { SafeScopeReasoningSnapshot } from './snapshots/reasoning-snapshot.entity';
 import { ReasoningSnapshotService } from './snapshots/reasoning-snapshot.service';
+import { ReasoningSnapshotController } from './snapshots/reasoning-snapshot.controller';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ReasoningSnapshotService } from './snapshots/reasoning-snapshot.service
   controllers: [
     SafescopeV2Controller,
     SafeScopeFeedbackController,
+    ReasoningSnapshotController,
   ],
   providers: [
     SafescopeV2Service,

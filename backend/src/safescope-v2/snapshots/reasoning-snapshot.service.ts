@@ -39,6 +39,10 @@ export class ReasoningSnapshotService {
     };
   }
 
+  async findOne(id: string) {
+    return this.snapshotRepo.findOne({ where: { id } });
+  }
+
   async createSnapshot(input: {
     reportId?: string;
     workspaceId?: string;
