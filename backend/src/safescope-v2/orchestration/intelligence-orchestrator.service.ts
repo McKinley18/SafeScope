@@ -27,6 +27,7 @@ import { TrenchingIntelligenceService } from '../reference-intelligence/trenchin
 import { ElectricalIntelligenceService } from '../reference-intelligence/electrical/electrical-intelligence.service';
 import { LiftingRiggingIntelligenceService } from '../reference-intelligence/lifting-rigging/lifting-rigging-intelligence.service';
 import { HazcomGhsIntelligenceService } from '../reference-intelligence/hazcom-ghs/hazcom-ghs-intelligence.service';
+import { CrossDomainInteractionService } from '../reference-intelligence/cross-domain/cross-domain-interaction.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -73,6 +74,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private electricalEngine = new ElectricalIntelligenceService();
   private liftingRiggingEngine = new LiftingRiggingIntelligenceService();
   private hazcomGhsEngine = new HazcomGhsIntelligenceService();
+  private crossDomainEngine = new CrossDomainInteractionService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -273,6 +275,10 @@ export class SafeScopeIntelligenceOrchestrator {
       }),
     };
 
+    const crossDomainInteraction = this.crossDomainEngine.evaluate({
+      domainIntelligence,
+    });
+
     const workspaceLearning = this.workspaceLearningEngine.evaluate({
       workspaceId,
       classification: promotedPrimary.classification,
@@ -338,9 +344,11 @@ export class SafeScopeIntelligenceOrchestrator {
           'reasoning_drift',
           'workspace_learning',
           'domain_intelligence',
+          'cross_domain_interaction',
         ],
       },
       domainIntelligence,
+      crossDomainInteraction,
       workspaceLearning,
       confidenceIntelligence,
       operationalReasoning,
