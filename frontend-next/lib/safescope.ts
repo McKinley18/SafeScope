@@ -59,3 +59,14 @@ export async function sendSafeScopeFeedback(payload: any) {
 
   return response.json();
 }
+
+
+export async function getSafeScopeReasoningSnapshot(snapshotId: string) {
+  const response = await fetch(`${API_BASE_URL}/safescope-v2/reasoning-snapshots/${snapshotId}`);
+
+  if (!response.ok) {
+    throw new Error("SafeScope reasoning snapshot could not be loaded.");
+  }
+
+  return response.json();
+}
