@@ -163,15 +163,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </nav>
 
               <div className="flex shrink-0 items-center gap-2">
-                <button ref={profileButtonRef}
-                  type="button"
-                  className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-sm font-black text-white ring-1 ring-white/10 transition hover:bg-white/15"
-                  aria-label="Notifications"
-                >
-                  🔔
-                  <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[#0B1320]" />
-                </button>
-
                 <div className="relative">
                   <button
                   type="button"
