@@ -1927,25 +1927,16 @@ export default function InspectionPage() {
                 )}
 
                 {safeScopeResult.energyTransferIntelligence && (
-                  <div className="mt-4 border-t border-slate-200 pt-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-wide text-[#1D72B8]">
-                          Energy Transfer Intelligence
-                        </p>
-                        <h4 className="mt-1 text-sm font-black text-slate-900">
-                          Dominant energy: {safeScopeResult.energyTransferIntelligence.dominantEnergySource || "undetermined"}
-                        </h4>
-                      </div>
-
-                      {safeScopeResult.energyTransferIntelligence.uncontrolledEnergyLikely && (
-                        <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">
-                          Uncontrolled Energy
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                  <SafeScopeDrawer
+                    title="Energy Transfer Intelligence"
+                    summary={`Dominant energy: ${safeScopeResult.energyTransferIntelligence.dominantEnergySource || "undetermined"}`}
+                    badge={
+                      safeScopeResult.energyTransferIntelligence.uncontrolledEnergyLikely
+                        ? "Uncontrolled Energy"
+                        : undefined
+                    }
+                  >
+                    <p className="text-sm font-semibold leading-6 text-slate-600">
                       {safeScopeResult.energyTransferIntelligence.energyTransferSummary}
                     </p>
 
@@ -1988,7 +1979,7 @@ export default function InspectionPage() {
                         {safeScopeResult.energyTransferIntelligence.controlLogic[0]}
                       </p>
                     )}
-                  </div>
+                  </SafeScopeDrawer>
                 )}
 
                 {safeScopeResult.barrierIntelligence && (
