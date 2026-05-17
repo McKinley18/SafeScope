@@ -5,6 +5,15 @@ import { Standard } from '../standards/entities/standard.entity';
 
 @Injectable()
 export class ApplicableStandardsService {
+  private isHousekeepingAccessScenario(text: string) {
+    return /(catwalk|walkway|travelway|passageway|platform|access)/i.test(text) &&
+      /(build up|buildup|accumulation|material|spillage|debris|housekeeping|slip|trip)/i.test(text);
+  }
+
+  private isMovingMachineScenario(text: string) {
+    return /(unguarded|guard|moving part|rotating|shaft|pulley|belt|conveyor|nip point|pinch point|drive)/i.test(text);
+  }
+
   constructor(
     @InjectRepository(Standard)
     private readonly standardRepo: Repository<Standard>,
@@ -27,7 +36,34 @@ export class ApplicableStandardsService {
       take: 5000,
     });
 
-    const results = all
+    const fallbackStandards = this.isHousekeepingAccessScenario(observation) && siteType === 'mining'
+      ? [
+          {
+            id: 'fallback-30-cfr-56-20003',
+            citation: '30 CFR 56.20003',
+            heading: 'Housekeeping',
+            summary: 'Workplaces, passageways, storerooms, and service rooms must be kept clean and orderly.',
+            agencyCode: 'MSHA',
+            scopeCode: 'mining',
+            score: 95,
+            confidence: 95,
+            matchingReasons: ['fallback: material accumulation / housekeeping on catwalk or travelway'],
+          },
+          {
+            id: 'fallback-30-cfr-56-11001',
+            citation: '30 CFR 56.11001',
+            heading: 'Safe access',
+            summary: 'Safe means of access shall be provided and maintained to all working places.',
+            agencyCode: 'MSHA',
+            scopeCode: 'mining',
+            score: 82,
+            confidence: 82,
+            matchingReasons: ['fallback: catwalk/walkway safe access affected by material buildup'],
+          },
+        ]
+      : [];
+
+    const results = [...fallbackStandards, ...all
       .map((standard) => {
         let score = 0;
         const matchingReasons: string[] = [];
@@ -59,6 +95,34 @@ export class ApplicableStandardsService {
           matchingReasons.push(`scope: ${siteType}`);
         }
 
+        if (this.isHousekeepingAccessScenario(observation)) {
+          if (standard.citation === '30 CFR 56.20003' || standard.citation === '30 CFR 57.20003') {
+            score += 75;
+            matchingReasons.push('scenario: material accumulation / housekeeping on travelway or catwalk');
+          }
+
+          if (standard.citation === '30 CFR 56.11001' || standard.citation === '30 CFR 57.11001') {
+            score += 55;
+            matchingReasons.push('scenario: safe access affected by material buildup on catwalk or walkway');
+          }
+
+          if (standard.citation === '1910.22(a)') {
+            score += 55;
+            matchingReasons.push('scenario: walking-working surface housekeeping / slip-trip exposure');
+          }
+
+          if (
+            standard.citation === '30 CFR 56.14107(a)' ||
+            standard.citation === '1910.212(a)(1)' ||
+            standard.citation === '1910.219'
+          ) {
+            score -= this.isMovingMachineScenario(observation) ? 0 : 40;
+            if (!this.isMovingMachineScenario(observation)) {
+              matchingReasons.push('negative: no moving machine part exposure described');
+            }
+          }
+        }
+
         return {
           id: standard.id,
           citation: standard.citation,
@@ -71,8 +135,9 @@ export class ApplicableStandardsService {
           matchingReasons,
         };
       })
-      .filter((item) => item.score > 0)
+      .filter((item) => item.score > 0)]
       .sort((a, b) => b.score - a.score)
+      .filter((item, index, arr) => arr.findIndex((other) => other.citation === item.citation) === index)
       .slice(0, limit);
 
     return results;

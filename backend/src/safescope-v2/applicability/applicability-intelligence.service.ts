@@ -89,6 +89,16 @@ export class ApplicabilityIntelligenceService {
         reasons.push('Electrical exposure indicators align with the standard context.');
       }
 
+      if (this.hasHousekeepingIndicators(contextTokens) && this.hasHousekeepingIndicators(standardText)) {
+        score += 35;
+        reasons.push('Housekeeping, material accumulation, or walking-working surface indicators align with the observed condition.');
+      }
+
+      if (this.hasAccessIndicators(contextTokens) && this.hasAccessIndicators(standardText)) {
+        score += 25;
+        reasons.push('Catwalk, walkway, travelway, or access indicators support safe-access applicability.');
+      }
+
       if (this.hasConfinedSpaceIndicators(contextTokens) && this.hasConfinedSpaceIndicators(standardText)) {
         score += 30;
         reasons.push('Confined space indicators align with the standard context.');
@@ -130,6 +140,11 @@ export class ApplicabilityIntelligenceService {
       if (this.hasElectricalIndicators(standardText) && !this.hasElectricalIndicators(contextTokens)) {
         score -= 20;
         exclusions.push('Electrical exposure conditions are not sufficiently established.');
+      }
+
+      if (this.hasAccessIndicators(standardText) && !this.hasAccessIndicators(contextTokens)) {
+        score -= 10;
+        exclusions.push('Safe-access or travelway conditions are not strongly established.');
       }
 
       const applicabilityConfidence = Math.max(0, Math.min(100, score));
@@ -225,6 +240,15 @@ export class ApplicabilityIntelligenceService {
 
   private hasConfinedSpaceIndicators(text: string) {
     return /(confined space|permit required|tank|vessel|silo|atmosphere|engulfment|limited entry|limited exit)/.test(text);
+  }
+
+
+  private hasHousekeepingIndicators(text: string) {
+    return /(housekeeping|material accumulation|accumulation|build up|buildup|spillage|spill|debris|mud|dust|rocks|aggregate|trash|clean|orderly|slip|trip|walking-working|walking working)/.test(text);
+  }
+
+  private hasAccessIndicators(text: string) {
+    return /(catwalk|walkway|travelway|passageway|platform|stairs|ladder|access|egress|walking-working|walking working)/.test(text);
   }
 
   private hasTrenchingIndicators(text: string) {

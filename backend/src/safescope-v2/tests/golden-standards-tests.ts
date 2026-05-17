@@ -39,6 +39,18 @@ async function run() {
       source: 'OSHA_GENERAL_INDUSTRY',
       expectedCitation: '1910.146',
     },
+    {
+      name: 'Catwalk material buildup finds MSHA housekeeping standard',
+      text: 'Catwalk has build up of material creating poor housekeeping and slip trip exposure on the travelway.',
+      source: 'MSHA',
+      expectedCitation: '30 CFR 56.20003',
+    },
+    {
+      name: 'Catwalk material buildup finds MSHA safe access standard',
+      text: 'Material accumulation on catwalk walkway restricts safe access to the work area.',
+      source: 'MSHA',
+      expectedCitation: '30 CFR 56.11001',
+    },
   ];
 
   let passed = 0;
