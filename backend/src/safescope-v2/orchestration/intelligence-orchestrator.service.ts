@@ -28,6 +28,7 @@ import { ElectricalIntelligenceService } from '../reference-intelligence/electri
 import { LiftingRiggingIntelligenceService } from '../reference-intelligence/lifting-rigging/lifting-rigging-intelligence.service';
 import { HazcomGhsIntelligenceService } from '../reference-intelligence/hazcom-ghs/hazcom-ghs-intelligence.service';
 import { CrossDomainInteractionService } from '../reference-intelligence/cross-domain/cross-domain-interaction.service';
+import { ApplicabilityIntelligenceService } from '../applicability/applicability-intelligence.service';
 import { ExecutiveJudgmentService } from '../executive-judgment/executive-judgment.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
@@ -76,6 +77,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private liftingRiggingEngine = new LiftingRiggingIntelligenceService();
   private hazcomGhsEngine = new HazcomGhsIntelligenceService();
   private crossDomainEngine = new CrossDomainInteractionService();
+  private applicabilityEngine = new ApplicabilityIntelligenceService();
   private executiveJudgmentEngine = new ExecutiveJudgmentService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
@@ -246,6 +248,18 @@ export class SafeScopeIntelligenceOrchestrator {
       confidenceIntelligence,
     });
 
+    const applicabilityIntelligence = this.applicabilityEngine.evaluate({
+      text: fusedText,
+      classification: promotedPrimary.classification,
+      expandedContext,
+      operationalReasoning,
+      energyTransferIntelligence,
+      barrierIntelligence,
+      evidenceQuality,
+      suggestedStandards: primaryStandardsResult.suggestedStandards,
+      agencyMode: (expandedContext as any)?.agencyMode,
+    });
+
     const domainIntelligence = {
       confinedSpace: this.confinedSpaceEngine.evaluate({
         text: fusedText,
@@ -353,6 +367,7 @@ export class SafeScopeIntelligenceOrchestrator {
           'action_effectiveness',
           'counterfactual',
           'standards_reasoning',
+          'applicability_intelligence',
           'decision_explainability',
           'hazard_graph',
           'exposure_path',
@@ -383,6 +398,7 @@ export class SafeScopeIntelligenceOrchestrator {
       actionEffectiveness,
       counterfactualIntelligence,
       standardsReasoning,
+      applicabilityIntelligence,
       decisionExplainability,
       executiveJudgment,
       hazardGraph,
