@@ -2,19 +2,19 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { OrganizationsService } from './organizations.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 
 @Controller('organization')
 export class OrganizationsController {
   constructor(private readonly service: OrganizationsService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
   @Get('me/settings')
   getMySettings(@Req() req: Request & { user?: any }) {
     return this.service.findOne(req.user.organizationId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
   @Roles('ORG_OWNER')
   @Patch('me/settings')
   updateMySettings(
@@ -24,19 +24,19 @@ export class OrganizationsController {
     return this.service.updateSettings(req.user.organizationId, body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
   @Get('me/members')
   getMyMembers(@Req() req: Request & { user?: any }) {
     return this.service.getMembers(req.user.organizationId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
   @Get('me/invites')
   getMyInvites(@Req() req: Request & { user?: any }) {
     return this.service.getInvitations(req.user.organizationId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
   @Roles('ORG_OWNER', 'SAFETY_DIRECTOR')
   @Post('me/invite')
   inviteToMyOrganization(
@@ -46,13 +46,13 @@ export class OrganizationsController {
     return this.service.createInvitation(req.user.organizationId, body.email, body.role || 'Auditor');
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard)
   @Roles('ORG_OWNER', 'SAFETY_DIRECTOR')
   @Post(':id/invite')
   invite(@Param('id') id: string, @Body() body: { email: string; role: string }) {
