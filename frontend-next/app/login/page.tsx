@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setStatusType("idle");
-      setStatus("Signing in...");
+      setStatus("Signing in — waking secure workspace...");
 
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
@@ -51,7 +51,7 @@ export default function LoginPage() {
       router.push("/command-center");
     } catch {
       setStatusType("error");
-      setStatus("Server unavailable. Please try again.");
+      setStatus("Server is waking up. Please try again in a moment.");
     } finally {
       setLoading(false);
     }
