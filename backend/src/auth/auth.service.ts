@@ -81,7 +81,7 @@ export class AuthService {
       .where("user.email = :email", { email })
       .getOne();
 
-    if (!user) {
+    if (!user || !user.password) {
       throw new BadRequestException('Invalid credentials');
     }
 
