@@ -152,8 +152,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       className={[
                         "rounded-full px-4 py-2 text-sm font-black tracking-tight transition",
                         active
-                          ? "bg-[#1D72B8] text-white shadow-md shadow-blue-900/20"
-                          : "text-[#B8C0CC] hover:bg-white/10 hover:text-white",
+                          ? "bg-[#1D72B8] text-[#F4F6F8] shadow-md shadow-blue-900/20"
+                          : "text-[#B8C0CC] hover:bg-white/10 hover:text-[#E2E6EA]",
                       ].join(" ")}
                     >
                       {item.label}

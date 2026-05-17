@@ -29,7 +29,7 @@ export default function MobileTabBar() {
                 href={item.href}
                 className={[
                   "flex h-[52px] flex-col items-center justify-center rounded-xl px-1 text-[10px] font-black",
-                  active ? "bg-[#1D72B8] text-white" : "text-slate-300",
+                  active ? "bg-[#1D72B8] text-[#F4F6F8]" : "text-[#C0C6CF]",
                 ].join(" ")}
               >
                 <span className="text-[18px] leading-none">{item.icon}</span>
