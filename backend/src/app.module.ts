@@ -43,7 +43,9 @@ import { PdfModule } from './pdf/pdf.module';
           database: databaseUrl ? undefined : configService.get<string>('DB_NAME'),
           ssl: isProduction ? { rejectUnauthorized: false } : false,
           autoLoadEntities: true,
-          synchronize: !isProduction && configService.get<string>('NODE_ENV') === 'development',
+          synchronize:
+            configService.get<string>('TYPEORM_SYNCHRONIZE') === 'true' ||
+            (!isProduction && configService.get<string>('NODE_ENV') === 'development'),
         };
       },
     }),
