@@ -28,6 +28,7 @@ import { ElectricalIntelligenceService } from '../reference-intelligence/electri
 import { LiftingRiggingIntelligenceService } from '../reference-intelligence/lifting-rigging/lifting-rigging-intelligence.service';
 import { HazcomGhsIntelligenceService } from '../reference-intelligence/hazcom-ghs/hazcom-ghs-intelligence.service';
 import { CrossDomainInteractionService } from '../reference-intelligence/cross-domain/cross-domain-interaction.service';
+import { ExecutiveJudgmentService } from '../executive-judgment/executive-judgment.service';
 
 export type SafeScopeIntelligenceOrchestratorInput = {
   fusedText: string;
@@ -75,6 +76,7 @@ export class SafeScopeIntelligenceOrchestrator {
   private liftingRiggingEngine = new LiftingRiggingIntelligenceService();
   private hazcomGhsEngine = new HazcomGhsIntelligenceService();
   private crossDomainEngine = new CrossDomainInteractionService();
+  private executiveJudgmentEngine = new ExecutiveJudgmentService();
 
   evaluate(input: SafeScopeIntelligenceOrchestratorInput) {
     const {
@@ -315,6 +317,22 @@ export class SafeScopeIntelligenceOrchestrator {
       controlIntelligence,
     });
 
+    const executiveJudgment = this.executiveJudgmentEngine.evaluate({
+      classification: promotedPrimary.classification,
+      risk: promotedPrimary.risk,
+      confidenceIntelligence,
+      evidenceQuality,
+      operationalReasoning,
+      energyTransferIntelligence,
+      barrierIntelligence,
+      controlIntelligence,
+      standardsReasoning,
+      generatedActions,
+      contradictionIntelligence,
+      crossDomainInteraction,
+      domainIntelligence,
+    });
+
     return {
       intelligenceMetadata: {
         engineName: 'SafeScope Intelligence Orchestrator',
@@ -345,6 +363,7 @@ export class SafeScopeIntelligenceOrchestrator {
           'workspace_learning',
           'domain_intelligence',
           'cross_domain_interaction',
+          'executive_judgment',
         ],
       },
       domainIntelligence,
@@ -365,6 +384,7 @@ export class SafeScopeIntelligenceOrchestrator {
       counterfactualIntelligence,
       standardsReasoning,
       decisionExplainability,
+      executiveJudgment,
       hazardGraph,
       exposurePathIntelligence,
       correlationIntelligence,
