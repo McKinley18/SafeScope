@@ -176,7 +176,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 {profileOpen && (
                   <div ref={profileMenuRef} className="absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
                     <div className="border-b border-slate-100 px-4 py-3">
-                    <p className="text-xs font-black text-slate-500">{securityLabel}</p>
+                    <p className="text-xs font-black text-[#AEB6C2]">{securityLabel}</p>
                   </div>
 
                   {isPinRequired() && (
@@ -240,24 +240,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <footer className="mt-auto w-full border-t border-slate-800 bg-[#0F172A] ">
           <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-4 px-5 py-6">
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link href="/about" className="text-sm font-semibold !text-white hover:!text-blue-200">
+              <Link href="/about" className="text-sm font-semibold !text-[#AEB6C2] hover:!text-blue-200">
                 About
               </Link>
 
               <span className="h-4 w-px bg-slate-600" />
 
-              <Link href="/legal" className="text-sm font-semibold !text-white hover:!text-blue-200">
+              <Link href="/legal" className="text-sm font-semibold !text-[#AEB6C2] hover:!text-blue-200">
                 Legal
               </Link>
 
               <span className="h-4 w-px bg-slate-600" />
 
-              <Link href="/safescope" className="text-sm font-semibold !text-white hover:!text-blue-200">
+              <Link href="/safescope" className="text-sm font-semibold !text-[#AEB6C2] hover:!text-blue-200">
                 SafeScope<span className="ml-[1px] align-super text-[9px]">TM</span>
               </Link>
             </div>
 
-            <p className="m-0 text-center text-[13px] text-slate-500">
+            <p className="m-0 text-center text-[13px] text-[#AEB6C2]">
               © {new Date().getFullYear()} Sentinel Safety. All rights reserved.
             </p>
           </div>
