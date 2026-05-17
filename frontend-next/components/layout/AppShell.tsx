@@ -153,7 +153,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                         "rounded-full px-4 py-2 text-sm font-black tracking-tight transition",
                         active
                           ? "bg-[#1D72B8] text-white shadow-md shadow-blue-900/20"
-                          : "text-slate-300 hover:bg-white/10 hover:text-white",
+                          : "text-[#B8C0CC] hover:bg-white/10 hover:text-white",
                       ].join(" ")}
                     >
                       {item.label}
