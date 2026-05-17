@@ -12,6 +12,7 @@ import AnnotationPreview from "@/components/evidence/AnnotationPreview";
 import AnnotationEditor from "@/components/evidence/AnnotationEditor";
 import SafeScopeDrawer from "@/components/safescope/SafeScopeDrawer";
 import { deleteEncryptedPhoto, loadEncryptedPhoto, saveEncryptedPhoto } from "@/lib/evidenceStorage";
+import { enqueueOfflineItem } from "@/lib/offlineQueue";
 
 const steps = [
   { title: "Step 1: Identify Hazards", desc: "Document the hazard observed." },
@@ -770,8 +771,18 @@ export default function InspectionPage() {
           "sentinel_latest_report",
           JSON.stringify(savedCloudReport.frontendReportJson || report)
         );
-      } catch {
-        alert("Report could not be saved to the workspace database. It will be saved locally instead.");
+      } catch (error) {
+        await enqueueOfflineItem({
+          type: "report_save",
+          payload: {
+            report,
+            storageMode,
+            reason: "workspace_cloud_save_failed",
+          },
+          lastError: error instanceof Error ? error.message : "Unknown cloud save failure",
+        });
+
+        alert("Report could not be saved to the workspace database. It was saved locally and queued for retry.");
 
         const existingReportsRaw = await getReports<any>();
         const existingReports = Array.isArray(existingReportsRaw) ? existingReportsRaw : [];
