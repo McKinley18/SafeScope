@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/safescope";
+import { apiFetch } from "@/lib/apiFetch";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function LoginPage() {
       setStatusType("idle");
       setStatus("Signing in — waking secure workspace...");
 
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), password }),

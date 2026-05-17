@@ -1,3 +1,5 @@
+import { apiFetch } from "./apiFetch";
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
@@ -26,7 +28,7 @@ export async function runSafeScopeV2Classify(payload: {
     .filter(Boolean)
     .join("\n");
 
-  const response = await fetch(`${API_BASE_URL}/safescope-v2/classify`, {
+  const response = await apiFetch(`${API_BASE_URL}/safescope-v2/classify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -47,7 +49,7 @@ export async function runSafeScopeV2Classify(payload: {
 }
 
 export async function sendSafeScopeFeedback(payload: any) {
-  const response = await fetch(`${API_BASE_URL}/standards/feedback`, {
+  const response = await apiFetch(`${API_BASE_URL}/standards/feedback`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -62,7 +64,7 @@ export async function sendSafeScopeFeedback(payload: any) {
 
 
 export async function getSafeScopeReasoningSnapshot(snapshotId: string) {
-  const response = await fetch(`${API_BASE_URL}/safescope-v2/reasoning-snapshots/${snapshotId}`);
+  const response = await apiFetch(`${API_BASE_URL}/safescope-v2/reasoning-snapshots/${snapshotId}`);
 
   if (!response.ok) {
     throw new Error("SafeScope reasoning snapshot could not be loaded.");
@@ -88,7 +90,7 @@ export async function submitSupervisorValidation(payload: {
   modifiedStandards?: any;
   modifiedRiskAssessment?: any;
 }) {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/safescope-v2/supervisor-validations`,
     {
       method: "POST",
@@ -109,7 +111,7 @@ export async function submitSupervisorValidation(payload: {
 export async function getSupervisorValidationHistory(
   reasoningSnapshotId: string
 ) {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/safescope-v2/supervisor-validations/${reasoningSnapshotId}`
   );
 

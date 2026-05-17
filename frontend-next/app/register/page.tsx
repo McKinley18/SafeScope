@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/safescope";
+import { apiFetch } from "@/lib/apiFetch";
 
 function validatePassword(password: string) {
   return {
@@ -64,7 +65,7 @@ export default function RegisterPage() {
       setStatusType("idle");
       setStatus("Creating account...");
 
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await apiFetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email: email.trim(), password, type: "company" }),
