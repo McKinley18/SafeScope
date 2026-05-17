@@ -13,7 +13,8 @@
     "seed:safescope-standards": "ts-node src/safescope-v2/standards/safescope-standards.seed.ts",
     "test:safescope-standards": "ts-node src/safescope-v2/tests/golden-standards-tests.ts",
     "test:safescope-operational": "ts-node src/safescope-v2/tests/golden-operational-reasoning-tests.ts",
-    "test:safescope-domains": "ts-node src/safescope-v2/tests/golden-domain-intelligence-tests.ts"
+    "test:safescope-domains": "ts-node src/safescope-v2/tests/golden-domain-intelligence-tests.ts",
+    "ingest:ecfr:standards": "ts-node src/standards/ingestion/ingest-ecfr-standards.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -33,6 +34,7 @@
     "class-validator": "^0.15.1",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
+    "fast-xml-parser": "^5.8.0",
     "helmet": "^8.1.0",
     "multer": "^2.1.1",
     "natural": "^8.1.1",
