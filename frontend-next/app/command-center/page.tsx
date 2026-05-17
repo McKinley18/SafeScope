@@ -70,57 +70,6 @@ export default function DashboardPage() {
       .slice(0, 5);
   }, [activityEvents, reports]);
 
-  const safeScopeSignal = useMemo(() => {
-    const findings = reports.flatMap((report) => report.findings || []);
-
-    const categoryCounts = findings.reduce<Record<string, number>>((acc, finding) => {
-      const category =
-        finding.hazardCategory ||
-        finding.safeScopeResult?.classification ||
-        "Uncategorized";
-
-      acc[category] = (acc[category] || 0) + 1;
-      return acc;
-    }, {});
-
-    const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
-
-    const criticalActions = storedActions.filter(
-      (action) =>
-        String(action.priority || "").toLowerCase() === "critical" &&
-        String(action.status || "").toLowerCase() !== "completed"
-    );
-
-    const overdueActions = storedActions.filter((action) => {
-      if (!action.due) return false;
-      return new Date(action.due).getTime() < Date.now() &&
-        String(action.status || "").toLowerCase() !== "completed";
-    });
-
-    if (criticalActions.length) {
-      return {
-        title: `${criticalActions.length} critical corrective action${criticalActions.length === 1 ? "" : "s"} open.`,
-        detail: "SafeScope recommends prioritizing verification and closure of critical corrective work.",
-      };
-    }
-
-    if (overdueActions.length) {
-      return {
-        title: `${overdueActions.length} overdue corrective action${overdueActions.length === 1 ? "" : "s"} detected.`,
-        detail: "Review overdue work before adding additional low-risk observations.",
-      };
-    }
-
-    if (topCategory && topCategory[1] >= 2) {
-      return {
-        title: `${topCategory[0]} is recurring across findings.`,
-        detail: "Repeated categories may indicate weak controls, training gaps, or supervision drift.",
-      };
-    }
-
-    return null;
-  }, [reports, storedActions]);
-
   const dashboardMetrics = useMemo(() => {
     const findings = reports.flatMap((report) => report.findings || []);
 
@@ -263,18 +212,6 @@ export default function DashboardPage() {
         </div>
 
         <aside className="space-y-5">
-          <section className="border-y border-slate-200 py-4">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
-              SafeScope Signal
-            </p>
-            <h2 className="mt-2 text-xl font-black text-slate-900">
-              {safeScopeSignal?.title || "No active SafeScope signals."}
-            </h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
-              {safeScopeSignal?.detail || "SafeScope intelligence will appear here as inspections, findings, and trends are analyzed."}
-            </p>
-          </section>
-
           <section>
             <p className="text-xs font-black uppercase tracking-[0.22em] text-[#1D72B8]">
               Activity
