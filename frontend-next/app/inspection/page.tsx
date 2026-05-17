@@ -721,7 +721,8 @@ export default function InspectionPage() {
     }
 
     if (shouldSaveLocal) {
-      const existingReports = await getReports<any>();
+      const existingReportsRaw = await getReports<any>();
+      const existingReports = Array.isArray(existingReportsRaw) ? existingReportsRaw : [];
 
       const nextReports = [
         report,
@@ -772,7 +773,8 @@ export default function InspectionPage() {
       } catch {
         alert("Report could not be saved to the workspace database. It will be saved locally instead.");
 
-        const existingReports = await getReports<any>();
+        const existingReportsRaw = await getReports<any>();
+        const existingReports = Array.isArray(existingReportsRaw) ? existingReportsRaw : [];
 
         const nextReports = [
           report,
